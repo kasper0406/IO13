@@ -29,6 +29,7 @@ int main(int argc, char *argv[]) {
   //istream.close();
    
   test_reads<FREADInputStream>(8 * 1024 * 1024);
+  test_writes<FWRITEOutputStream>(8 * 1024 * 1024);
 
   return 0;
 }

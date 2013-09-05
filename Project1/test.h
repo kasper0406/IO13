@@ -116,11 +116,11 @@ void measure(ostream& out,
   out << endl;
 };
 
-template <class IS>
-void print_test_reads_header(ostream& out, uint64_t elements) {
-  string name = typeid(IS).name();
+template <class S>
+void print_test_header(ostream& out, uint64_t elements) {
+  string name = typeid(S).name();
 
-  out << "--- Stream \"" << name << "\" read test ---" << endl;
+  out << endl << "--- " << name << " read/write test ---" << endl;
   out << "Elements: " << elements << endl;
   out << endl << "n\t\tk\tTrials\tMin    [s]\tLower  [s]\tMedian [s]\tUpper  [s]\tMax [s]";
 //#ifdef __linux__
@@ -130,14 +130,17 @@ void print_test_reads_header(ostream& out, uint64_t elements) {
   out << endl;
 }
 
-// Tester reads fra flere streams der interleaves. Det er det der giver den bedste
+// TODO: Tildels copy-paste for test_reads og test_writes
+
+// Tester flere streams der interleaves. Det er det der giver den bedste
 // merge-sort approksimation. Hvis de koeres efter hinanden er det jo bare ligesom
 // at koere een sekventielt.
-template <template<typename> class IS>
+template <template<typename> class S>
 void test_reads(uint64_t elements) {
   const string filename = "test_file";
   const uint32_t max_k = 32;
-
+  const uint32_t trials = 3;
+    
   if (!(elements && !(elements & (elements - 1)))) {
     cout << "Number of elements not a power of 2" << endl;
     exit(1);
@@ -150,16 +153,17 @@ void test_reads(uint64_t elements) {
 
   generate_file<uint32_t>(filename, random_uint32, elements);
 
-  print_test_reads_header<IS<uint32_t>>(cout, elements);
+  print_test_header<S<uint32_t>>(cout, elements);
 
   for (uint32_t k = 1; k <= max_k; k *= 2) {
-    vector<IS<int32_t>> streams(k);
+    vector<S<int32_t>> streams(k);
 
     uint64_t n = elements / k;
 
     stringstream test;
     test << setw(16) << to_string(n) + "\t" + to_string(k);
-    measure(cout, test.str(), 3, [&]() {
+
+    auto read_test = [&]() {
       for (uint32_t i = 0; i < k; ++i) {
         streams[i].open(filename, (uint64_t)i * (elements / k), ((uint64_t)i + 1LL) * (elements / k));
       }
@@ -171,12 +175,67 @@ void test_reads(uint64_t elements) {
       }
 
       for (auto& stream : streams) {
+        // Sanity check
         if (!stream.end_of_stream()) {
           cout << "Not eof" << endl;
           exit(1);
         }
         stream.close();
       }
-    });
+    };
+
+    measure(cout, test.str(), trials, read_test);
+  }
+}
+
+// Tester flere streams der interleaves. Det er det der giver den bedste
+// merge-sort approksimation. Hvis de koeres efter hinanden er det jo bare ligesom
+// at koere een sekventielt.
+// For write tests, udskrives der bare 0'er
+template <template<typename> class S>
+void test_writes(uint64_t elements) {
+  const string filename = "test_file";
+  const uint32_t max_k = 32;
+  const uint32_t trials = 3;
+    
+  if (!(elements && !(elements & (elements - 1)))) {
+    cout << "Number of elements not a power of 2" << endl;
+    exit(1);
+  }
+
+  if (max_k > elements) {
+    cout << "Max number of streams must be lower or equal to the number of elements" << endl;
+    exit(1);
+  }
+
+  generate_file<uint32_t>(filename, random_uint32, elements);
+
+  print_test_header<S<uint32_t>>(cout, elements);
+
+  for (uint32_t k = 1; k <= max_k; k *= 2) {
+    vector<S<int32_t>> streams(k);
+
+    uint64_t n = elements / k;
+
+    stringstream test;
+    test << setw(16) << to_string(n) + "\t" + to_string(k);
+
+    auto write_test = [&]() {
+      for (uint32_t i = 0; i < k; ++i) {
+        streams[i].open(filename, (uint64_t)i * (elements / k), ((uint64_t)i + 1LL) * (elements / k));
+      }
+
+      for (uint64_t i = 0; i < n; ++i) {
+        for (auto& stream : streams) {
+          stream.write(0);
+        }
+      }
+
+      for (auto& stream : streams) {
+        stream.close();
+      }
+    };
+
+    measure(cout, test.str(), trials, write_test);
   }
 }
