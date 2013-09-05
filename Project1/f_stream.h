@@ -3,16 +3,25 @@
 #include <string>
 #include <cstdint>
 #include <cstdio>
+#include <stdexcept>
 
 #include "stream.h"
 
 template <typename T>
 class FStream : public virtual Stream<T> {
 public:
-  void open(string filename, uint64_t start, uint64_t end) {
+  enum Direction { IN, OUT };
+  
+  void open(string filename, uint64_t start, uint64_t end, Direction direction) {
     remaining = end - start;
     
-    m_file = fopen(filename.c_str(), "rb");
+    string dir;
+    if (direction == IN)
+      dir = "r";
+    else
+      dir = "r+";
+    
+    m_file = fopen(filename.c_str(), (dir + "b").c_str());
     if (m_file == NULL)
       throw runtime_error("Failed to open file: " + filename);
     
