@@ -3,17 +3,12 @@
 #include <string>
 #include <cstdint>
 
+#include "stream.h"
+
 using namespace std;
 
 template <typename T>
-class InputStream {
+class InputStream : public virtual Stream<T> {
 public:
-  /**
-   * Opens file 'filename' and reads entries in the interval [start, end[.
-   */
-  void open(string filename, uint64_t start, uint64_t end);
-
   T read_next();
-  bool end_of_stream();
-  void close();
 };
