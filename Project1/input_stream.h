@@ -7,6 +7,7 @@ using namespace std;
 
 template <typename T>
 class InputStream {
+public:
   void open(string filename, uint64_t position);
   T read_next();
   bool end_of_stream();
