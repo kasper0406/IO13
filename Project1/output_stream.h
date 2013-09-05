@@ -7,7 +7,8 @@ using namespace std;
 
 template <typename T>
 class OutputStream {
-  void open(string filename, uint64_t position);
+public:
+  void open(string filename, uint64_t start, uint64_t end);
   void write(T value);
   void close();
 };

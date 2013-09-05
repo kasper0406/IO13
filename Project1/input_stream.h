@@ -8,7 +8,11 @@ using namespace std;
 template <typename T>
 class InputStream {
 public:
-  void open(string filename, uint64_t position);
+  /**
+   * Opens file 'filename' and reads entries in the interval [start, end[.
+   */
+  void open(string filename, uint64_t start, uint64_t end);
+  
   T read_next();
   bool end_of_stream();
   void close();
