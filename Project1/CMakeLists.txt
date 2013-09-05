@@ -34,4 +34,6 @@ ENDIF(APPLE)
 
 add_executable(Project1 main.cpp
                         input_stream.h
-                        output_stream.h)
+                        output_stream.h
+                        test.h
+                        utils.h)
