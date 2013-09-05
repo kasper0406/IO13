@@ -10,6 +10,11 @@
 template <typename T>
 class FStream : public virtual Stream<T> {
 public:
+  FStream() {
+    m_file = NULL;
+    remaining = 0;
+  }
+  
   enum Direction { IN, OUT };
   
   void open(string filename, uint64_t start, uint64_t end, Direction direction) {
@@ -40,5 +45,5 @@ public:
   
 protected:
   FILE* m_file;
-  uint32_t remaining;
+  uint64_t remaining;
 };

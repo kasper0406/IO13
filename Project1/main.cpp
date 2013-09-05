@@ -4,6 +4,7 @@
 
 #include "fread_input_stream.h"
 #include "fwrite_output_stream.h"
+#include "mmap_input_stream.h"
 
 using namespace std;
 
