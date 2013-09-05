@@ -10,7 +10,7 @@ template <class T>
 class FREADInputStream : public InputStream<T> {
 public:
   void open(string filename, uint32_t position) {
-    m_file = fopen(filename, "rb");
+    m_file = fopen(filename.c_str(), "rb");
     if (m_file == NULL)
       throw runtime_error("Failed to open file: " + filename);
     
