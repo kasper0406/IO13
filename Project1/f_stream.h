@@ -30,8 +30,13 @@ public:
     if (m_file == NULL)
       throw runtime_error("Failed to open file: " + filename);
     
-    if (fseek(m_file, sizeof(T) * start, SEEK_SET) != 0)
+#ifndef _WINDOWS
+    if (fseek64(m_file, sizeof(T) * start, SEEK_SET) != 0)
       throw runtime_error("Failed to set position in file!");
+#else
+    if (_fseeki64(m_file, sizeof(T) * start, SEEK_SET) != 0)
+      throw runtime_error("Failed to set position in file!");
+#endif
   }
   
   bool end_of_stream() const {
