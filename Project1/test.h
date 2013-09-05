@@ -116,9 +116,11 @@ void measure(ostream& out,
   out << endl;
 };
 
-template <template<typename> class IS>
+template <class IS>
 void print_test_reads_header(ostream& out, uint64_t elements) {
-  out << "--- Stream \"" << typeid(IS).name() << "\" read test ---" << endl;
+  string name = typeid(IS).name();
+
+  out << "--- Stream \"" << name << "\" read test ---" << endl;
   out << "Elements: " << elements << endl;
   out << endl << "n\t\tk\tTrials\tMin    [s]\tLower  [s]\tMedian [s]\tUpper  [s]\tMax [s]";
 //#ifdef __linux__
@@ -130,7 +132,7 @@ void print_test_reads_header(ostream& out, uint64_t elements) {
 
 // Tester reads fra flere streams der interleaves. Det er det der giver den bedste
 // merge-sort approksimation. Hvis de koeres efter hinanden er det jo bare ligesom
-// at koerer een sekventielt.
+// at koere een sekventielt.
 template <template<typename> class IS>
 void test_reads(uint64_t elements) {
   const string filename = "test_file";
@@ -148,7 +150,7 @@ void test_reads(uint64_t elements) {
 
   generate_file<uint32_t>(filename, random_uint32, elements);
 
-  print_test_reads_header<IS>(cout, elements);
+  print_test_reads_header<IS<uint32_t>>(cout, elements);
 
   for (uint32_t k = 1; k <= max_k; k *= 2) {
     vector<IS<int32_t>> streams(k);

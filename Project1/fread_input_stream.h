@@ -26,5 +26,4 @@ public:
     
     return result;
   }
-  uint64_t remaining;
 };
