@@ -3,12 +3,12 @@
 #include <string>
 #include <cstdint>
 
+#include "stream.h"
+
 using namespace std;
 
 template <typename T>
-class OutputStream {
+class OutputStream : public virtual Stream<T> {
 public:
-  void open(string filename, uint64_t start, uint64_t end);
   void write(T value);
-  void close();
 };
