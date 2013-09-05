@@ -3,7 +3,7 @@ project (IOProject2)
 
 string(COMPARE EQUAL ${CMAKE_SYSTEM_NAME} "Linux" LINUX)
 
-IF(${LINUX})
+IF(${FALSE}) # LINUX!
 #  set(CMAKE_CXX_COMPILER "clang++")
   set(CMAKE_BUILD_TYPE Release)
   set(CMAKE_CXX_FLAGS_RELEASE "-O3")
@@ -35,11 +35,3 @@ ENDIF(APPLE)
 add_executable(Project1 main.cpp
                         input_stream.h
                         output_stream.h)
-
-IF(UNIX)
-    target_link_libraries(Project1 pthread)
-ENDIF(UNIX)
-
-IF(${LINUX})
-  target_link_libraries(Project1 ipcm_lib rt)
-ENDIF(${LINUX})
