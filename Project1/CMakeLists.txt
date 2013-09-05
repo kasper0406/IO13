@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 2.6)
-project (IOProject2)
+project (IOProject1)
 
 string(COMPARE EQUAL ${CMAKE_SYSTEM_NAME} "Linux" LINUX)
 
