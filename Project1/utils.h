@@ -10,7 +10,7 @@
 
 using namespace std;
 
-mt19937 generator(100);
+minstd_rand generator(100);
 uniform_int_distribution<uint32_t> distribution(numeric_limits<uint32_t>::min(),
                                                 numeric_limits<uint32_t>::max());
 auto random_uint32 = bind(distribution, generator);
