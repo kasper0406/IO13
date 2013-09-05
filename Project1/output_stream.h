@@ -1,11 +1,13 @@
 #pragma once
 
 #include <string>
-#include <cstdlib>
+#include <cstdint>
+
+using namespace std;
 
 template <typename T>
 class OutputStream {
-  void open(string filename, uint position);
-  write(T value);
+  void open(string filename, uint64_t position);
+  void write(T value);
   void close();
 };
