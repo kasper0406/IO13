@@ -130,7 +130,95 @@ void print_test_header(ostream& out, uint64_t elements) {
   out << endl;
 }
 
-// TODO: Tildels copy-paste for test_reads og test_writes
+template <template<typename> class IN, template<typename> class OUT>
+void sanity_test() {
+  const string filename = "test_file";
+  const uint64_t elements = 1024;
+  
+  generate_file<uint64_t>(filename, random_uint32, elements);
+
+  // Sequential write test
+  OUT<uint32_t> out;
+  out.open(filename, 0, elements);
+
+  for (uint64_t i = 0; i < elements; ++i) {
+    out.write(i);
+  }
+
+  out.close();
+
+  // Sequential read test
+  IN<uint32_t> in;
+  in.open(filename, 0, elements);
+
+  for (uint64_t i = 0; i < elements; ++i) {
+    if (in.read_next() != i) {
+      cout << "Sanity check for "
+           << typeid(IN<uint32_t>).name() << " and "
+           << typeid(OUT<uint32_t>).name() << " failed";
+      exit(1);
+    }
+  }
+
+  in.close();
+
+  generate_file<uint64_t>(filename, random_uint32, elements);
+
+  // Parallel write test
+  OUT<uint32_t> out0;
+  OUT<uint32_t> out1;
+  OUT<uint32_t> out2;
+  OUT<uint32_t> out3;
+  out0.open(filename, 0, elements / 4);
+  out1.open(filename, elements / 4, elements / 2);
+  out2.open(filename, elements / 2, (elements / 4) * 3);
+  out3.open(filename, (elements / 4) * 3, elements);
+
+  for (uint64_t i = 0; i < elements; ) {
+    out0.write(i++);
+    out1.write(i++);
+    out2.write(i++);
+    out3.write(i++);
+  }
+
+  out0.close();
+  out1.close();
+  out2.close();
+  out3.close();
+
+  // Parallel read test
+  IN<uint32_t> in0;
+  IN<uint32_t> in1;
+  IN<uint32_t> in2;
+  IN<uint32_t> in3;
+  in0.open(filename, 0, elements / 4);
+  in1.open(filename, elements / 4, elements / 2);
+  in2.open(filename, elements / 2, (elements / 4) * 3);
+  in3.open(filename, (elements / 4) * 3, elements);
+
+  for (uint64_t i = 0; i < elements; ) {
+    if (in0.read_next() != i++
+        || in1.read_next() != i++
+        || in2.read_next() != i++
+        || in3.read_next() != i++) {
+      cout << "Sanity check failed for "
+           << typeid(IN<uint32_t>).name() << " and "
+           << typeid(OUT<uint32_t>).name() << " failed";
+      exit(1);
+    }
+  }
+
+  in0.close();
+  in1.close();
+  in2.close();
+  in3.close();
+
+  cout << "Sanity check for "
+       << typeid(IN<uint32_t>).name() << " and " << endl << "                 "
+       << typeid(OUT<uint32_t>).name() << " succeeded" << endl;
+}
+
+// TODO(lespeholt): Tildels copy-paste for test_reads og test_writes
 
 // Tester flere streams der interleaves. Det er det der giver den bedste
 // merge-sort approksimation. Hvis de koeres efter hinanden er det jo bare ligesom
@@ -207,8 +295,6 @@ void test_writes(uint64_t elements) {
     cout << "Max number of streams must be lower or equal to the number of elements" << endl;
     exit(1);
   }
-
-  generate_file<uint32_t>(filename, random_uint32, elements);
 
   print_test_header<S<uint32_t>>(cout, elements);
 
