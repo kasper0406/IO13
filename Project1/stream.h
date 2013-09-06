@@ -9,6 +9,8 @@ template <typename T>
 class Stream
 {
 public:
+  enum Direction { IN, OUT };
+  
   /**
    * Opens file 'filename' and reads entries in the interval [start, end[.
    */

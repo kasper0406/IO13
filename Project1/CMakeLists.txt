@@ -38,6 +38,10 @@ add_executable(Project1 main.cpp
                         output_stream.h
                         test.h
                         utils.h
-                        fread_input_stream.h
+                        stream.h
                         f_stream.h
-                        mmap_input_stream.h)
+                        fread_input_stream.h
+                        fwrite_output_stream.h
+                        mmap_stream.h
+                        mmap_input_stream.h
+                        mmap_output_stream.h)

@@ -15,13 +15,11 @@ public:
     remaining = 0;
   }
   
-  enum Direction { IN, OUT };
-  
-  void open(string filename, uint64_t start, uint64_t end, Direction direction) {
+  void open(string filename, uint64_t start, uint64_t end, typename Stream<T>::Direction direction) {
     remaining = end - start;
     
     string dir;
-    if (direction == IN)
+    if (direction == Stream<T>::Direction::IN)
       dir = "r";
     else
       dir = "r+";

@@ -12,7 +12,7 @@ template <typename T>
 class FREADInputStream : public FStream<T>, public InputStream<T> {
 public:
   void open(string filename, uint64_t start, uint64_t end) {
-    FStream<T>::open(filename, start, end, FStream<T>::IN);
+    FStream<T>::open(filename, start, end, Stream<T>::IN);
   }
   
   T read_next() {
