@@ -21,6 +21,8 @@ public:
   }
   
   T read_next() {
+    if (this->remaining == 0)
+      throw runtime_error("Trying to read from empty stream!");
     this->remaining -= 1;
     
     if (this->current - B == this->memory)

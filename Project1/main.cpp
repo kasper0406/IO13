@@ -20,6 +20,9 @@ using namespace std;
 
 int main(int argc, char *argv[]) {
   sanity_test<FREADInputStream, FWRITEOutputStream>();
+#ifndef _WINDOWS
+  sanity_test<MMapIStream, MMapOStream>();
+#endif
   
   const uint64_t elements = 8 * 1024 * 1024;
   
@@ -29,6 +32,6 @@ int main(int argc, char *argv[]) {
   test_reads<MMapIStream>(elements);
   test_writes<MMapOStream>(elements);
 #endif
-    
+  
   return 0;
 }
