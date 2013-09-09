@@ -15,6 +15,9 @@ template <typename T> using MMapOStream = MMapOutputStream<1024, T>;
 
 using namespace std;
 
+// TODO(lespeholt): Husk at bruge en ordentlig random generator. Standard
+// versionen har en kort periode!
+
 int main(int argc, char *argv[]) {
   sanity_test<FREADInputStream, FWRITEOutputStream>();
   
