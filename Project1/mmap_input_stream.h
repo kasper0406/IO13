@@ -17,6 +17,10 @@ template<uint64_t B, typename T>
 class MMapInputStream : public InputStream<T>, public MMapStream<B, T> {
 public:
   void open(string filename, uint64_t start, uint64_t end) {
+    this->fd = ::open(filename.c_str(), O_RDONLY);
+    if (this->fd == -1)
+      throw runtime_error("Failed to open file!");
+    
     MMapStream<B, T>::open(filename, start, end, Stream<T>::IN);
   }
   

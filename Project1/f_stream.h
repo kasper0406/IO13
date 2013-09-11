@@ -18,16 +18,6 @@ public:
   void open(string filename, uint64_t start, uint64_t end, typename Stream<T>::Direction direction) {
     remaining = end - start;
     
-    string dir;
-    if (direction == Stream<T>::Direction::IN)
-      dir = "r";
-    else
-      dir = "r+";
-    
-    m_file = fopen(filename.c_str(), (dir + "b").c_str());
-    if (m_file == NULL)
-      throw runtime_error("Failed to open file: " + filename);
-    
 #ifndef _WINDOWS
     if (fseek(m_file, sizeof(T) * start, SEEK_SET) != 0)
       throw runtime_error("Failed to set position in file!");

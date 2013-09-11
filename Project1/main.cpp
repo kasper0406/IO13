@@ -18,6 +18,10 @@ using namespace std;
 // TODO(lespeholt): Husk at bruge en ordentlig random generator. Standard
 // versionen har en kort periode!
 
+// TODO(knielsen): Overskriv fseek / lseek etc. med alternativer så alle
+// systemer bruger 64 bit pointers. OS X gør dette auto, men win og linux
+// gør det så vidt jeg kan læse kun med 32 bits.
+
 int main(int argc, char *argv[]) {
   sanity_test<FREADInputStream, FWRITEOutputStream>();
 #ifndef _WINDOWS
