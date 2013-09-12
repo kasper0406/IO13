@@ -3,6 +3,7 @@
 #include "stream.h"
 #include <fcntl.h>
 #include <cstdio>
+#include <unistd.h>
 
 template<typename T>
 class RWStream : public virtual Stream<T> {
