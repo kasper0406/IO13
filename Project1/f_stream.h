@@ -15,7 +15,7 @@ public:
     remaining = 0;
   }
   
-  void open(string filename, uint64_t start, uint64_t end, typename Stream<T>::Direction direction) {
+  void open(string filename, uint64_t start, uint64_t end) {
     remaining = end - start;
     
 #ifndef _WINDOWS

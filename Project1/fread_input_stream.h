@@ -16,7 +16,7 @@ public:
     if (this->m_file == NULL)
       throw runtime_error("Failed to open file: " + filename);
     
-    FStream<T>::open(filename, start, end, Stream<T>::IN);
+    FStream<T>::open(filename, start, end);
   }
   
   T read_next() {

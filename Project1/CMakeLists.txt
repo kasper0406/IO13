@@ -45,4 +45,9 @@ add_executable(Project1 main.cpp
                         fwrite_output_stream.h
                         mmap_stream.h
                         mmap_input_stream.h
-                        mmap_output_stream.h)
+                        mmap_output_stream.h
+                        buffered_input_stream.h
+                        buffered_output_stream.h
+                        read_input_stream.h
+                        write_output_stream.h
+                        rw_stream.h)

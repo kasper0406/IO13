@@ -32,7 +32,7 @@ public:
         throw runtime_error("Failed to extend file size!");
     }
     
-    FStream<T>::open(filename, start, end, Stream<T>::OUT);
+    FStream<T>::open(filename, start, end);
   }
   
   void write(T value) {
