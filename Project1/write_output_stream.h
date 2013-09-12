@@ -1,5 +1,6 @@
 #pragma once
 
+#include <unistd.h>
 #include "input_stream.h"
 #include "rw_stream.h"
 

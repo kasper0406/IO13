@@ -2,7 +2,6 @@
 
 #include "stream.h"
 #include <fcntl.h>
-#include <unistd.h>
 #include <cstdio>
 
 template<typename T>

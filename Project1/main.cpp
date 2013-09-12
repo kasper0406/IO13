@@ -4,6 +4,10 @@
 
 #include "fread_input_stream.h"
 #include "fwrite_output_stream.h"
+#include "read_input_stream.h"
+#include "write_output_stream.h"
+#include "buffered_input_stream.h"
+#include "buffered_output_stream.h"
 #include "merge_sort.h"
 
 #ifndef _WINDOWS
@@ -13,6 +17,9 @@
 template <typename T> using MMapIStream = MMapInputStream<1024, T>;
 template <typename T> using MMapOStream = MMapOutputStream<1024, T>;
 #endif
+
+//template <typename T> using MMapIStream = MMapInputStream<1024, T>;
+//template <typename T> using MMapOStream = MMapOutputStream<1024, T>;
 
 using namespace std;
 
@@ -26,6 +33,7 @@ using namespace std;
 int main(int argc, char *argv[]) {
   sanity_test<FREADInputStream, FWRITEOutputStream>();
 #ifndef _WINDOWS
+  sanity_test<ReadInputStream, WriteOutputStream>();
   sanity_test<MMapIStream, MMapOStream>();
 #endif
   

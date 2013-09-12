@@ -34,6 +34,6 @@ public:
   }
 private:
 	T* buffer;
-	uint index;
-	uint length;
+	uint64_t index;
+	uint64_t length;
 };
