@@ -3,6 +3,8 @@
 #include <string>
 #include <cstdint>
 #include <errno.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include "stream.h"
 
@@ -18,16 +20,6 @@ public:
     this->direction = direction;
     nextBlock = start;
     remaining = end - start;
-    
-    int flags;
-    if (direction == Stream<T>::Direction::IN)
-      flags = O_RDONLY;
-    else
-      flags = O_RDWR;
-    
-    fd = ::open(filename.c_str(), flags);
-    if (fd == -1)
-      throw runtime_error("Failed to open file!");
     
     remap();
   }
