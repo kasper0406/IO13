@@ -1,0 +1,55 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[latin9]{inputenc}
+\usepackage{listings}
+\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{mathpazo}
+\usepackage{wasysym}
+\usepackage{graphicx}
+\usepackage{tikz,pgfplots}
+\usepackage[colorinlistoftodos]{todonotes}
+\usepackage{natbib} 
+\usepackage{geometry}
+\usetikzlibrary{fit,shapes.misc,snakes}
+\geometry{verbose,tmargin=2.5cm,bmargin=2.5cm,lmargin=2.5cm,rmargin=2.5cm}
+
+\newcommand{\ord}{\operatorname{ord}}
+
+\begin{document}
+
+\title{IO\\Project 1}
+
+\author{Lasse Espeholt - 20093223\\
+Kasper Nielsen - 20091182\\
+Andreas Kristiansen - 20092027\\}
+
+\maketitle
+\begin{figure}[h!]
+\includegraphics[width=\textwidth]{"images/forside"}
+\end{figure}
+
+
+\vfill{}
+\begin{description}
+\item [{Implementation~code~and~test~results:}]
+\texttt{http://github.com/kasper0406/IO2013/}
+\end{description}
+\pagebreak{}\tableofcontents{}\pagebreak{}
+
+\section{Introduction}
+\input{introduction.tex}
+
+\section{Algorithms and data structures}
+\input{algorithms.tex}
+\clearpage{}
+\section{Benchmarks}
+\input{benchmarks.tex}
+
+\section{Conclusion}
+\input{conclusion.tex}
+
+\clearpage{}\bibliographystyle{plain}
+\addcontentsline{toc}{section}{\refname}\bibliography{ref}
+
+\end{document}
