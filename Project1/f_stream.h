@@ -16,7 +16,10 @@ public:
   }
   
   void open(string filename, uint64_t start, uint64_t end) {
-    remaining = end - start;
+    counter++;
+    
+    elements = end - start;
+    remaining = elements;
     
 #ifndef _WINDOWS
     if (fseek(m_file, sizeof(T) * start, SEEK_SET) != 0)
@@ -32,11 +35,18 @@ public:
   }
   
   void close() {
-    if (m_file != NULL)
+    if (m_file != NULL) {
       fclose(m_file);
+      counter--;
+    }
+  }
+  
+  uint64_t size() const {
+    return elements;
   }
   
 protected:
   FILE* m_file;
   uint64_t remaining;
+  uint64_t elements;
 };

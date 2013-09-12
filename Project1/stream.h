@@ -5,6 +5,8 @@
 
 using namespace std;
 
+uint64_t counter = 0;
+
 template <typename T>
 class Stream
 {

@@ -19,7 +19,8 @@ public:
   void open(string filename, uint64_t start, uint64_t end, typename Stream<T>::Direction direction) {
     this->direction = direction;
     nextBlock = start;
-    remaining = end - start;
+    elements = end - start;
+    remaining = elements;
     
     remap();
   }
@@ -36,6 +37,10 @@ public:
       ::close(fd);
   }
   
+  uint64_t size() const {
+    return elements;
+  }
+  
 protected:
   T* memory;
   T* current;
@@ -43,6 +48,7 @@ protected:
   uint64_t remaining;
   uint64_t nextBlock;
   typename Stream<T>::Direction direction;
+  uint64_t elements;
   
   void remap() {
     if (memory != NULL)

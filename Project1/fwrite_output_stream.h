@@ -20,6 +20,7 @@ public:
       throw runtime_error("Failed to change file mode to writing!");
     
     // Make sure the file is large enough
+    /*
     if (fseek(this->m_file, 0, SEEK_END) != 0)
       throw runtime_error("Failed to go to end of file!");
     if (ftell(this->m_file) < sizeof(T) * end) {
@@ -31,6 +32,7 @@ public:
       if (fwrite(&val, sizeof(int), 1, this->m_file) != 1)
         throw runtime_error("Failed to extend file size!");
     }
+     */
     
     FStream<T>::open(filename, start, end);
   }

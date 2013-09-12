@@ -14,11 +14,11 @@
 #include "buffered_input_stream.h"
 #include "buffered_output_stream.h"
 
-template <typename T> using MMapIStream = MMapInputStream<1024, T>;
-template <typename T> using MMapOStream = MMapOutputStream<1024, T>;
+template <typename T> using MMapIStream = MMapInputStream<4, T>;
+template <typename T> using MMapOStream = MMapOutputStream<4, T>;
 
-template <typename T> using BufferedIStream = BufferedInputStream<1024, T>;
-template <typename T> using BufferedOStream = BufferedOutputStream<1024, T>;
+template <typename T> using BufferedIStream = BufferedInputStream<4, T>;
+template <typename T> using BufferedOStream = BufferedOutputStream<4, T>;
 #endif
 
 using namespace std;
@@ -40,6 +40,7 @@ int main(int argc, char *argv[]) {
   
   const uint64_t elements = 8 * 1024 * 1024;
   
+  /*
   {
     int n = 8;
     int k = 4;
@@ -65,13 +66,55 @@ int main(int argc, char *argv[]) {
 
     out.close();
   }
+   */
+  
+  const uint64_t N = 3517;
+  const uint64_t M = 17;
+  const uint64_t d = 5;
+  
+  /*
+  int cur = 0;
+  generate_file<int>("input", [&]() {
+    return cur++;
+  }, N);
+   */
+  
+  generate_file<uint32_t>("input", random_uint32, N);
+  
+  cout << "Before sort:" << endl;
+  FREADInputStream<uint32_t> reader;
+  reader.open("input", 0, N);
+  for (int i = 0; !reader.end_of_stream(); i++) {
+    cout << reader.read_next() << "\t";
+    if (i % M == M - 1)
+      cout << endl;
+  }
+  cout << endl;
+  reader.close();
+  
+  IO13::sort<FREADInputStream, FWRITEOutputStream, uint32_t, M, d>(N, "input");
+  // IO13::sort<MMapIStream, MMapOStream, uint32_t, M, d>(N, "input");
+  // IO13::sort<ReadInputStream, WriteOutputStream, uint32_t, M, d>(N, "input");
+  // IO13::sort<BufferedIStream, BufferedOStream, uint32_t, M, d>(N, "input");
 
+  cout << endl << "After sort:" << endl;
+  reader.open("input", 0, N);
+  for (int i = 0; !reader.end_of_stream(); i++) {
+    cout << reader.read_next() << "\t";
+    if (i % M == M - 1)
+      cout << endl;
+  }
+  cout << endl;
+  reader.close();
+  
   /*test_reads<FREADInputStream>(elements);
   test_writes<FWRITEOutputStream>(elements);
 #ifndef _WINDOWS
   test_reads<MMapIStream>(elements);
   test_writes<MMapOStream>(elements);
 #endif*/
+  
+  cout << "File counter: " << counter << endl;
   
   return 0;
 }
