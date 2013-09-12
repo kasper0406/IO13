@@ -39,6 +39,7 @@ add_executable(Project1 main.cpp
                         test.h
                         utils.h
                         stream.h
+                        merge_sort.h
                         f_stream.h
                         fread_input_stream.h
                         fwrite_output_stream.h

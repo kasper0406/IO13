@@ -15,7 +15,7 @@ public:
       throw runtime_error("Failed to create file " + filename);
     
     // Open the file for writing
-    this->m_file = freopen(NULL, "r+b", this->m_file);
+    this->m_file = freopen(filename.c_str(), "r+b", this->m_file);
     if (this->m_file == NULL)
       throw runtime_error("Failed to change file mode to writing!");
     

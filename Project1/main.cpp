@@ -4,6 +4,7 @@
 
 #include "fread_input_stream.h"
 #include "fwrite_output_stream.h"
+#include "merge_sort.h"
 
 #ifndef _WINDOWS
 #include "mmap_input_stream.h"
@@ -30,12 +31,38 @@ int main(int argc, char *argv[]) {
   
   const uint64_t elements = 8 * 1024 * 1024;
   
-  test_reads<FREADInputStream>(elements);
+  {
+    int n = 8;
+    int k = 4;
+    int cur = 0;
+
+    generate_file<int>("input", [&]() {
+       return cur++ % (n / k);
+    }, n);
+
+    FWRITEOutputStream<int> out;
+    out.open("merged", 0, n);
+
+    vector<FREADInputStream<int>> ins(k);
+    for (int i = 0; i < k; ++i) {
+      ins[i].open("input", i * (n / k), (i + 1) * (n / k));
+    }
+
+    IO13::merge<int, FWRITEOutputStream, FREADInputStream>(out, ins);
+
+    for (auto& in : ins) {
+      in.close();
+    }
+
+    out.close();
+  }
+
+  /*test_reads<FREADInputStream>(elements);
   test_writes<FWRITEOutputStream>(elements);
 #ifndef _WINDOWS
   test_reads<MMapIStream>(elements);
   test_writes<MMapOStream>(elements);
-#endif
+#endif*/
   
   return 0;
 }
