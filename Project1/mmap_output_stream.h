@@ -41,10 +41,11 @@ public:
     
     if (this->remaining == 0)
       throw runtime_error("Tried to write to full output stream!");
-    this->remaining -= count;
 
-    if (this->current - B == this->memory)
+    if (this->needsRemap())
       this->remap();
+    
+    this->remaining -= count;
     
     *this->current = value;
     this->current += 1;

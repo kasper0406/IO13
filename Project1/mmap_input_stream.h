@@ -27,10 +27,11 @@ public:
   T read_next() {
     if (this->remaining == 0)
       throw runtime_error("Trying to read from empty stream!");
-    this->remaining -= 1;
     
-    if (this->current - B == this->memory)
+    if (this->needsRemap())
       this->remap();
+    
+    this->remaining--;
     
     T result = *this->current;
     this->current += 1;

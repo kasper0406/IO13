@@ -21,8 +21,6 @@ public:
     nextBlock = start;
     elements = end - start;
     remaining = elements;
-    
-    remap();
   }
   
   bool end_of_stream() const {
@@ -49,10 +47,15 @@ protected:
   uint64_t nextBlock;
   typename Stream<T>::Direction direction;
   uint64_t elements;
+  uint64_t oldOffWrtPageSize;
+  
+  bool needsRemap() const {
+    return this->memory == NULL || this->current - this->memory == B + this->oldOffWrtPageSize / sizeof(T);
+  }
   
   void remap() {
     if (memory != NULL)
-      munmap(memory, B * sizeof(T));
+      munmap(memory, B * sizeof(T) + oldOffWrtPageSize);
     
     // Align the offset to a multiple of page size
     uint64_t offset = nextBlock * sizeof(T);
@@ -66,7 +69,7 @@ protected:
     else
       prot = PROT_WRITE;
     
-    memory = (T*) mmap(NULL, B * sizeof(T), prot, MAP_SHARED, fd, offset);
+    memory = (T*) mmap(NULL, B * sizeof(T) + offWrtPageSize, prot, MAP_SHARED, fd, offset);
     if (memory == MAP_FAILED) {
       memory = NULL;
       throw runtime_error("Failed to map memory: " + to_string(errno));
@@ -75,6 +78,7 @@ protected:
     // Skip the elements loaded in to satisfy the "offset should be multiple of page size"-restriction.
     current = memory + offWrtPageSize / sizeof(T);
     
+    oldOffWrtPageSize = offWrtPageSize;
     nextBlock += B;
   }
 };

@@ -92,8 +92,8 @@ int main(int argc, char *argv[]) {
   cout << endl;
   reader.close();
   
-  IO13::sort<FREADInputStream, FWRITEOutputStream, uint32_t, M, d>(N, "input");
-  // IO13::sort<MMapIStream, MMapOStream, uint32_t, M, d>(N, "input");
+  // IO13::sort<FREADInputStream, FWRITEOutputStream, uint32_t, M, d>(N, "input");
+  IO13::sort<MMapIStream, MMapOStream, uint32_t, M, d>(N, "input");
   // IO13::sort<ReadInputStream, WriteOutputStream, uint32_t, M, d>(N, "input");
   // IO13::sort<BufferedIStream, BufferedOStream, uint32_t, M, d>(N, "input");
 
