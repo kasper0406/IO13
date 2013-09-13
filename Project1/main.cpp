@@ -99,8 +99,14 @@ int main(int argc, char *argv[]) {
 
   cout << endl << "After sort:" << endl;
   reader.open("input", 0, N);
+  uint32_t cur = 0;
   for (int i = 0; !reader.end_of_stream(); i++) {
-    cout << reader.read_next() << "\t";
+    uint32_t val  =reader.read_next();
+    if (val < cur)
+      cerr << "ERROR!" << endl;
+    cur = val;
+    
+    cout << val << "\t";
     if (i % M == M - 1)
       cout << endl;
   }

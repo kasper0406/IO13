@@ -55,7 +55,7 @@ IN<T> merge(vector<IN<T>>& ins) {
 
 template<typename T>
 int compare(const void* t1, const void* t2) {
-  return *(T*)t2 < *(T*)t1;
+  return *(T*)t1 - *(T*)t2;
 }
  
 template <template <typename> class IN, template <typename> class OUT,
@@ -82,8 +82,8 @@ void sort(uint64_t N, string file) {
     
     inputstream.close();
     
-    // qsort(&elements[0], end - start, sizeof(T), compare<T>);
-    sort(elements.begin(), elements.end());
+    qsort(&elements[0], end - start, sizeof(T), compare<T>);
+    // sort(elements.begin(), elements.end());
     
     for (int i = 0; i < end - start; i++)
       outputstream.write(elements[i]);
