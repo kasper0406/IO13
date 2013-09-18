@@ -30,54 +30,10 @@ using namespace std;
 // systemer bruger 64 bit pointers. OS X gør dette auto, men win og linux
 // gør det så vidt jeg kan læse kun med 32 bits.
 
-int main(int argc, char *argv[]) {
-  sanity_test<FREADInputStream, FWRITEOutputStream>();
-#ifndef _WINDOWS
-  sanity_test<ReadInputStream, WriteOutputStream>();
-  sanity_test<BufferedIStream, BufferedOStream>();
-  sanity_test<MMapIStream, MMapOStream>();
-#endif
-  
-  const uint64_t elements = 8 * 1024 * 1024;
-  
-  /*
-  {
-    int n = 8;
-    int k = 4;
-    int cur = 0;
-
-    generate_file<int>("input", [&]() {
-       return cur++ % (n / k);
-    }, n);
-
-    FWRITEOutputStream<int> out;
-    out.open("merged", 0, n);
-
-    vector<FREADInputStream<int>> ins(k);
-    for (int i = 0; i < k; ++i) {
-      ins[i].open("input", i * (n / k), (i + 1) * (n / k));
-    }
-
-    IO13::merge<int, FWRITEOutputStream, FREADInputStream>(out, ins);
-
-    for (auto& in : ins) {
-      in.close();
-    }
-
-    out.close();
-  }
-   */
-  
+void kasper_test() {
   const uint64_t N = 3517;
   const uint64_t M = 17;
   const uint64_t d = 5;
-  
-  /*
-  int cur = 0;
-  generate_file<int>("input", [&]() {
-    return cur++;
-  }, N);
-   */
   
   generate_file<uint32_t>("input", random_uint32, N);
   
@@ -113,14 +69,33 @@ int main(int argc, char *argv[]) {
   cout << endl;
   reader.close();
   
-  /*test_reads<FREADInputStream>(elements);
+  cout << "File counter: " << counter << endl;
+}
+
+int main(int argc, char *argv[]) {
+  sanity_test<FREADInputStream, FWRITEOutputStream>();
+#ifndef _WINDOWS
+  sanity_test<ReadInputStream, WriteOutputStream>();
+  sanity_test<BufferedIStream, BufferedOStream>();
+  sanity_test<MMapIStream, MMapOStream>();
+#endif
+  
+  const uint64_t elements = 1024 * 1024;
+
+  // kasper_test();
+  
+  test_reads<ReadInputStream>(elements);
+  test_writes<WriteOutputStream>(elements);
+
+  test_reads<BufferedIStream>(elements);
+  test_writes<BufferedOStream>(elements);
+
+  test_reads<FREADInputStream>(elements);
   test_writes<FWRITEOutputStream>(elements);
 #ifndef _WINDOWS
   test_reads<MMapIStream>(elements);
   test_writes<MMapOStream>(elements);
-#endif*/
-  
-  cout << "File counter: " << counter << endl;
+#endif
   
   return 0;
 }

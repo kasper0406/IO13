@@ -135,8 +135,6 @@ void sanity_test() {
   const string filename = "test_file";
   const uint64_t elements = 1024;
   
-  generate_file<uint64_t>(filename, random_uint32, elements);
-
   // Sequential write test
   OUT<uint32_t> out;
   out.open(filename, 0, elements);
