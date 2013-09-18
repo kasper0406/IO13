@@ -71,31 +71,51 @@ void kasper_test() {
   
   cout << "File counter: " << counter << endl;
 }
+template <size_t MinB, size_t MaxB, size_t elements> // Input skal vaere paa formen 2^b
+class BufferTest {
+public:
+  static void run() {
+    run<MaxB>();
+  }
+
+private:
+  template <size_t B>
+  static void run() {
+    test_reads<MMapInputStream<B, uint32_t>>(elements);
+    test_writes<MMapOutputStream<B, uint32_t>>(elements);
+
+    test_reads<BufferedInputStream<B, uint32_t>>(elements);
+    test_writes<BufferedOutputStream<B, uint32_t>>(elements);
+
+    if (B / 2 >= MinB) {
+      run<B / 2>();
+    }
+  }
+};
 
 int main(int argc, char *argv[]) {
   sanity_test<FREADInputStream, FWRITEOutputStream>();
-#ifndef _WINDOWS
   sanity_test<ReadInputStream, WriteOutputStream>();
   sanity_test<BufferedIStream, BufferedOStream>();
   sanity_test<MMapIStream, MMapOStream>();
-#endif
   
   const uint64_t elements = 1024 * 1024;
 
   // kasper_test();
-  
-  test_reads<ReadInputStream>(elements);
-  test_writes<WriteOutputStream>(elements);
 
-  test_reads<BufferedIStream>(elements);
-  test_writes<BufferedOStream>(elements);
+  // Buffer test
 
-  test_reads<FREADInputStream>(elements);
-  test_writes<FWRITEOutputStream>(elements);
-#ifndef _WINDOWS
-  test_reads<MMapIStream>(elements);
-  test_writes<MMapOStream>(elements);
-#endif
+  BufferTest<128, 4096, elements>::run();
+
+  // Read/write test
+
+  test_reads<ReadInputStream<uint32_t>>(elements);
+  test_writes<WriteOutputStream<uint32_t>>(elements);
+
+  test_reads<FREADInputStream<uint32_t>>(elements);
+  test_writes<FWRITEOutputStream<uint32_t>>(elements);
   
+  cout << "File counter: " << counter << endl;
+
   return 0;
 }

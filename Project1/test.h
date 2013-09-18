@@ -221,7 +221,7 @@ void sanity_test() {
 // Tester flere streams der interleaves. Det er det der giver den bedste
 // merge-sort approksimation. Hvis de koeres efter hinanden er det jo bare ligesom
 // at koere een sekventielt.
-template <template<typename> class S>
+template <class S>
 void test_reads(uint64_t elements) {
   const string filename = "test_file";
   const uint32_t max_k = 32;
@@ -237,12 +237,12 @@ void test_reads(uint64_t elements) {
     exit(1);
   }
 
-  generate_file<uint32_t>(filename, random_uint32, elements);
+  generate_file<typename S::type>(filename, random_uint32, elements);
 
-  print_test_header<S<uint32_t>>(cout, elements);
+  print_test_header<S>(cout, elements);
 
   for (uint32_t k = 1; k <= max_k; k *= 2) {
-    vector<S<int32_t>> streams(k);
+    vector<S> streams(k);
 
     uint64_t n = elements / k;
 
@@ -278,7 +278,7 @@ void test_reads(uint64_t elements) {
 // merge-sort approksimation. Hvis de koeres efter hinanden er det jo bare ligesom
 // at koere een sekventielt.
 // For write tests, udskrives der bare 0'er
-template <template<typename> class S>
+template <class S>
 void test_writes(uint64_t elements) {
   const string filename = "test_file";
   const uint32_t max_k = 32;
@@ -294,10 +294,10 @@ void test_writes(uint64_t elements) {
     exit(1);
   }
 
-  print_test_header<S<uint32_t>>(cout, elements);
+  print_test_header<S>(cout, elements);
 
   for (uint32_t k = 1; k <= max_k; k *= 2) {
-    vector<S<int32_t>> streams(k);
+    vector<S> streams(k);
 
     uint64_t n = elements / k;
 

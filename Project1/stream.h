@@ -19,4 +19,6 @@ public:
   void open(string filename, uint64_t start, uint64_t end);
   bool end_of_stream();
   void close() const;
+
+  typedef T type;
 };
