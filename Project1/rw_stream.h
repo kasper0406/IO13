@@ -4,6 +4,7 @@
 #include <fcntl.h>
 #include <cstdio>
 #include <unistd.h>
+#include <cerrno>
 
 template<typename T>
 class RWStream : public virtual Stream<T> {
@@ -15,11 +16,20 @@ public:
 		fd = ::open(filename.c_str(),
 								direction == Stream<T>::Direction::IN ? O_RDONLY : O_WRONLY | O_CREAT,
 								S_IRUSR | S_IWUSR);
-		::lseek(fd, sizeof(T)*start, SEEK_SET);
+
+    if (fd == -1) {
+      throw runtime_error("Could not open stream." + to_string(errno));
+
+    }
+		if (::lseek(fd, sizeof(T)*start, SEEK_SET) == -1) {
+      throw runtime_error("Seek failed");
+    }
 	}
 
 	virtual void close() {
-		::close(fd);
+		if (::close(fd) == -1) {
+      throw runtime_error("Could not close stream");
+    }
 	}
   
   uint64_t size() const {

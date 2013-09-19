@@ -31,8 +31,11 @@ public:
     if (memory != NULL)
       munmap(memory, B * sizeof(T));
     
-    if (fd != -1)
-      ::close(fd);
+    if (fd != -1) {
+      if (::close(fd) == -1) {
+        throw runtime_error("Could not close stream");
+      }
+    }
   }
   
   uint64_t size() const {

@@ -33,8 +33,10 @@ public:
 		if (index>0) {
 			size_t size = sizeof(T)*index;
 		  if (::write(this->fd, buffer, size) != size)
-				throw runtime_error("Failed to write element to output stream!");
+				throw runtime_error("Failed to close output stream!");
 		}
+
+    RWStream<T>::close();
 	}
 
 private:

@@ -216,6 +216,8 @@ void sanity_test() {
        << typeid(OUT<uint32_t>).name() << " succeeded" << endl;
 }
 
+const uint32_t max_k = 512;
+
 // TODO(lespeholt): Tildels copy-paste for test_reads og test_writes
 
 // Tester flere streams der interleaves. Det er det der giver den bedste
@@ -224,7 +226,6 @@ void sanity_test() {
 template <class S>
 void test_reads(uint64_t elements) {
   const string filename = "test_file";
-  const uint32_t max_k = 32;
   const uint32_t trials = 3;
     
   if (!(elements && !(elements & (elements - 1)))) {
@@ -281,7 +282,6 @@ void test_reads(uint64_t elements) {
 template <class S>
 void test_writes(uint64_t elements) {
   const string filename = "test_file";
-  const uint32_t max_k = 32;
   const uint32_t trials = 3;
     
   if (!(elements && !(elements & (elements - 1)))) {
