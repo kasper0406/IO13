@@ -216,8 +216,9 @@ void sanity_test() {
        << typeid(OUT<uint32_t>).name() << " succeeded" << endl;
 }
 
+const uint32_t min_k = 512;
 const uint32_t max_k = 512;
-const uint32_t trials = 3;
+const uint32_t trials = 10;
 
 // TODO(lespeholt): Tildels copy-paste for test_reads og test_writes
 
@@ -242,7 +243,7 @@ void test_reads(uint64_t elements) {
 
   print_test_header<S>(cout, elements);
 
-  for (uint32_t k = 1; k <= max_k; k *= 2) {
+  for (uint32_t k = min_k; k <= max_k; k *= 2) {
     vector<S> streams(k);
 
     uint64_t n = elements / k;
@@ -295,7 +296,7 @@ void test_writes(uint64_t elements) {
 
   print_test_header<S>(cout, elements);
 
-  for (uint32_t k = 1; k <= max_k; k *= 2) {
+  for (uint32_t k = min_k; k <= max_k; k *= 2) {
     vector<S> streams(k);
 
     uint64_t n = elements / k;

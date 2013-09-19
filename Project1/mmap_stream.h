@@ -28,8 +28,11 @@ public:
   }
   
   void close() {
-    if (memory != NULL)
-      munmap(memory, B * sizeof(T));
+    if (memory != NULL) {
+      if (munmap(memory, B * sizeof(T)) == -1) {
+        throw runtime_error("Munmap failed");
+      }
+    }
     
     if (fd != -1) {
       if (::close(fd) == -1) {
@@ -57,8 +60,11 @@ protected:
   }
   
   void remap() {
-    if (memory != NULL)
-      munmap(memory, B * sizeof(T) + oldOffWrtPageSize);
+    if (memory != NULL) {
+      if (munmap(memory, B * sizeof(T) + oldOffWrtPageSize) == -1) {
+        throw runtime_error("Munmap 2 failed");
+      }
+    }
     
     // Align the offset to a multiple of page size
     uint64_t offset = nextBlock * sizeof(T);
