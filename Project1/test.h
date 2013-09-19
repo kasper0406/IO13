@@ -217,6 +217,7 @@ void sanity_test() {
 }
 
 const uint32_t max_k = 512;
+const uint32_t trials = 3;
 
 // TODO(lespeholt): Tildels copy-paste for test_reads og test_writes
 
@@ -226,7 +227,6 @@ const uint32_t max_k = 512;
 template <class S>
 void test_reads(uint64_t elements) {
   const string filename = "test_file";
-  const uint32_t trials = 3;
     
   if (!(elements && !(elements & (elements - 1)))) {
     cout << "Number of elements not a power of 2" << endl;
@@ -282,7 +282,6 @@ void test_reads(uint64_t elements) {
 template <class S>
 void test_writes(uint64_t elements) {
   const string filename = "test_file";
-  const uint32_t trials = 3;
     
   if (!(elements && !(elements & (elements - 1)))) {
     cout << "Number of elements not a power of 2" << endl;
