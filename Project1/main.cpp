@@ -14,11 +14,11 @@
 #include "buffered_input_stream.h"
 #include "buffered_output_stream.h"
 
-template <typename T> using MMapIStream = MMapInputStream<4, T>;
-template <typename T> using MMapOStream = MMapOutputStream<4, T>;
+template <typename T> using MMapIStream = MMapInputStream<128, T>;
+template <typename T> using MMapOStream = MMapOutputStream<128, T>;
 
-template <typename T> using BufferedIStream = BufferedInputStream<4, T>;
-template <typename T> using BufferedOStream = BufferedOutputStream<4, T>;
+template <typename T> using BufferedIStream = BufferedInputStream<128, T>;
+template <typename T> using BufferedOStream = BufferedOutputStream<128, T>;
 #endif
 
 using namespace std;
@@ -81,15 +81,15 @@ public:
 private:
   template <size_t B>
   static void run() {
-    test_reads<MMapInputStream<B, uint32_t>>(elements);
-    test_writes<MMapOutputStream<B, uint32_t>>(elements);
-
-    test_reads<BufferedInputStream<B, uint32_t>>(elements);
-    test_writes<BufferedOutputStream<B, uint32_t>>(elements);
-
     if (B / 2 >= MinB) {
       run<B / 2>();
     }
+
+    test_reads<MMapInputStream<B, uint32_t>>(elements);
+    //test_writes<MMapOutputStream<B, uint32_t>>(elements);
+
+    /*test_reads<BufferedInputStream<B, uint32_t>>(elements);
+    test_writes<BufferedOutputStream<B, uint32_t>>(elements);*/
   }
 };
 
@@ -105,7 +105,7 @@ int main(int argc, char *argv[]) {
 
   // Buffer test
 
-  BufferTest<128, 4096, elements>::run();
+  BufferTest<4096, 4096, elements>::run();
 
   // Read/write test
 
