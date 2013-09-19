@@ -216,9 +216,9 @@ void sanity_test() {
        << typeid(OUT<uint32_t>).name() << " succeeded" << endl;
 }
 
-const uint32_t min_k = 512;
-const uint32_t max_k = 512;
-const uint32_t trials = 10;
+const uint32_t min_k = 1;
+const uint32_t max_k = 1024;
+const uint32_t trials = 3;
 
 // TODO(lespeholt): Tildels copy-paste for test_reads og test_writes
 

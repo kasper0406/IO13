@@ -39,6 +39,10 @@ public:
         throw runtime_error("Could not close stream");
       }
     }
+
+    memory = nullptr;
+    fd = -1;
+    remaining = 0;
   }
   
   uint64_t size() const {
@@ -56,7 +60,7 @@ protected:
   uint64_t oldOffWrtPageSize;
   
   bool needsRemap() const {
-    return this->memory == NULL || this->current - this->memory == B + this->oldOffWrtPageSize / sizeof(T);
+    return this->memory == NULL || this->current - this->memory >= B + this->oldOffWrtPageSize / sizeof(T);
   }
   
   void remap() {

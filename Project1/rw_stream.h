@@ -24,12 +24,15 @@ public:
 		if (::lseek(fd, sizeof(T)*start, SEEK_SET) == -1) {
       throw runtime_error("Seek failed");
     }
+
+    counter++;
 	}
 
 	virtual void close() {
 		if (::close(fd) == -1) {
       throw runtime_error("Could not close stream");
     }
+    counter--;
 	}
   
   uint64_t size() const {
