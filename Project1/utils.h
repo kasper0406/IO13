@@ -24,10 +24,14 @@ void generate_file(string filename, function<T()> generator, uint64_t n) {
     exit(1);
   }
 
+  const uint64_t bufferSize = 1024;
+  vector<T> buffer(bufferSize);
   for (uint64_t i = 0; i < n; ++i) {
-    T value = generator();
-    fs.write((char*)&value, sizeof(T));
+    buffer[i % bufferSize] = rand(); // i * 5 % 37 + n * i; // generator();
+    if (i % bufferSize == bufferSize - 1)
+      fs.write((char*)&buffer[0], sizeof(T) * bufferSize);
   }
+  fs.write((char*)&buffer[0], sizeof(T) * (n % bufferSize));
 
   fs.close();
 }
