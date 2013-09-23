@@ -49,15 +49,6 @@ struct Measurement {
   double dram_energy_used;
 };
 
-template <typename Func>
-double measure(ostream& out,
-             const string& description,
-             const size_t trials,
-             Func f)
-{
-  return measure(out, description, trials, f, [] () {});
-}
-
 template <typename Func, typename PreprocessFunc>
 double measure(ostream& out,
              const string& description,
@@ -130,6 +121,15 @@ double measure(ostream& out,
 
   return measurements[iMedian].time;
 };
+    
+template <typename Func>
+double measure(ostream& out,
+               const string& description,
+               const size_t trials,
+               Func f)
+{
+  return measure(out, description, trials, f, [] () {});
+}
 
 template <class S>
 void print_test_header(ostream& out, uint64_t elements) {

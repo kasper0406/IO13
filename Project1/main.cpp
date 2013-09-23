@@ -30,6 +30,7 @@ using namespace std;
 // systemer bruger 64 bit pointers. OS X gør dette auto, men win og linux
 // gør det så vidt jeg kan læse kun med 32 bits.
 
+/*
 void kasper_test() {
   const uint64_t N = 3517;
   const uint64_t M = 17;
@@ -70,7 +71,8 @@ void kasper_test() {
   reader.close();
   
   cout << "File counter: " << counter << endl;
-}
+}*/
+
 template <size_t MinB, size_t MaxB, size_t elements> // Input skal vaere paa formen 2^b
 class BufferTest {
 public:
