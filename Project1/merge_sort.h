@@ -58,9 +58,8 @@ int compare(const void* t1, const void* t2) {
   return *(T*)t1 - *(T*)t2;
 }
  
-template <template <typename> class IN, template <typename> class OUT,
-  typename T, uint64_t M, uint32_t d>
-void sort(uint64_t N, string file) {
+template <template <typename> class IN, template <typename> class OUT, typename T>
+void sort(uint64_t N, string file, uint64_t M, uint32_t d) {
   const string temp = "tmp";
   const uint32_t blocks = ceil(double(N) / double(M));
   

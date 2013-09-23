@@ -13,6 +13,7 @@
 #include "utils.h"
 #include "input_stream.h"
 #include "output_stream.h"
+#include "merge_sort.h"
 
 //#ifdef __linux__
 //#include </home/espeholt/ipcm/cpucounters.h>
@@ -54,6 +55,16 @@ void measure(ostream& out,
              const size_t trials,
              Func f)
 {
+  measure(out, description, trials, f, [] () {});
+}
+
+template <typename Func, typename PreprocessFunc>
+void measure(ostream& out,
+             const string& description,
+             const size_t trials,
+             Func f,
+             PreprocessFunc preprocess)
+{
   const size_t iMin = 0;
   const size_t iLower = trials / 4;
   const size_t iMedian = trials / 2;
@@ -66,6 +77,8 @@ void measure(ostream& out,
   
   for (unsigned int i = 0; i < trials; i++) {
     Measurement measurement;
+
+    preprocess();
 
     auto beginning = high_resolution_clock::now();
     
@@ -217,7 +230,7 @@ void sanity_test() {
 }
 
 const uint32_t min_k = 1;
-const uint32_t max_k = 1024;
+const uint32_t max_k = 512;
 const uint32_t trials = 3;
 
 // TODO(lespeholt): Tildels copy-paste for test_reads og test_writes
@@ -321,5 +334,51 @@ void test_writes(uint64_t elements) {
     };
 
     measure(cout, test.str(), trials, write_test);
+  }
+}
+
+template <class IN, class OUT>
+void print_sort_header(ostream& out) {
+  string name_in = typeid(IN).name();
+  string name_out = typeid(OUT).name();
+
+  out << endl << "--- " << name_in << " " << name_out << " sort test ---" << endl;
+  out << endl << setw(16) << "n" << setw(16) << "M" << setw(8) << "d" << "   Trials\tMin    [s]\tLower  [s]\tMedian [s]\tUpper  [s]\tMax [s]";
+//#ifdef __linux__
+//  out << "\tL2 hits\tL2 misses\tL3 hits\tL3 misses\tInst. ret.\tCPU Energy [J]\tDRAM Energy [J]";
+//#endif
+
+  out << endl;
+}
+
+template <template <typename> class IN, template <typename> class OUT>
+void test_sort() {
+  const string filename = "test_file";
+  const uint64_t min_M = 128;
+  const uint64_t max_M = 1024 * 1024;
+  const uint32_t min_d = 2;
+  const uint32_t max_d = 128;
+  const uint64_t min_elements = 1024 * 1024;
+  const uint64_t max_elements = 1024 * 1024 * 1024;
+   
+  print_sort_header<IN<uint32_t>, OUT<uint32_t>>(cout);
+
+  for (uint64_t elements = min_elements; elements <= max_elements; elements *= 2) {
+    for (uint64_t M = min_M; M <= max_M; M *= 2) {
+      for (uint32_t d = min_d; d <= max_d; d *= 2) {
+        stringstream test;
+        test << setw(16) << to_string(elements) << setw(16) << to_string(M) << setw(8) << to_string(d);
+
+        auto sort_test = [&]() {
+          IO13::sort<IN, OUT, uint32_t>(elements, filename, M, d);
+        };
+
+        auto preprocess = [&]() {
+          generate_file<uint32_t>(filename, random_uint32, elements);
+        };
+
+        measure(cout, test.str(), trials, sort_test, preprocess);
+      }
+    }
   }
 }
