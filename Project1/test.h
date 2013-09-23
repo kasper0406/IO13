@@ -50,16 +50,16 @@ struct Measurement {
 };
 
 template <typename Func>
-void measure(ostream& out,
+double measure(ostream& out,
              const string& description,
              const size_t trials,
              Func f)
 {
-  measure(out, description, trials, f, [] () {});
+  return measure(out, description, trials, f, [] () {});
 }
 
 template <typename Func, typename PreprocessFunc>
-void measure(ostream& out,
+double measure(ostream& out,
              const string& description,
              const size_t trials,
              Func f,
@@ -127,6 +127,8 @@ void measure(ostream& out,
 //#endif
   
   out << endl;
+
+  return measurements[iMedian].time;
 };
 
 template <class S>
@@ -232,6 +234,7 @@ void sanity_test() {
 const uint32_t min_k = 1;
 const uint32_t max_k = 512;
 const uint32_t trials = 3;
+const double time_limit_in_seconds = 60 * 3;
 
 // TODO(lespeholt): Tildels copy-paste for test_reads og test_writes
 
@@ -285,7 +288,9 @@ void test_reads(uint64_t elements) {
       }
     };
 
-    measure(cout, test.str(), trials, read_test);
+    if (measure(cout, test.str(), trials, read_test) > time_limit_in_seconds) {
+      break;
+    }
   }
 }
 
@@ -333,7 +338,9 @@ void test_writes(uint64_t elements) {
       }
     };
 
-    measure(cout, test.str(), trials, write_test);
+    if (measure(cout, test.str(), trials, write_test) > time_limit_in_seconds) {
+      break;
+    }
   }
 }
 
