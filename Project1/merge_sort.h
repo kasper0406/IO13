@@ -89,7 +89,7 @@ void sort(uint64_t N, string file, uint64_t M, uint32_t d) {
     
     IN<T> input;
     input.open(temp, start, end);
-    queue.push(input);
+    queue.push(move(input));
   }
   outputstream.close();
   
@@ -97,17 +97,17 @@ void sort(uint64_t N, string file, uint64_t M, uint32_t d) {
   while (queue.size() != 1) {
     vector<IN<T>> streamsToMerge;
     for (int i = 0; i < d && queue.size() > 0; i++) {
-      streamsToMerge.push_back(queue.front());
+      streamsToMerge.push_back(move(queue.front()));
       queue.pop();
     }
     
-    queue.push(merge<T, OUT, IN>(streamsToMerge));
+    queue.push(move(merge<T, OUT, IN>(streamsToMerge)));
     
     for (auto& stream : streamsToMerge)
       stream.close();
   }
   
-  IN<T> input = queue.front();
+  IN<T> input = move(queue.front());
   OUT<T> output;
   output.open(file, 0, N);
   

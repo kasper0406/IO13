@@ -13,6 +13,39 @@ public:
 		index = length = B;
 	}
 
+  ~BufferedInputStream() {
+    if (this->buffer != nullptr)
+      delete[] this->buffer;
+  }
+  
+  BufferedInputStream(BufferedInputStream&& other) : RWStream<T>(move(other)) {
+    buffer = other.buffer;
+    index = other.index;
+    length = other.length;
+    
+    other.buffer = nullptr;
+  }
+  
+  BufferedInputStream(const BufferedInputStream& other) {
+    throw runtime_error("Streams should not be copied!");
+  }
+  
+  BufferedInputStream& operator=(const BufferedInputStream& other) {
+    throw runtime_error("Streams should not be copied!");
+  }
+  
+  BufferedInputStream& operator=(BufferedInputStream&& other) {
+    if (this != &other) {
+      buffer = other.buffer;
+      index = other.index;
+      length = other.length;
+      
+      other.buffer = nullptr;
+    }
+    
+    return static_cast<BufferedInputStream&>(RWStream<T>::operator=(std::move(other)));
+  }
+  
 	void open(string filename, uint64_t start, uint64_t end) {
 		RWStream<T>::open(filename, start, end, Stream<T>::IN);
 	}
