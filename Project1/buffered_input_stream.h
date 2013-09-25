@@ -18,7 +18,7 @@ public:
       delete[] this->buffer;
   }
   
-  BufferedInputStream(BufferedInputStream&& other) : RWStream<T>(move(other)) {
+  BufferedInputStream(BufferedInputStream&& other) noexcept : RWStream<T>(move(other)) {
     buffer = other.buffer;
     index = other.index;
     length = other.length;
