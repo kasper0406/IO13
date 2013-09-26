@@ -7,7 +7,7 @@ buffersize = -1
 
 measurements = [ [] for st in StreamTypes ]
 
-for line in open("datafile.dat", 'r'):
+for line in open("streams.dat", 'r'):
     line = line.strip()
     if len(line) == 0 or line.startswith("Elements"):
         continue # Skip empty lines
@@ -32,11 +32,14 @@ for line in open("datafile.dat", 'r'):
     else:
         try:
             types = (int, int, int, int, float, float, float, float, float)
+            if len(line.split()) <> len(types) - 1:
+                continue
+
             measurements[current].append( [ type(s) for type, s in zip(types, [buffersize] + line.split()) ] )
         except ValueError:
             continue # Skip invalid lines
 
-for st in StreamTypes:
+for i,st in enumerate(StreamTypes):
     def cmp((B1, n1, k1, trials1, min1, lower1, median1, upper1, max1),
             (B2, n2, k2, trials2, min2, lower2, median2, upper2, max2)):
         if n1 <> n2:
@@ -49,5 +52,5 @@ for st in StreamTypes:
 
     print "Measurements for " + st
     print "{0}\t{1}\t{2}\t{3}".format("B", "n", "k", "median")
-    for (B, n, k, trials, min, lower, median, upper, max) in sorted(measurements[current], cmp):
+    for (B, n, k, trials, min, lower, median, upper, max) in sorted(measurements[i], cmp):
         print "{0}\t{1}\t{2}\t{3}".format(B, n, k, median)
