@@ -401,7 +401,6 @@ void test_sort() {
     }
   }
 }
-<<<<<<< HEAD
 
 template<typename T>
 int compare(const void* t1, const void* t2) {
@@ -458,5 +457,3 @@ void test_heapsort() {
     }
   }
 }
-=======
->>>>>>> 33c27a6d594926a225e1d6237662d7c6deff3e3b
