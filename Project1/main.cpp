@@ -88,8 +88,6 @@ private:
       run<B / 4>();
     }
 
-    cout << "Testing with B = " << to_string(B) << endl;
-
     // test_reads<MMapInputStream<B, uint32_t>>(elements);
     // test_writes<MMapOutputStream<B, uint32_t>>(elements);
 
@@ -119,7 +117,7 @@ int main(int argc, char *argv[]) {
 
   // test_reads<FREADInputStream<uint32_t>>(elements);
   // test_writes<FWRITEOutputStream<uint32_t>>(elements);
-  
+    
   test_sort<BufferedIStream, BufferedOStream>();
 
   cout << "File counter: " << counter << endl;
