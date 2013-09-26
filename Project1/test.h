@@ -375,7 +375,7 @@ void test_sort() {
   const uint32_t min_d = 2;
   const uint32_t max_d = 128;
   // const uint64_t min_elements = 1024 * 1024 * 32;
-  const uint64_t min_elements = 1024 * 1024 * 1024 / 2;
+  const uint64_t min_elements = 1024 * 1024 * 1024 / 128;
   const uint64_t max_elements = 1024 * 1024 * 1024 / 2;
    
   print_sort_header<IN<uint32_t>, OUT<uint32_t>>(cout);
