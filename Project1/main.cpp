@@ -14,7 +14,7 @@
 #include "buffered_input_stream.h"
 #include "buffered_output_stream.h"
 
-constexpr uint64_t B = 1 << 27;
+constexpr uint64_t B = 1 << 21;
 template <typename T> using MMapIStream = MMapInputStream<B, T>;
 template <typename T> using MMapOStream = MMapOutputStream<B, T>;
 
@@ -102,13 +102,13 @@ int main(int argc, char *argv[]) {
   sanity_test<BufferedIStream, BufferedOStream>();
   sanity_test<MMapIStream, MMapOStream>();
   
-  const uint64_t elements = 1024 * 1024 * 1024 / 2;
+  // const uint64_t elements = 1024 * 1024 * 1024 / 2;
 
   // kasper_test();
 
   // Buffer test
 
-  BufferTest<1024 * 1024, elements / 2, elements>::run();
+  // BufferTest<1024 * 1024, elements / 2, elements>::run();
 
   // Read/write test
 

@@ -242,7 +242,7 @@ template <template<typename> class IN, template<typename> class OUT>
 
 const uint32_t min_k = 1;
 const uint32_t max_k = 32;
-const uint32_t trials = 3;
+const uint32_t trials = 1;
 const double time_limit_in_seconds = 60 * 3;
 
 // TODO(lespeholt): Tildels copy-paste for test_reads og test_writes
@@ -370,20 +370,21 @@ void print_sort_header(ostream& out) {
 template <template <typename> class IN, template <typename> class OUT>
 void test_sort() {
   const string filename = "test_file";
-  const uint64_t min_M = 1024 * 1024 * 16;
-  const uint64_t max_M = 1024 * 1024 * 1024 / 4;
+  const uint64_t min_M = 1024 * 1024 * 64 / 4;
+  const uint64_t max_M = 1024 * 1024 * 1024 / 2;
   const uint32_t min_d = 2;
   const uint32_t max_d = 128;
-  const uint64_t min_elements = 1024 * 1024 * 32;
-  const uint64_t max_elements = 1024 * 1024 * 1024;
+  // const uint64_t min_elements = 1024 * 1024 * 32;
+  const uint64_t min_elements = 1024 * 1024 * 1024 / 2;
+  const uint64_t max_elements = 1024 * 1024 * 1024 / 2;
    
   print_sort_header<IN<uint32_t>, OUT<uint32_t>>(cout);
 
   for (uint64_t elements = min_elements; elements <= max_elements; elements *= 2) {
     generate_file<uint32_t>(filename, random_uint32, elements);
 
-    for (uint64_t M = max(elements / 128, min_M); M <= max_M; M *= 2) {
-      for (uint32_t d = min_d; d <= max_d; d *= 2) {
+    for (uint64_t M = min_M; M <= max_M; M *= 2) {
+      for (uint32_t d = min_d; d <= max_d; d *= 4) {
         stringstream test;
         test << setw(16) << to_string(elements) << setw(16) << to_string(M) << setw(8) << to_string(d);
 
