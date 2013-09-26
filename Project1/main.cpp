@@ -84,8 +84,8 @@ public:
 private:
   template <size_t B>
   static void run() {
-    if (B / 4 >= MinB) {
-      run<B / 4>();
+    if (B / 2 >= MinB) {
+      run<B / 2>();
     }
 
     // test_reads<MMapInputStream<B, uint32_t>>(elements);
@@ -102,13 +102,13 @@ int main(int argc, char *argv[]) {
   sanity_test<BufferedIStream, BufferedOStream>();
   sanity_test<MMapIStream, MMapOStream>();
   
-  const uint64_t elements = 1024 * 1024 * 1024 / 4;
+  const uint64_t elements = 1024 * 1024 * 1024 / 2;
 
   // kasper_test();
 
   // Buffer test
 
-  // BufferTest<524288, elements / 2, elements>::run();
+  BufferTest<1024 * 1024, elements / 2, elements>::run();
 
   // Read/write test
 
