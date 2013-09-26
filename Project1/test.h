@@ -389,3 +389,59 @@ void test_sort() {
     }
   }
 }
+
+template<typename T>
+int compare(const void* t1, const void* t2) {
+  return *(T*)t1 - *(T*)t2;
+}
+
+void test_qsort() {
+  cout << "Qsort" << endl;
+
+  for (uint64_t elements = 1; ; elements *= 2) {
+    vector<uint32_t> ints(elements);
+
+    auto preprocess = [&]() {
+      for (uint64_t i = 0; i < elements; ++i) {
+        ints[i] = random_uint32();
+      }
+    };
+
+    auto qsort_test = [&]() {
+      qsort(&ints[0], elements, sizeof(uint32_t), compare<uint32_t>);
+    };
+
+    stringstream test;
+    test << setw(16) << to_string(elements);
+
+    if (measure(cout, test.str(), trials, qsort_test, preprocess) > time_limit_in_seconds) {
+      break;
+    }
+  }
+}
+
+void test_heapsort() {
+  cout << "Heapsort" << endl;
+
+  for (uint64_t elements = 1; ; elements *= 2) {
+    vector<uint32_t> ints(elements);
+
+    auto preprocess = [&]() {
+      for (uint64_t i = 0; i < elements; ++i) {
+        ints[i] = random_uint32();
+      }
+    };
+
+    auto heapsort_test = [&]() {
+      make_heap(&ints[0], &ints[elements]);
+      sort_heap(&ints[0], &ints[elements]);
+    };
+
+    stringstream test;
+    test << setw(16) << to_string(elements);
+
+    if (measure(cout, test.str(), trials, heapsort_test, preprocess) > time_limit_in_seconds) {
+      break;
+    }
+  }
+}
