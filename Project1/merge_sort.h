@@ -50,7 +50,7 @@ IN<T> merge(vector<IN<T>>& ins) {
   result.open("tmp" + to_string(counter), 0, elements);
   
   counter++;
-  return result;
+  return move(result);
 }
 
 template<typename T>

@@ -9,6 +9,7 @@
 #include <functional>
 #include <algorithm>
 #include <chrono>
+#include <stdexcept>
 
 #include "utils.h"
 #include "input_stream.h"
@@ -66,60 +67,68 @@ double measure(ostream& out,
   
   out << description << "\t" << trials << "\t";
   
-  for (unsigned int i = 0; i < trials; i++) {
-    Measurement measurement;
+  try {
+    for (unsigned int i = 0; i < trials; i++) {
+      Measurement measurement;
 
-    preprocess();
+      preprocess();
 
-    auto beginning = high_resolution_clock::now();
+      auto beginning = high_resolution_clock::now();
     
-//#ifdef __linux__
-//    SystemCounterState before_sstate = getSystemCounterState();
-//#endif
+      //#ifdef __linux__
+      //    SystemCounterState before_sstate = getSystemCounterState();
+      //#endif
 
-    // Run code to be benchmarked
-    f();      
+      // Run code to be benchmarked
+      f();      
 
-//#ifdef __linux__
-//    SystemCounterState after_sstate = getSystemCounterState();
-//    measurement.l2_cache_hits        = getL2CacheHits(before_sstate, after_sstate);
-//    measurement.l2_cache_misses      = getL2CacheMisses(before_sstate, after_sstate);
-//    measurement.l3_cache_hits        = getL3CacheHits(before_sstate, after_sstate);
-//    measurement.l3_cache_misses      = getL3CacheMisses(before_sstate, after_sstate);
-//    measurement.instructions_retired = getInstructionsRetired(before_sstate, after_sstate);
-//    measurement.cpu_energy_used      = getConsumedJoules(before_sstate, after_sstate);
-//    measurement.dram_energy_used     = getDRAMConsumedJoules(before_sstate, after_sstate);
-//#endif
+      //#ifdef __linux__
+      //    SystemCounterState after_sstate = getSystemCounterState();
+      //    measurement.l2_cache_hits        = getL2CacheHits(before_sstate, after_sstate);
+      //    measurement.l2_cache_misses      = getL2CacheMisses(before_sstate, after_sstate);
+      //    measurement.l3_cache_hits        = getL3CacheHits(before_sstate, after_sstate);
+      //    measurement.l3_cache_misses      = getL3CacheMisses(before_sstate, after_sstate);
+      //    measurement.instructions_retired = getInstructionsRetired(before_sstate, after_sstate);
+      //    measurement.cpu_energy_used      = getConsumedJoules(before_sstate, after_sstate);
+      //    measurement.dram_energy_used     = getDRAMConsumedJoules(before_sstate, after_sstate);
+      //#endif
 
-    high_resolution_clock::duration duration = high_resolution_clock::now() - beginning;
-    double time_spent = duration_cast<milliseconds>(duration).count() / 1000.;
+      high_resolution_clock::duration duration = high_resolution_clock::now() - beginning;
+      double time_spent = duration_cast<milliseconds>(duration).count() / 1000.;
 
-    measurement.time = time_spent;
-    measurements.push_back(measurement);
+      measurement.time = time_spent;
+      measurements.push_back(measurement);
+    }
+
+    // Could be optimized with selection instead of sorting
+    sort(measurements.begin(), measurements.end());
+  
+    out << fixed << measurements[iMin].time << "\t";
+    out << fixed << measurements[iLower].time << "\t";
+    out << fixed << measurements[iMedian].time << "\t";
+    out << fixed << measurements[iUpper].time << "\t";
+    out << fixed << measurements[iMax].time << "\t";
+
+    //#ifdef __linux__
+    //  out << fixed << measurements[iMedian].l2_cache_hits << "\t";
+    //  out << fixed << measurements[iMedian].l2_cache_misses << "\t";
+    //  out << fixed << measurements[iMedian].l3_cache_hits << "\t";
+    //  out << fixed << measurements[iMedian].l3_cache_misses << "\t";
+    //  out << fixed << measurements[iMedian].instructions_retired << "\t";
+    //  out << fixed << measurements[iMedian].cpu_energy_used << "\t";
+    //  out << fixed << measurements[iMedian].dram_energy_used << "\t";
+    //#endif
+  
+    out << endl;
+
+    return measurements[iMedian].time;
+  } catch (bad_alloc& ba) {
+    out << "BAD ALLOC!" << endl;
+    return -1;
+  } catch (runtime_error& re) {
+    out << "Test failed: " << re.what() << endl;
+    return -1;
   }
-  
-  // Could be optimized with selection instead of sorting
-  sort(measurements.begin(), measurements.end());
-  
-  out << fixed << measurements[iMin].time << "\t";
-  out << fixed << measurements[iLower].time << "\t";
-  out << fixed << measurements[iMedian].time << "\t";
-  out << fixed << measurements[iUpper].time << "\t";
-  out << fixed << measurements[iMax].time << "\t";
-
-//#ifdef __linux__
-//  out << fixed << measurements[iMedian].l2_cache_hits << "\t";
-//  out << fixed << measurements[iMedian].l2_cache_misses << "\t";
-//  out << fixed << measurements[iMedian].l3_cache_hits << "\t";
-//  out << fixed << measurements[iMedian].l3_cache_misses << "\t";
-//  out << fixed << measurements[iMedian].instructions_retired << "\t";
-//  out << fixed << measurements[iMedian].cpu_energy_used << "\t";
-//  out << fixed << measurements[iMedian].dram_energy_used << "\t";
-//#endif
-  
-  out << endl;
-
-  return measurements[iMedian].time;
 };
     
 template <typename Func>
@@ -138,15 +147,15 @@ void print_test_header(ostream& out, uint64_t elements) {
   out << endl << "--- " << name << " read/write test ---" << endl;
   out << "Elements: " << elements << endl;
   out << endl << "n\t\tk\tTrials\tMin    [s]\tLower  [s]\tMedian [s]\tUpper  [s]\tMax [s]";
-//#ifdef __linux__
-//  out << "\tL2 hits\tL2 misses\tL3 hits\tL3 misses\tInst. ret.\tCPU Energy [J]\tDRAM Energy [J]";
-//#endif
+  //#ifdef __linux__
+  //  out << "\tL2 hits\tL2 misses\tL3 hits\tL3 misses\tInst. ret.\tCPU Energy [J]\tDRAM Energy [J]";
+  //#endif
 
   out << endl;
 }
 
 template <template<typename> class IN, template<typename> class OUT>
-void sanity_test() {
+  void sanity_test() {
   const string filename = "test_file";
   const uint64_t elements = 1024;
   
@@ -232,8 +241,8 @@ void sanity_test() {
 }
 
 const uint32_t min_k = 1;
-const uint32_t max_k = 512;
-const uint32_t trials = 3;
+const uint32_t max_k = 32;
+const uint32_t trials = 1;
 const double time_limit_in_seconds = 60 * 3;
 
 // TODO(lespeholt): Tildels copy-paste for test_reads og test_writes
@@ -259,7 +268,7 @@ void test_reads(uint64_t elements) {
 
   print_test_header<S>(cout, elements);
 
-  for (uint32_t k = min_k; k <= max_k; k *= 2) {
+  for (uint32_t k = min_k; k <= max_k; k *= 4) {
     vector<S> streams(k);
 
     uint64_t n = elements / k;
@@ -314,7 +323,7 @@ void test_writes(uint64_t elements) {
 
   print_test_header<S>(cout, elements);
 
-  for (uint32_t k = min_k; k <= max_k; k *= 2) {
+  for (uint32_t k = min_k; k <= max_k; k *= 4) {
     vector<S> streams(k);
 
     uint64_t n = elements / k;
@@ -329,7 +338,7 @@ void test_writes(uint64_t elements) {
 
       for (uint64_t i = 0; i < n; ++i) {
         for (auto& stream : streams) {
-          stream.write(0);
+          stream.write(rand());
         }
       }
 
@@ -361,18 +370,21 @@ void print_sort_header(ostream& out) {
 template <template <typename> class IN, template <typename> class OUT>
 void test_sort() {
   const string filename = "test_file";
-  const uint64_t min_M = 128;
-  const uint64_t max_M = 1024 * 1024;
+  const uint64_t min_M = 1024 * 1024 * 64 / 4;
+  const uint64_t max_M = 1024 * 1024 * 1024 / 2;
   const uint32_t min_d = 2;
   const uint32_t max_d = 128;
-  const uint64_t min_elements = 1024 * 1024;
-  const uint64_t max_elements = 1024 * 1024 * 1024;
+  // const uint64_t min_elements = 1024 * 1024 * 32;
+  const uint64_t min_elements = 1024 * 1024 * 1024 / 2;
+  const uint64_t max_elements = 1024 * 1024 * 1024 / 2;
    
   print_sort_header<IN<uint32_t>, OUT<uint32_t>>(cout);
 
   for (uint64_t elements = min_elements; elements <= max_elements; elements *= 2) {
+    generate_file<uint32_t>(filename, random_uint32, elements);
+
     for (uint64_t M = min_M; M <= max_M; M *= 2) {
-      for (uint32_t d = min_d; d <= max_d; d *= 2) {
+      for (uint32_t d = min_d; d <= max_d; d *= 4) {
         stringstream test;
         test << setw(16) << to_string(elements) << setw(16) << to_string(M) << setw(8) << to_string(d);
 
@@ -381,7 +393,7 @@ void test_sort() {
         };
 
         auto preprocess = [&]() {
-          generate_file<uint32_t>(filename, random_uint32, elements);
+          // generate_file<uint32_t>(filename, random_uint32, elements);
         };
 
         measure(cout, test.str(), trials, sort_test, preprocess);
@@ -389,6 +401,7 @@ void test_sort() {
     }
   }
 }
+<<<<<<< HEAD
 
 template<typename T>
 int compare(const void* t1, const void* t2) {
@@ -445,3 +458,5 @@ void test_heapsort() {
     }
   }
 }
+=======
+>>>>>>> 33c27a6d594926a225e1d6237662d7c6deff3e3b

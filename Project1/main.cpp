@@ -14,11 +14,12 @@
 #include "buffered_input_stream.h"
 #include "buffered_output_stream.h"
 
-template <typename T> using MMapIStream = MMapInputStream<2048, T>;
-template <typename T> using MMapOStream = MMapOutputStream<2048, T>;
+constexpr uint64_t B = 1 << 21;
+template <typename T> using MMapIStream = MMapInputStream<B, T>;
+template <typename T> using MMapOStream = MMapOutputStream<B, T>;
 
-template <typename T> using BufferedIStream = BufferedInputStream<128, T>;
-template <typename T> using BufferedOStream = BufferedOutputStream<128, T>;
+template <typename T> using BufferedIStream = BufferedInputStream<B, T>;
+template <typename T> using BufferedOStream = BufferedOutputStream<B, T>;
 #endif
 
 using namespace std;
@@ -87,8 +88,8 @@ private:
       run<B / 2>();
     }
 
-    test_reads<MMapInputStream<B, uint32_t>>(elements);
-    test_writes<MMapOutputStream<B, uint32_t>>(elements);
+    // test_reads<MMapInputStream<B, uint32_t>>(elements);
+    // test_writes<MMapOutputStream<B, uint32_t>>(elements);
 
     test_reads<BufferedInputStream<B, uint32_t>>(elements);
     test_writes<BufferedOutputStream<B, uint32_t>>(elements);
@@ -101,22 +102,24 @@ int main(int argc, char *argv[]) {
   sanity_test<BufferedIStream, BufferedOStream>();
   sanity_test<MMapIStream, MMapOStream>();
   
-  const uint64_t elements = 1024 * 1024;
+  // const uint64_t elements = 1024 * 1024 * 1024 / 2;
 
   // kasper_test();
 
   // Buffer test
 
-  BufferTest<128, 4096, elements>::run();
+  // BufferTest<1024 * 1024, elements / 2, elements>::run();
 
   // Read/write test
 
-  test_reads<ReadInputStream<uint32_t>>(elements);
-  test_writes<WriteOutputStream<uint32_t>>(elements);
+  // test_reads<ReadInputStream<uint32_t>>(elements);
+  // test_writes<WriteOutputStream<uint32_t>>(elements);
 
-  test_reads<FREADInputStream<uint32_t>>(elements);
-  test_writes<FWRITEOutputStream<uint32_t>>(elements);
-  
+  // test_reads<FREADInputStream<uint32_t>>(elements);
+  // test_writes<FWRITEOutputStream<uint32_t>>(elements);
+    
+  test_sort<BufferedIStream, BufferedOStream>();
+
   cout << "File counter: " << counter << endl;
 
   return 0;
