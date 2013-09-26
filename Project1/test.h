@@ -384,7 +384,7 @@ void test_sort() {
     generate_file<uint32_t>(filename, random_uint32, elements);
 
     for (uint64_t M = min_M; M <= max_M; M *= 2) {
-      for (uint32_t d = min_d; d <= max_d; d *= 4) {
+      for (uint32_t d = min_d; d <= max_d; d *= 2) {
         stringstream test;
         test << setw(16) << to_string(elements) << setw(16) << to_string(M) << setw(8) << to_string(d);
 
