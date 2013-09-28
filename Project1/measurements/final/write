@@ -1,0 +1,15 @@
+Sanity check for 16FREADInputStreamIjE and 
+                 18FWRITEOutputStreamIjE succeeded
+Sanity check for 15ReadInputStreamIjE and 
+                 17WriteOutputStreamIjE succeeded
+Sanity check for 19BufferedInputStreamILm524288EjE and 
+                 20BufferedOutputStreamILm524288EjE succeeded
+Sanity check for 15MMapInputStreamILm524288EjE and 
+                 16MMapOutputStreamILm524288EjE succeeded
+
+--- 17WriteOutputStreamIjE read/write test ---
+Elements: 268435456
+
+n		k	Trials	Min    [s]	Lower  [s]	Median [s]	Upper  [s]	Max [s]
+     268435456	1	1	649.089000	649.089000	649.089000	649.089000	649.089000	
+File counter: 0
