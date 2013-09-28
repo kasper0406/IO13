@@ -7,7 +7,7 @@ buffersize = -1
 
 measurements = [ [] for st in StreamTypes ]
 
-for line in open("streams.dat", 'r'):
+for line in open("buffered_input", 'r'):
     line = line.strip()
     if len(line) == 0 or line.startswith("Elements"):
         continue # Skip empty lines
