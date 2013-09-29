@@ -9,6 +9,7 @@ set xtics 0, 1 rotate
 set offset 1, 1
 
 set ylabel "Running time [s]"
+set yrange [30:60]
 
 set ytics nomirror tc lt 1
 set xtics add ("1" 0)
@@ -30,4 +31,4 @@ set grid mytics
 set key vert left top Left reverse
 set pointsize 2
 
-plot for [IDX=0:3] 'buffered_output' i IDX using (log2($2)):($7) title mytitle(IDX) with linespoints
+plot for [IDX=0:5] 'buffered_output' i IDX using (log2($2)):($7) title mytitle(IDX) with linespoints

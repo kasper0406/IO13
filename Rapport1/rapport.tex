@@ -105,6 +105,13 @@ tested the streams in respectively reading / writing $n$ elements from
 that a new stream is starting at every $\frac{n}{k}$ elements, and
 elements are being processed in a round robin fashion of the streams.
 
+All tests of the streams have used $n = 2^{28}$, which corresponds to
+2GB of elements. This choice was made to make sure the data was
+located on the disk, and still small enough to get some data. The
+value of $n$ has not been varied for the stream test, as it is not
+expected that streams will behave differently, as long as the data is
+big enough to not fit the main memory.
+
 In the merge step in the sorting application, the input streams are
 used in a very similar way, the output streams are however only used
 in the $k = 1$ case, but we have chosen to do testing of these streams
@@ -112,12 +119,65 @@ for varying values of $k$, to be able to get comparable results
 between input and output streams.
 
 \subsection{Buffered streams}
+This type of stream is implemented using the \texttt{read} and
+\texttt{write} POSIX system calls. On top of those, a buffer of size
+$B$ is maintained keeping track of the next elements to read or write.
+
+It will be investigated how the choice of buffer size and varying
+values of $k$ influences the
+performance. Figure~\ref{fig:buffered-input} shows a plot of this for
+the input stream.
+
+\begin{figure}[h!]
+  \centering
+  \includegraphics[width=0.8\textwidth]{images/buffered_input_low}
+  \caption{Running times for the buffered input stream using different
+    buffer sizes and varying $k$-values.}
+  \label{fig:buffered-input}
+\end{figure}
+
+From Figure~\ref{fig:buffered-input} it seems like all the streams
+perform about the same for sequential read ($k = 1$), which is the
+case where the operating system and disk controller is also easily
+able to employ caching on lower levels.
+
+As $k$ gets bigger, Figure~\ref{fig:buffered-input} indicates that
+bigger buffers gives better performance, which was expected. However,
+for large buffer sizes in combination with large values of $k$, the
+input stream performs extremely poorly. The slowness is because the
+buffers in this case resides on disk, whereby buffering is worse than
+using no buffer at all. Larger choices of buffer size was also tried,
+which as expected showed a similar behaviour, and is therefore of no
+interest for use in sorting.
+
+From Figure~\ref{fig:buffered-input}, it seems that a buffer size of 2
+MB provides the best compromise of running time and memory usage for
+the input stream in the sorting application.
+
+For the output stream a similar plot is shown in
+Figure~\ref{fig:buffered-output}.
+
+\begin{figure}[h!]
+  \centering
+  \includegraphics[width=0.8\textwidth]{images/buffered_output_low}
+  \caption{Running times for the buffered output stream using different
+    buffer sizes and varying $k$-values.}
+  \label{fig:buffered-output}
+\end{figure}
 
 \subsection{MMap streams}
 
 \subsection{Other streams}
 
 \subsection{Relative comparison}
+In order to determine which stream to use, it is very important that
+the input streams performs well for varying values of $k$. This
+however, is not as important for the output stream since it is not
+interleaved, but other disk access may happen in between writes to the
+output stream in the sorting, meaning that it is also is preferable if
+the output stream performs decently for different $k$ values, as this
+indicate that the output stream is more robust for interleaved disk
+operations.
 
 \section{Sorting}
 
