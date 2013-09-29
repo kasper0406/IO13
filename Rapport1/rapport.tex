@@ -165,6 +165,30 @@ Figure~\ref{fig:buffered-output}.
   \label{fig:buffered-output}
 \end{figure}
 
+It is expected that the plots in Figure~\ref{fig:buffered-input} and
+Figure~\ref{fig:buffered-output} are similar, since the two streams
+are much alike. However, it is seen that the varying the buffer size
+almost have no effect on the performance of the output streams, except
+when they are too big to be in memory\todo{This seems to happen before
+  in the write case?}.
+
+Another experiment was performed to explain this behaviour, where the
+\texttt{fsync(2)}\footnote{The \texttt{fsync(2)} system call ensures
+  that the file is written to disk immediately.} system call was
+called immediately after each write operation. It was found that both
+the input and output streams performed very similar, hence the absence
+of effect in buffer size change showed in
+Figure~\ref{fig:buffered-output} can be explained by the operating
+system delaying writes to the disk.
+
+A buffer size of 2 MB has been chosen to give the best trade-off
+between running time and memory consumption. From
+Figure~\ref{fig:buffered-output} it seems like a tiny buffer would be
+a better choice, but if the operating system for some reason fails
+delay writes in the sorting application, a buffer size of 2 MB
+provides more confidence that the stream will actually perform as
+expected when used in sorting.
+
 \subsection{MMap streams}
 
 \subsection{Other streams}
