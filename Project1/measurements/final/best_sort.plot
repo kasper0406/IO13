@@ -21,5 +21,5 @@ set key vert left top Left reverse
 set pointsize 2
 
 plot 'qsort' every ::22 using (log2($1)):($5) title 'Quicksort' with linespoints, \
-     'heapsort' every ::22 using (log2($1)):($5) title 'Heapsort' with linespoints
-     # TODO(lespeholt): Mangler den bedste external merge for alle punkterne
+     'heapsort' every ::22 using (log2($1)):($5) title 'Heapsort' with linespoints, \
+     'best_external_sort' using (log2($1)):($7) title 'External Mergesort' with linespoints
