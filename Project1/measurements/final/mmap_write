@@ -1,12 +1,3 @@
-Sanity check for 16FREADInputStreamIjE and 
-                 18FWRITEOutputStreamIjE succeeded
-Sanity check for 15ReadInputStreamIjE and 
-                 17WriteOutputStreamIjE succeeded
-Sanity check for 19BufferedInputStreamILm524288EjE and 
-                 20BufferedOutputStreamILm524288EjE succeeded
-Sanity check for 15MMapInputStreamILm524288EjE and 
-                 16MMapOutputStreamILm524288EjE succeeded
-
 --- 16MMapOutputStreamILm2048EjE read/write test ---
 Elements: 268435456
 
@@ -14,6 +5,7 @@ n		k	Trials	Min    [s]	Lower  [s]	Median [s]	Upper  [s]	Max [s]
      268435456	1	1	36.012000	36.012000	36.012000	36.012000	36.012000	
       67108864	4	1	124.721000	124.721000	124.721000	124.721000	124.721000	
      16777216	16	1	164.193000	164.193000	164.193000	164.193000	164.193000	
+
 
 --- 16MMapOutputStreamILm8192EjE read/write test ---
 Elements: 268435456
@@ -23,6 +15,7 @@ n		k	Trials	Min    [s]	Lower  [s]	Median [s]	Upper  [s]	Max [s]
       67108864	4	1	101.316000	101.316000	101.316000	101.316000	101.316000	
      16777216	16	1	160.804000	160.804000	160.804000	160.804000	160.804000	
 
+
 --- 16MMapOutputStreamILm32768EjE read/write test ---
 Elements: 268435456
 
@@ -30,6 +23,7 @@ n		k	Trials	Min    [s]	Lower  [s]	Median [s]	Upper  [s]	Max [s]
      268435456	1	1	80.154000	80.154000	80.154000	80.154000	80.154000	
       67108864	4	1	106.517000	106.517000	106.517000	106.517000	106.517000	
      16777216	16	1	155.411000	155.411000	155.411000	155.411000	155.411000	
+
 
 --- 16MMapOutputStreamILm131072EjE read/write test ---
 Elements: 268435456
@@ -39,6 +33,7 @@ n		k	Trials	Min    [s]	Lower  [s]	Median [s]	Upper  [s]	Max [s]
       67108864	4	1	107.088000	107.088000	107.088000	107.088000	107.088000	
      16777216	16	1	163.702000	163.702000	163.702000	163.702000	163.702000	
 
+
 --- 16MMapOutputStreamILm524288EjE read/write test ---
 Elements: 268435456
 
@@ -47,6 +42,7 @@ n		k	Trials	Min    [s]	Lower  [s]	Median [s]	Upper  [s]	Max [s]
       67108864	4	1	109.483000	109.483000	109.483000	109.483000	109.483000	
      16777216	16	1	173.523000	173.523000	173.523000	173.523000	173.523000	
 
+
 --- 16MMapOutputStreamILm2097152EjE read/write test ---
 Elements: 268435456
 
@@ -54,6 +50,7 @@ n		k	Trials	Min    [s]	Lower  [s]	Median [s]	Upper  [s]	Max [s]
      268435456	1	1	83.106000	83.106000	83.106000	83.106000	83.106000	
       67108864	4	1	103.363000	103.363000	103.363000	103.363000	103.363000	
      16777216	16	1	154.146000	154.146000	154.146000	154.146000	154.146000	
+
 
 --- 16MMapOutputStreamILm8388608EjE read/write test ---
 Elements: 268435456
