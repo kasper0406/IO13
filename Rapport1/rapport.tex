@@ -44,11 +44,88 @@ Andreas Kristiansen - 20092027\\}
 \section{Introduction}
 \input{introduction.tex}
 
-\section{Algorithms and data structures}
-\input{algorithms.tex}
-\clearpage{}
-\section{Benchmarks}
-\input{benchmarks.tex}
+\section{Setup}
+This section presents the test setup, how measurements are performed
+and gives an overview of the files attached to this report.
+
+\subsection{Test setup}
+All measurements presented in this report was performed on a computer
+with an Intel \todo{Insert CPU model} CPU with the following technical
+specifications:
+\begin{itemize}
+\item 2 cores operating at 2.8GHz.\todo{Fix these specs}
+\item 2 x 32KB write-back L1 data cache. Shared 6MB non-inclusive 24-way set associative L2 cache.
+\item 256 entries data, 4-way set associative data TLB.
+\end{itemize}
+The main memory size of the machine is 1 Gb, and was running Ubuntu
+Linux 12.04\todo{Is this correct?}. All implementations have been
+written in \texttt{C++11} and compiled on both Linux and Mac OS X
+using the clang 3.2 compiler. When measurements was performed, the
+code was compiled using the \texttt{-O3 -flto -funroll-loops -march=core2}\todo{Check this}
+optimization flags.
+
+In the beginning we ran our tests 3 times. However, it turned out the
+variance of our measurements was very small, and to make it feasible
+to run our tests on bigger inputs, we adjusted our tests to only
+consist of one trial.
+
+\subsection{File structure}
+The following is a description of the different folders handed in with
+the report.
+\begin{description}
+\item[code] Contains the implementations of the different streams and
+  the external memory sort.
+
+\item[output] Contains the raw measurements used for the plots in the
+  report. The plots themselves are also included in a pdf-format.
+\end{description}
+
+\subsubsection{Code structure}
+The code has the following source files.
+\begin{description}
+\item[main.cpp] Driver code for calling test code.
+\item[Test.hpp] Test framework for generating inputs and measuring
+  running times.
+\item[CMakeLists.txt] CMake file for the project specifying
+  compilation options.
+
+\item Describe rest!\todo{Do this!}
+\end{description}
+
+\section{Streams}
+This section will present how we benchmarked the four different
+streams, and an analysis of their performance. First each stream will
+be treated separately and the best settings for each stream will be
+used in a relative performance benchmark for finding the stream most
+suitable for sorting.
+
+In order to mimic the behaviour of sorting during the test, we have
+tested the streams in respectively reading / writing $n$ elements from
+/ to a file. Each test uses $k$ interleaved streams to do this, such
+that a new stream is starting at every $\frac{n}{k}$ elements, and
+elements are being processed in a round robin fashion of the streams.
+
+In the merge step in the sorting application, the input streams are
+used in a very similar way, the output streams are however only used
+in the $k = 1$ case, but we have chosen to do testing of these streams
+for varying values of $k$, to be able to get comparable results
+between input and output streams.
+
+\subsection{Buffered streams}
+
+\subsection{MMap streams}
+
+\subsection{Other streams}
+
+\subsection{Relative comparison}
+
+\section{Sorting}
+
+%\section{Algorithms and data structures}
+%\input{algorithms.tex}
+%\clearpage{}
+%\section{Benchmarks}
+%\input{benchmarks.tex}
 
 \section{Conclusion}
 \input{conclusion.tex}
