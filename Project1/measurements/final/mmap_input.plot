@@ -30,4 +30,4 @@ set grid mytics
 set key vert right top Left reverse
 set pointsize 2
 
-plot for [IDX=0:6] 'mmap_read' i IDX using (log2($2)):($7) title mytitle(IDX) with linespoints
+plot for [IDX=0:6] 'mmap_read' i IDX using (log2($2)):($6) title mytitle(IDX) with linespoints
