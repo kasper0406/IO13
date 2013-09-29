@@ -27,7 +27,7 @@ mytitle(IDX) = (IDX < 5) ? sprintf("%d kB", 4 * (2 ** (11+2*IDX)) / 1024) : spri
 #set logscale y
 set grid mytics
 
-set key vert left top Left reverse
+set key vert right top Left reverse
 set pointsize 2
 
 plot for [IDX=4:4] 'buffered_output' i IDX using (log2($2)):($7) title mytitle(IDX) . ' Buffered' with linespoints, \
