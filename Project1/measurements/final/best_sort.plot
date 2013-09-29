@@ -20,6 +20,10 @@ set grid mytics
 set key vert left top Left reverse
 set pointsize 2
 
-plot 'qsort' every ::22 using (log2($1)):($5) title 'Quicksort' with linespoints, \
-     'heapsort' every ::22 using (log2($1)):($5) title 'Heapsort' with linespoints, \
+# TODO(lespeholt): Lav dashed saa der er forskel paa rigtige data og spekulerede
+set arrow from 28,650 to 29,200000 nohead linecolor 1
+set arrow from 27,49.2 to 28,100000 nohead linecolor 2
+
+plot 'qsort' every ::30 using (log2($1)):($5) title 'Quicksort' with linespoints, \
+     'heapsort' every ::30 using (log2($1)):($5) title 'Heapsort' with linespoints, \
      'best_external_sort' using (log2($1)):($7) title 'External Mergesort' with linespoints
