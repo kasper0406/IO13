@@ -21,8 +21,7 @@
 \title{IO\\Project 1}
 
 \author{Lasse Espeholt - 20093223\\
-Kasper Nielsen - 20091182\\
-Andreas Kristiansen - 20092027\\}
+Kasper Nielsen - 20091182\\}
 
 \maketitle
 \begin{figure}[h!]
@@ -49,25 +48,25 @@ This section presents the test setup, how measurements are performed
 and gives an overview of the files attached to this report.
 
 \subsection{Test setup}
-All measurements presented in this report was performed on a computer
-with an Intel \todo{Insert CPU model} CPU with the following technical
+All measurements presented in this report were performed on a computer
+with an Intel Core i3-380UM CPU with the following technical
 specifications:
 \begin{itemize}
-\item 2 cores operating at 2.8GHz.\todo{Fix these specs}
-\item 2 x 32KB write-back L1 data cache. Shared 6MB non-inclusive 24-way set associative L2 cache.
-\item 256 entries data, 4-way set associative data TLB.
+\item 2 cores operating at 1.33GHz.
+\item 2 x 32KB L1 data cache. 2 x 256 KB L2 cache. Shared 3MB L3 cache.
 \end{itemize}
-The main memory size of the machine is 1 Gb, and was running Ubuntu
-Linux 12.04\todo{Is this correct?}. All implementations have been
-written in \texttt{C++11} and compiled on both Linux and Mac OS X
-using the clang 3.2 compiler. When measurements was performed, the
-code was compiled using the \texttt{-O3 -flto -funroll-loops -march=core2}\todo{Check this}
+The main memory size of the machine is 1 GB (with 600 - 700 MB free memory), and was running Ubuntu
+Linux 12.04. The storage was an external USB2 attached 250 GB, 5,400 RPM hard drive.
+
+All implementations have been
+written in \texttt{C++11} and compiled on Linux using the GCC 4.7 compiler. When measurements were performed, the
+code was compiled using the \texttt{-O3 -flto -funroll-loops}
 optimization flags.
 
 In the beginning we ran our tests 3 times. However, it turned out the
 variance of our measurements was very small, and to make it feasible
 to run our tests on bigger inputs, we adjusted our tests to only
-consist of one trial.
+one trial for large inputs.
 
 \subsection{File structure}
 The following is a description of the different folders handed in with
@@ -89,7 +88,7 @@ The code has the following source files.
 \item[CMakeLists.txt] CMake file for the project specifying
   compilation options.
 
-\item Describe rest!\todo{Do this!}
+\item Describe rest!\todo{Do this and correct filenames!}
 \end{description}
 
 \section{Streams}
@@ -106,15 +105,15 @@ that a new stream is starting at every $\frac{n}{k}$ elements, and
 elements are being processed in a round robin fashion of the streams.
 
 All tests of the streams have used $n = 2^{28}$, which corresponds to
-2GB of elements. This choice was made to make sure the data was
-located on the disk, and still small enough to get some data. The
+2GB of elements\todo{Ikke sandt, det er kun 1GB elementer vi har testet paa. Ellers ville MMap read ogsaa vaere meget maerkelige! Maaske vi for Mmap skulle lave en 2GB test}. This choice was made to make sure the data was
+located on the disk, and still small enough to be able to run all the tests within reasonably time. The
 value of $n$ has not been varied for the stream test, as it is not
 expected that streams will behave differently, as long as the data is
 big enough to not fit the main memory.
 
 In the merge step in the sorting application, the input streams are
 used in a very similar way, the output streams are however only used
-in the $k = 1$ case, but we have chosen to do testing of these streams
+in the $k = 1$ case\todo{?}, but we have chosen to do testing of these streams
 for varying values of $k$, to be able to get comparable results
 between input and output streams.
 
