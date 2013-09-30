@@ -231,22 +231,16 @@ should function in exactly the same way.
 
 We will now turn our attention to the streams using the \texttt{read}
 and \texttt{write} system calls directly. Due to extremely poor
-performance, we only did the measurements displayed in
-Table~\ref{tbl:poor-streams}\todo{Comment on these!}.
+performance, only one measurement for the output stream was
+performed. The obtained results are plotted in Figure~\ref{fig:syscall-streams}.
 
-\begin{table}[h!]
+\begin{figure}[h!]
   \centering
-  \begin{tabular}{c|cc}
-    $k$ & Read time & Write time \\
-    \hline
-    1   & 129.752s  & 649.089s   \\
-    4   & 130.710s  & -          \\
-    16  & 135.268   & -          \\
-    64  & 184.103   & -          \\
-  \end{tabular}
-  \caption{Running times for the streams using \texttt{read} and
-    \texttt{write} system calls directly.}
-\end{table}
+  \includegraphics[width=0.8\textwidth]{syscall_streams}
+  \caption{Running times for the streams using the \texttt{write} and
+    \texttt{read} system calls directly, varying the values of $k$.}
+  \label{fig:syscall-streams}
+\end{figure}
 
 \subsection{Relative comparison}
 In order to determine which stream to use, it is very important that
