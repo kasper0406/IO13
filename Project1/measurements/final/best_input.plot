@@ -31,6 +31,6 @@ set key vert left top Left reverse
 set pointsize 2
 
 plot for [IDX=4:4] 'buffered_input' i IDX using (log2($2)):($6) title mytitle(IDX) . ' Buffered' with linespoints, \
-     for [IDX=5:5] 'mmap_read' i IDX using (log2($2)):($6) title mytitle(IDX) . ' MMAP' with linespoints, \
+     for [IDX=1:1] 'mmap_read' i IDX using (log2($2)):($6) title mytitle(IDX) . ' MMAP' with linespoints, \
      'read' using (log2($2)):($6) title 'read' with linespoints, \
      'fread' using (log2($2)):($6) title 'fread' with linespoints
