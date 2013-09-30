@@ -120,6 +120,7 @@ for varying values of $k$, to be able to get comparable results
 between input and output streams.
 
 \subsection{Buffered streams}
+\label{sec:buffered-streams}
 This type of stream is implemented using the \texttt{read} and
 \texttt{write} POSIX system calls. On top of those, a buffer of size
 $B$ is maintained keeping track of the next elements to read or write.
@@ -245,6 +246,7 @@ decreasing for larger values of $k$, and no test with $k$ greater than
 16 was performed due to long execution times\todo{Do this?}.
 
 \subsection{Other streams}
+\label{sec:other-streams}
 This section will discuss the two remaining stream
 implementations. The first of these are the streams using the
 \texttt{fwrite} and \texttt{fread} C standard library calls, which
@@ -303,6 +305,16 @@ the output stream performs decently for different $k$ values, as this
 indicate that the output stream is more robust for interleaved disk
 operations.
 
+In order to chose which stream to use in sorting, we have picked out
+the input and output streams from the previous sections, which had the
+best performance across all values of $k$. In this section we will
+compare them, and single out a winner for use in sorting.
+
+Figure~\ref{fig:best-input} shows the running times for what was found
+to be the best input streams. This plot suggests that the buffered
+input stream with 2MB buffer is the best choice, whereby we have
+chosen to use this for sorting.
+
 \begin{figure}[h!]
   \centering
   \includegraphics[width=0.8\textwidth]{best_input}
@@ -310,6 +322,20 @@ operations.
     types of streams.}
   \label{fig:best-input}
 \end{figure}
+
+Figure~\ref{fig:best-output} shows a plot of the best output
+streams. The only real competition is between the \texttt{fwrite} and
+the buffered output stream with 2MB buffer. As discussed in
+Section~\ref{sec:other-streams} the streams are functioning in almost
+the same way, except they use a different buffer size. From the extra
+experiment performed in Section~\ref{sec:buffered-streams}, it was
+found that a small buffer was significantly worse if data was forced
+to be written to the disk instantly after the buffer is full. This is
+the case for sorting, since the operations in the next iteration
+relies on these data. Therefore we have chosen to use the buffered
+output stream with a 2MB buffer, even though
+Figure~\ref{fig:best-output} seems to suggest it is performing
+slightly worse at $k = 256$\todo{Do another plot justifying this?}.
 
 \begin{figure}[h!]
   \centering
@@ -321,11 +347,7 @@ operations.
 
 \section{Sorting}
 
-%\section{Algorithms and data structures}
-%\input{algorithms.tex}
-%\clearpage{}
-%\section{Benchmarks}
-%\input{benchmarks.tex}
+\subsection{Comparison with conventional sorting algorithms}
 
 \section{Conclusion}
 \input{conclusion.tex}
