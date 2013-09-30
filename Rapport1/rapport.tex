@@ -58,15 +58,20 @@ specifications:
 \item 2 x 32KB L1 data cache. 2 x 256 KB L2 cache. Shared 3MB L3 cache.
 \end{itemize}
 The main memory size of the machine is 1 GB (with 600 - 700 MB free memory), and was running Ubuntu
-Linux 12.04. The storage was an external USB2 attached 250 GB, 5,400 RPM hard drive.
+Linux 12.04. The hard drive was a USB2 attached Fujitsu MJA2250BH which has the following specifications:
+
+\begin{itemize}
+\item 250GB
+\item 5,400 RPM
+\item 8MB cache
+\end{itemize}
 
 All implementations have been
-written in \texttt{C++11} and compiled on Linux using the GCC 4.7 compiler. When measurements were performed, the
+written in C++11 and compiled on Linux using the GCC 4.7 compiler. When measurements were performed, the
 code was compiled using the \texttt{-O3 -flto -funroll-loops}
 optimization flags.
 
-In the beginning we ran our tests 3 times. However, it turned out the
-variance of our measurements was very small, and to make it feasible
+In the beginning we ran our tests 3 times. However, to make it feasible
 to run our tests on bigger inputs, we adjusted our tests to only
 one trial for large inputs.
 
@@ -101,14 +106,12 @@ used in a relative performance benchmark for finding the stream most
 suitable for sorting.
 
 In order to mimic the behaviour of sorting during the test, we have
-tested the streams in respectively reading / writing $n$ elements from
-/ to a file. Each test uses $k$ interleaved streams to do this, such
+tested the streams in respectively reading/writing $n$ elements from/to a file. Each test uses $k$ interleaved streams to do this, such
 that a new stream is starting at every $\frac{n}{k}$ elements, and
 elements are being processed in a round robin fashion of the streams.
 
 All tests of the streams have used $n = 2^{28}$, which corresponds to
-1GB of elements\todo{Ikke sandt, det er kun 1GB elementer vi har testet paa. Ellers ville MMap read ogsaa vaere meget maerkelige! Maaske vi for Mmap skulle lave en 2GB test}. This choice was made to make sure the data was
-located on the disk, and still small enough to be able to run all the tests within reasonably time. The
+1GB of elements. This choice was made to make sure the data could not be hold in memory in its entirety, and still small enough to be able to run all the tests within reasonably time. The
 value of $n$ has not been varied for the stream test, as it is not
 expected that streams will behave differently, as long as the data is
 big enough to not fit the main memory.
@@ -121,7 +124,7 @@ between input and output streams.
 
 \subsection{Buffered streams}
 \label{sec:buffered-streams}
-This type of stream is implemented using the \texttt{read} and
+This type of streams are implemented using the \texttt{read} and
 \texttt{write} POSIX system calls. On top of those, a buffer of size
 $B$ is maintained keeping track of the next elements to read or write.
 
@@ -178,10 +181,10 @@ Another experiment was performed to explain this behaviour, where the
 \texttt{fsync(2)}\footnote{The \texttt{fsync(2)} system call ensures
   that the file is written to disk immediately.} system call was
 called immediately after each write operation. It was found that both
-the input and output streams performed very similar, hence the absence
+the input and output streams performed very similar, hence the absence\todo{er det fsync naar vi bruger write/read og ikke fread/fwrite?}
 of effect in buffer size change showed in
 Figure~\ref{fig:buffered-output} can be explained by the operating
-system delaying writes to the disk.
+system delaying writes to the disk.\todo{Maaske mere sandsynligt at det er disken der goer det?}
 
 A buffer size of 2 MB has been chosen to give the best trade-off
 between running time and memory consumption. From
@@ -216,7 +219,7 @@ Figure~\ref{fig:mmap-input} shows a plot of the running times for the
 mmapped input stream. Except for the case $k = 256$, the plot shows
 that the running times for the different block sizes are very close,
 which is expected. For the $k = 256$ case, it seems like some choices
-of block sizes are better than other, but there does not seem to be an
+of block sizes are better than others, but there does not seem to be an
 obvious correlation on how the block sizes influences the running time
 in this case. This may simply be because of variance in the
 measurements\todo{Try to do more trials.}.
@@ -225,7 +228,7 @@ The running time of input stream was found to be worse when the value
 of $k$ was increased. This can be explained by that the disk have to
 read data located farther away from each other when a new page is
 loaded into memory. This takes longer time, because the disk have to
-move its read heads\todo{Other reasons?}.
+move its read heads\todo{Other reasons? Ved ikke helt om jeg koeber den. Med det argument burde der vel ikke vaere meget forskel paa 4 og 16? Et andet argument kunne vaere at det bliver mere tilfaeldigt hvad der bliver laest naeste gang}.
 
 \begin{figure}[h!]
   \centering
@@ -288,7 +291,7 @@ As mentioned earlier, only one measurement was done for the output
 stream. It is a bit surprising that the output stream is so much
 slower than the input stream. The the smallest unit able to be written
 to the disk is a sector\todo{block?}, which on the test machine is
-512B\todo{Check this.}. If smaller amount should be written, it is
+512B\todo{Check this. Vi har mere data om dette nu. I buffered_input_xxxsmall.}. If smaller amount should be written, it is
 required that the sector is read, modified in memory and then written
 back to the disk. When the \texttt{write} system call is used without
 buffering, this happens every time an integer is written to the
@@ -346,45 +349,8 @@ slightly worse at $k = 256$\todo{Do another plot justifying this?}.
 \end{figure}
 
 \section{Sorting}
-This section will describe the external memory merge sort
-implemented. For a given input size $N$, the algorithm has two
-parameters to tweak: The memory size $M$, and the number, $k$, of
-input streams to merge simultaneously.
-
-We have chosen to focus only on optimizing the parameters of the
-external memory sort algorithm when the elements does not fit the main
-memory -- in these cases conventional in-place sorting algorithms are
-superior (see Section~\ref{sec:sort-comparison}).
-
-Figure~\ref{fig:sorting} shows how different choices for $M$ and $k$
-changes the performance when sorting 2GB of elements. We have also
-tried to make a similar plot for sorting of 1GB elements with the same
-findings.
-
-\begin{figure}[h!]
-  \centering
-  \includegraphics[width=0.8\textwidth]{sorting}
-  \caption{Time for sorting a 2GB file varying the memory size $M$ and
-    streams to merge in parallel $k$.}
-  \label{fig:sorting}
-\end{figure}
-
-It can be seen from Figure~\ref{fig:sorting} that increasing the value
-of $k$ always seems to improve the performance\todo{Describe.}.
-
-Another thing to notice, is that the performance increases as the
-memory size $M$ is increased, until a point where the main memory
-cannot hold the $M$ elements or the associated stream buffers. As
-described in Section~\ref{sec:buffered-streams} this is very bad for
-performance. In our experiments we see that this is happening when $M
-= 512MB$\todo{Why already at this point?}.
-
-An interesting thing to notice, is that there seems to be a very nice
-correspondence between the choice of $M$, $k$ and the running
-time\todo{Why?}.
 
 \subsection{Comparison with conventional sorting algorithms}
-\label{sec:sort-comparison}
 In order to determine how well the external merge sort is performing,
 it has been benchmarked against conventional quick sort and heap sort
 implementations. The quick sort is from the C standard library, and
