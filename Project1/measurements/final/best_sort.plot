@@ -4,7 +4,7 @@ max(a,b) = (a > b) ? a : b
 set terminal pdf enhanced font "Helvetica, 10" size 7,4
 set output "./best_sort.pdf"
 
-set xlabel "log2 k"
+set xlabel "log2 n"
 set xtics 0, 1 rotate
 set offset 1, 1
 
