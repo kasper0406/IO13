@@ -107,7 +107,7 @@ that a new stream is starting at every $\frac{n}{k}$ elements, and
 elements are being processed in a round robin fashion of the streams.
 
 All tests of the streams have used $n = 2^{28}$, which corresponds to
-2GB of elements\todo{Ikke sandt, det er kun 1GB elementer vi har testet paa. Ellers ville MMap read ogsaa vaere meget maerkelige! Maaske vi for Mmap skulle lave en 2GB test}. This choice was made to make sure the data was
+1GB of elements\todo{Ikke sandt, det er kun 1GB elementer vi har testet paa. Ellers ville MMap read ogsaa vaere meget maerkelige! Maaske vi for Mmap skulle lave en 2GB test}. This choice was made to make sure the data was
 located on the disk, and still small enough to be able to run all the tests within reasonably time. The
 value of $n$ has not been varied for the stream test, as it is not
 expected that streams will behave differently, as long as the data is
@@ -191,6 +191,17 @@ provides more confidence that the stream will actually perform as
 expected when used in sorting.
 
 \subsection{MMap streams}
+For the memory mapped streams, the \texttt{mmap} and \texttt{munmap}
+system calls are used for mapping a file into memory. Then the file
+can be accessed as it was loaded into memory, but the actual loading
+is lazy, such that it only happens when it is actually needed.
+
+Therefore it is expected that the block size mapped into memory each
+time \texttt{mmap} is called, will not have any significant impact on
+the results, since only some memory bookkeeping and different amount
+of remapping is required when using different block sizes. This
+however, should be negligible compared to the time of the actual disk
+access.
 
 \begin{figure}[h!]
   \centering
@@ -200,6 +211,21 @@ expected when used in sorting.
   \label{fig:mmap-input}
 \end{figure}
 
+Figure~\ref{fig:mmap-input} shows a plot of the running times for the
+mmapped input stream. Except for the case $k = 256$, the plot shows
+that the running times for the different block sizes are very close,
+which is expected. For the $k = 256$ case, it seems like some choices
+of block sizes are better than other, but there does not seem to be an
+obvious correlation on how the block sizes influences the running time
+in this case. This may simply be because of variance in the
+measurements\todo{Try to do more trials.}.
+
+The running time of input stream was found to be worse when the value
+of $k$ was increased. This can be explained by that the disk have to
+read data located farther away from each other when a new page is
+loaded into memory. This takes longer time, because the disk have to
+move its read heads\todo{Other reasons?}.
+
 \begin{figure}[h!]
   \centering
   \includegraphics[width=0.8\textwidth]{mmap_output}
@@ -207,6 +233,16 @@ expected when used in sorting.
     mapped blocks and $k$-values.}
   \label{fig:mmap-output}
 \end{figure}
+
+A similar plot for the mmap output stream is shown at
+Figure~\ref{fig:mmap-output}. For the output stream it seems like the
+different streams behaves alike for different buffer sizes, except
+when the block size is 8kB. The 8kB block performs substantially
+better when $k = 1$, but worse when $k = 4$\todo{Why?}.
+
+Like the input stream, the performance of the output stream is
+decreasing for larger values of $k$, and no test with $k$ greater than
+16 was performed due to long execution times\todo{Do this?}.
 
 \subsection{Other streams}
 This section will discuss the two remaining stream
@@ -232,7 +268,7 @@ should function in exactly the same way.
 We will now turn our attention to the streams using the \texttt{read}
 and \texttt{write} system calls directly. Due to extremely poor
 performance, only one measurement for the output stream was
-performed. The obtained results are plotted in Figure~\ref{fig:syscall-streams}.
+obtained. The results are plotted in Figure~\ref{fig:syscall-streams}.
 
 \begin{figure}[h!]
   \centering
@@ -241,6 +277,21 @@ performed. The obtained results are plotted in Figure~\ref{fig:syscall-streams}.
     \texttt{read} system calls directly, varying the values of $k$.}
   \label{fig:syscall-streams}
 \end{figure}
+
+The input stream has an almost constant running time from $k$ between
+1 and 16. However, for $k = 64$ a small increase in running time is
+seen, which ...\todo{Describe why?}.
+
+As mentioned earlier, only one measurement was done for the output
+stream. It is a bit surprising that the output stream is so much
+slower than the input stream. The the smallest unit able to be written
+to the disk is a sector\todo{block?}, which on the test machine is
+512B\todo{Check this.}. If smaller amount should be written, it is
+required that the sector is read, modified in memory and then written
+back to the disk. When the \texttt{write} system call is used without
+buffering, this happens every time an integer is written to the
+stream, causing a tremendous overhead, resulting in the extremely
+large running time.
 
 \subsection{Relative comparison}
 In order to determine which stream to use, it is very important that
