@@ -9,7 +9,6 @@ set xtics 0, 1 rotate
 set offset 1, 1
 
 set ylabel "Running time [s]"
-set yrange [20:500]
 
 set ytics nomirror tc lt 1
 set xtics add ("1" 0)
