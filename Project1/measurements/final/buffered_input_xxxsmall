@@ -7,11 +7,13 @@ Sanity check for 19BufferedInputStreamILm524288EjE and
 Sanity check for 15MMapInputStreamILm524288EjE and 
                  16MMapOutputStreamILm524288EjE succeeded
 
+
 --- 20BufferedOutputStreamILm8EjE read/write test ---
 Elements: 67108864
 
 n		k	Trials	Min    [s]	Lower  [s]	Median [s]	Upper  [s]	Max [s]
       67108864	1	10	24.441000	31.612000	60.216000	66.827000	72.537000	
+
 
 --- 20BufferedOutputStreamILm16EjE read/write test ---
 Elements: 67108864
@@ -19,11 +21,13 @@ Elements: 67108864
 n		k	Trials	Min    [s]	Lower  [s]	Median [s]	Upper  [s]	Max [s]
       67108864	1	10	12.587000	13.136000	13.944000	14.328000	19.398000	
 
+
 --- 20BufferedOutputStreamILm32EjE read/write test ---
 Elements: 67108864
 
 n		k	Trials	Min    [s]	Lower  [s]	Median [s]	Upper  [s]	Max [s]
       67108864	1	10	8.172000	9.100000	9.875000	9.925000	10.102000	
+
 
 --- 20BufferedOutputStreamILm64EjE read/write test ---
 Elements: 67108864
@@ -31,11 +35,13 @@ Elements: 67108864
 n		k	Trials	Min    [s]	Lower  [s]	Median [s]	Upper  [s]	Max [s]
       67108864	1	10	8.305000	9.432000	9.882000	9.941000	27.376000	
 
+
 --- 20BufferedOutputStreamILm128EjE read/write test ---
 Elements: 67108864
 
 n		k	Trials	Min    [s]	Lower  [s]	Median [s]	Upper  [s]	Max [s]
       67108864	1	10	8.285000	9.509000	9.741000	9.893000	10.013000	
+
 
 --- 20BufferedOutputStreamILm256EjE read/write test ---
 Elements: 67108864
@@ -43,11 +49,13 @@ Elements: 67108864
 n		k	Trials	Min    [s]	Lower  [s]	Median [s]	Upper  [s]	Max [s]
       67108864	1	10	8.295000	9.597000	9.626000	9.971000	10.006000	
 
+
 --- 20BufferedOutputStreamILm512EjE read/write test ---
 Elements: 67108864
 
 n		k	Trials	Min    [s]	Lower  [s]	Median [s]	Upper  [s]	Max [s]
       67108864	1	10	8.921000	9.583000	9.708000	9.728000	9.883000	
+
 
 --- 20BufferedOutputStreamILm1024EjE read/write test ---
 Elements: 67108864
@@ -55,11 +63,13 @@ Elements: 67108864
 n		k	Trials	Min    [s]	Lower  [s]	Median [s]	Upper  [s]	Max [s]
       67108864	1	10	8.430000	9.553000	9.799000	9.877000	10.158000	
 
+
 --- 20BufferedOutputStreamILm2048EjE read/write test ---
 Elements: 67108864
 
 n		k	Trials	Min    [s]	Lower  [s]	Median [s]	Upper  [s]	Max [s]
       67108864	1	10	8.803000	9.524000	9.761000	9.781000	10.055000	
+
 
 --- 20BufferedOutputStreamILm4096EjE read/write test ---
 Elements: 67108864
