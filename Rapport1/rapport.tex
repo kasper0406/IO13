@@ -348,6 +348,44 @@ slightly worse at $k = 256$\todo{Do another plot justifying this?}.
 
 \section{Sorting}
 
+This section will describe the external memory merge sort
+implemented. For a given input size $N$, the algorithm has two
+parameters to tweak: The memory size $M$, and the number, $k$, of
+input streams to merge simultaneously.
+
+We have chosen to focus only on optimizing the parameters of the
+external memory sort algorithm when the elements does not fit the main
+memory -- in these cases conventional in-place sorting algorithms are
+superior (see Section~\ref{sec:sort-comparison}).
+
+Figure~\ref{fig:sorting} shows how different choices for $M$ and $k$
+changes the performance when sorting 2GB of elements. We have also
+tried to make a similar plot for sorting of 1GB elements with the same
+findings.
+
+\begin{figure}[h!]
+  \centering
+  \includegraphics[width=0.8\textwidth]{sorting}
+  \caption{Time for sorting a 2GB file varying the memory size $M$ and
+    streams to merge in parallel $k$.}
+  \label{fig:sorting}
+\end{figure}
+
+It can be seen from Figure~\ref{fig:sorting} that increasing the value
+of $k$ always seems to improve the performance\todo{Describe.}.
+
+Another thing to notice, is that the performance increases as the
+memory size $M$ is increased, until a point where the main memory
+cannot hold the $M$ elements or the associated stream buffers. As
+described in Section~\ref{sec:buffered-streams} this is very bad for
+performance. In our experiments we see that this is happening when $M
+= 512MB$\todo{Why already at this point?}.
+
+An interesting thing to notice, is that there seems to be a very nice
+correspondence between the choice of $M$, $k$ and the running
+time\todo{Why?}.
+
+
 \subsection{Comparison with conventional sorting algorithms}
 In order to determine how well the external merge sort is performing,
 it has been benchmarked against conventional quick sort and heap sort
