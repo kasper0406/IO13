@@ -31,4 +31,4 @@ set grid mytics
 set key vert right top Left reverse
 set pointsize 2
 
-plot for [IDX=0:7] 'large_sort2' i IDX using (log2($3)):($7) title mytitle(IDX) with linespoints
+plot for [IDX=0:8] 'large_sort2' i IDX using (log2($3)):($7) title mytitle(IDX) with linespoints
