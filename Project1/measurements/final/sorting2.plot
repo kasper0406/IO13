@@ -23,7 +23,7 @@ set xtics add ("128" 7)
 set xtics add ("256" 8)
 set xtics add ("" 9)
 
-mytitle(IDX) = sprintf("%d MB", 4 * (2 ** (20+IDX)) / (1024 * 1024))
+mytitle(IDX) = sprintf("%d MB", 4 * (2 ** (20+IDX)) / (1024 * 512))
 
 #set logscale y
 set grid mytics
