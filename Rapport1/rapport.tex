@@ -150,7 +150,7 @@ input stream performs extremely poorly. The slowness is because the
 buffers partly ends up on disk because of insufficient free memory, whereby buffering is worse than
 using no buffer at all. Larger choices of buffer size was also tried,
 which as expected showed a similar behaviour, and is therefore of no
-interest for use in sorting\todo{Comment on ``curve'' for small buffers in plot.}.
+interest for use in sorting\todo{Comment on ``curve'' for small buffers in plot. data ligger langt fra hinanden vs. den kan lave readahead + data begynder at ligge taet. Muligvis ogsaa ventetid for 32MB}.
 
 From Figure~\ref{fig:buffered-input}, it seems that a buffer size of 2
 MB provides the best compromise of running time and memory usage for
@@ -180,7 +180,7 @@ An experiment was performed, where the
 \texttt{fsync(2)}\footnote{The \texttt{fsync(2)} system call ensures
   that the file is written to disk immediately.} system call was
 called immediately after each write operation. It was found that both
-the input and output streams performed very similar, hence the absence \todo{er det fsync naar vi bruger write/read og ikke fread/fwrite?}
+the input and output streams performed very similar, hence the absence
 of effect in varying buffer sizes showed in
 Figure~\ref{fig:buffered-output} can be explained by the write cache of the disk.
 
@@ -190,7 +190,7 @@ Figure~\ref{fig:buffered-output} it seems like a tiny buffer would be
 a better choice, but if the operating system for some reason fails
 delay writes in the sorting application, a buffer size of 2 MB
 provides more confidence that the stream will actually perform as
-expected when used in sorting.\todo{Lad os lige gaa over denne paragraf}
+expected when used in sorting.\todo{Lad os lige gaa over denne paragraf.}
 
 \subsection{MMap streams}
 For the memory mapped streams, the \texttt{mmap} and \texttt{munmap}
@@ -220,7 +220,7 @@ which is expected. For the $k = 256$ case, it seems like some choices
 of block sizes are better than others, but there does not seem to be an
 obvious correlation on how the block sizes influences the running time
 in this case. This may simply be because of variance in the
-measurements\todo{Try to do more trials.}.
+measurements\todo{Maaske ikke designet til mange...}.
 
 The running time of input stream was found to be worse when the value
 of $k$ was increased. This can be explained by that the disk have to
@@ -244,7 +244,7 @@ better when $k = 1$, but worse when $k = 4$\todo{Why?}.
 
 Like the input stream, the performance of the output stream is
 decreasing for larger values of $k$, and no test with $k$ greater than
-16 was performed due to long execution times\todo{Do this?}.
+16 was performed due to long execution times.
 
 \subsection{Other streams}
 \label{sec:other-streams}
@@ -283,13 +283,13 @@ obtained. The results are plotted in Figure~\ref{fig:syscall-streams}.
 
 The input stream has an almost constant running time from $k$ between
 1 and 16. However, for $k = 64$ a small increase in running time is
-seen, which ...\todo{Describe why?}.
+seen, which ...\todo{Describe why? naar vi kommer tilbage til foerste stream, er alt ude af cachen pga readahead*64>8MB cache}.
 
 As mentioned earlier, only one measurement was done for the output
 stream. It is a bit surprising that the output stream is so much
 slower than the input stream. The the smallest unit able to be written
-to the disk is a sector\todo{block?}, which on the test machine is
-512B. If smaller amount should be written, it is\todo{Check this. Vi har mere data om dette nu. I buffered input xxxsmall}
+to the disk is a sector, which on the test machine is
+512B. If smaller amount should be written, it is\todo{Probably BS}
 required that the sector is read, modified in memory and then written
 back to the disk. When the \texttt{write} system call is used without
 buffering, this happens every time an integer is written to the
@@ -336,7 +336,7 @@ the case for sorting, since the operations in the next iteration
 relies on these data. Therefore we have chosen to use the buffered
 output stream with a 2MB buffer, even though
 Figure~\ref{fig:best-output} seems to suggest it is performing
-slightly worse at $k = 256$\todo{Do another plot justifying this?}.
+slightly worse at $k = 256$\todo{Do another plot justifying this? Nope, slet det med write, fokuser paa read}.
 
 \begin{figure}[h!]
   \centering
@@ -347,7 +347,10 @@ slightly worse at $k = 256$\todo{Do another plot justifying this?}.
 \end{figure}
 
 \section{Sorting}
-
+\todo{skriv i rapporten k<n/m}
+\todo{hoejde af trae skal med}
+\todo{udregning af hukommelse skal med for plottet}
+\todo{totale IO: N/B log... + N/B}
 This section will describe the external memory merge sort
 implemented. For a given input size $N$, the algorithm has two
 parameters to tweak: The memory size $M$, and the number, $k$, of
@@ -372,18 +375,18 @@ findings.
 \end{figure}
 
 It can be seen from Figure~\ref{fig:sorting} that increasing the value
-of $k$ always seems to improve the performance\todo{Describe.}.
+of $k$ always seems to improve the performance\todo{Describe.Fordi trae bliver lavere, saa vi laeser filen faerre gange}.
 
 Another thing to notice, is that the performance increases as the
 memory size $M$ is increased, until a point where the main memory
 cannot hold the $M$ elements or the associated stream buffers. As
 described in Section~\ref{sec:buffered-streams} this is very bad for
 performance. In our experiments we see that this is happening when $M
-= 512MB$\todo{Why already at this point?}.
+= 512MB$\todo{Slet! ikke gyldigt laengere}.
 
 An interesting thing to notice, is that there seems to be a very nice
 correspondence between the choice of $M$, $k$ and the running
-time\todo{Why?}.
+time\todo{Why? min streams hoejde -> memory}.
 
 
 \subsection{Comparison with conventional sorting algorithms}
