@@ -26,4 +26,4 @@ set arrow from 27,49.2 to 28,100000 nohead linecolor 2
 
 plot 'qsort' every ::30 using (log2($1)):($5) title 'Quicksort' with linespoints, \
      'heapsort' every ::30 using (log2($1)):($5) title 'Heapsort' with linespoints, \
-     'best_external_sort' using (log2($1)):($7) title 'External Mergesort' with linespoints
+     'best_external_sort' i 0 using (log2($1)):($7) title 'External Mergesort' with linespoints
