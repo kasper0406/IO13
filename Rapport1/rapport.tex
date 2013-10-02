@@ -126,11 +126,11 @@ between input and output streams.
 \label{sec:buffered-streams}
 This type of streams are implemented using the \texttt{read} and
 \texttt{write} POSIX system calls. On top of those, a buffer of size
-$B$ is added such that the system calls are only called once for $B$ elements.
-
-It will be investigated how the choice of buffer size and varying
+$B$ is added such that the system calls are only called once for $B$ elements. This section investigates how the choice of buffer size and varying
 values of $k$ influences the
-performance. Figure~\ref{fig:buffered-input} shows a plot of the performance for the buffered input stream.
+performance.
+
+Figure~\ref{fig:buffered-input} shows a plot of the performance for the buffered input stream.
 
 \begin{figure}[h!]
   \centering
@@ -146,11 +146,14 @@ perform similarly for sequential read ($k = 1$). This is most likely because the
 As $k$ gets bigger, Figure~\ref{fig:buffered-input} indicates that
 bigger buffers gives better performance, which was expected. However,
 for large buffer sizes in combination with large values of $k$, the
-input stream performs extremely poorly. The slowness is because the
-buffers partly ends up on disk because of insufficient free memory, whereby buffering is worse than
-using no buffer at all. Larger choices of buffer size was also tried,
-which as expected showed a similar behaviour, and is therefore of no
-interest for use in sorting\todo{Comment on ``curve'' for small buffers in plot. data ligger langt fra hinanden vs. den kan lave readahead + data begynder at ligge taet. Muligvis ogsaa ventetid for 32MB}.
+input stream performs extremely poorly. The decrease in performance happens because the
+buffers partly ends up on disk because of insufficient free memory causing memory thrashing. Experiments with larger buffer sizes were also performed and they
+showed a similar behaviour and are therefore of no
+interest for use in sorting.
+
+
+Figure~\ref{fig:buffered-input} shows a small curve for smaller buffer sizes. We speculate that...
+\todo{data ligger langt fra hinanden vs. den kan lave readahead + data begynder at ligge taet + cache paa disk. Hhm hvordan kan det passe for 8kB?}
 
 From Figure~\ref{fig:buffered-input}, it seems that a buffer size of 2
 MB provides the best compromise of running time and memory usage for
@@ -167,8 +170,8 @@ Figure~\ref{fig:buffered-output}.
   \label{fig:buffered-output}
 \end{figure}
 
-It is expected that the plots in Figure~\ref{fig:buffered-input} and
-Figure~\ref{fig:buffered-output} are similar, since the two streams
+We expected that the plots in Figure~\ref{fig:buffered-input} and
+Figure~\ref{fig:buffered-output} would be similar since the two streams
 are much alike. However, the plots shows that the varying the buffer sizes
 almost have no effect on the performance of the output streams (except
 when they are too big to be in memory.)\todo{This seems to happen before
@@ -187,16 +190,13 @@ Figure~\ref{fig:buffered-output} can be explained by the write cache of the disk
 A buffer size of 2 MB has been chosen to give the best trade-off
 between running time and memory consumption. From
 Figure~\ref{fig:buffered-output} it seems like a tiny buffer would be
-a better choice, but if the operating system for some reason fails
-delay writes in the sorting application, a buffer size of 2 MB
-provides more confidence that the stream will actually perform as
-expected when used in sorting.\todo{Lad os lige gaa over denne paragraf.}
+a better choice but for external Mergesort only $k=1$ is used. Therefore, we choose to base our choice on the performance of the input streams.
 
 \subsection{MMap streams}
 For the memory mapped streams, the \texttt{mmap} and \texttt{munmap}
 system calls are used for mapping a file into memory. Then the file
 can be accessed as it was loaded into memory, but the actual loading
-is lazy, such that it only happens when it is actually needed.
+is lazy, such that it only happens when it is needed.
 
 Therefore it is expected that the block size mapped into memory each
 time \texttt{mmap} is called, will not have any significant impact on
@@ -220,13 +220,10 @@ which is expected. For the $k = 256$ case, it seems like some choices
 of block sizes are better than others, but there does not seem to be an
 obvious correlation on how the block sizes influences the running time
 in this case. This may simply be because of variance in the
-measurements\todo{Maaske ikke designet til mange...}.
+measurements.
 
 The running time of input stream was found to be worse when the value
-of $k$ was increased. This can be explained by that the disk have to
-read data located farther away from each other when a new page is
-loaded into memory. This takes longer time, because the disk have to
-move its read heads\todo{Other reasons? Ved ikke helt om jeg koeber den. Med det argument burde der vel ikke vaere meget forskel paa 4 og 16? Et andet argument kunne vaere at det bliver mere tilfaeldigt hvad der bliver laest naeste gang}.
+of $k$ was increased. We speculate that the performance decrease is caused by the operating system's bookkeeping. Normally, one would not use different mappings in the same process but only a single one where each stream would get a pointer to different memory locations.\todo{Et andet argument kunne vaere at det bliver mere tilfaeldigt hvad der bliver laest naeste gang}
 
 \begin{figure}[h!]
   \centering
@@ -240,7 +237,7 @@ A similar plot for the mmap output stream is shown at
 Figure~\ref{fig:mmap-output}. For the output stream it seems like the
 different streams behaves alike for different buffer sizes, except
 when the block size is 8kB. The 8kB block performs substantially
-better when $k = 1$, but worse when $k = 4$\todo{Why?}.
+better when $k = 1$, but worse when $k = 4$\todo{Why? Jeg har nye plots, lad os kigge paa dem}.
 
 Like the input stream, the performance of the output stream is
 decreasing for larger values of $k$, and no test with $k$ greater than
