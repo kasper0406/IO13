@@ -152,8 +152,28 @@ showed a similar behaviour and are therefore of no
 interest for use in sorting.
 
 
-Figure~\ref{fig:buffered-input} shows a small curve for smaller buffer sizes. We speculate that...
-\todo{data ligger langt fra hinanden vs. den kan lave readahead + data begynder at ligge taet + cache paa disk. Hhm hvordan kan det passe for 8kB? Jo tror det er fint det argument med cache}
+Figure~\ref{fig:buffered-input} shows a small curve for smaller buffer
+sizes. As $k$ increases, more disk seeking is required, but when $k$
+becomes large, the $k$ different streams is close to each other,
+especially because of read-ahead of 128kB per stream.
+
+An experiment was performed to check this hypothesis, where we tried
+to change how much read-ahead to
+perform. Figure~\ref{fig:buffered-readahead} shows a plot of the
+results. It is seen that the curve is skewed compared to before. This
+provides evidence that read-ahead has an effect when $k$ is large. For
+smaller $k$ values the performance seems almost the same, which we
+speculate is due to the look-ahead done by the disk controller. This
+only works for small $k$, because of a limited cache on the disk
+controller.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.8\textwidth]{buffered_input_rd}
+  \caption{Effect on changing the read-ahead value for buffered input
+    stream with a 2MB buffer.}
+  \label{fig:buffered-readahead}
+\end{figure}
 
 From Figure~\ref{fig:buffered-input}, it seems that a buffer size of 2
 MB provides the best compromise of running time and memory usage for
@@ -180,7 +200,7 @@ when they are too big to be in memory.)\todo{This seems to happen before
 The disk controller has the choice of delaying writes to the disk platters by using its 8MB cache and wait until it receives more data in the same region of the disk. It thereby avoids random seeks. This could explain why varying buffer sizes performs equally.
 
 An experiment was performed, where the
-\texttt{fsync(2)}\footnote{The \texttt{fsync(2)} system call ensures
+\texttt{fsync}\footnote{The \texttt{fsync} system call ensures
   that the file is written to disk immediately.} system call was
 called immediately after each write operation. It was found that both
 the input and output streams performed very similar, hence the absence
@@ -223,7 +243,7 @@ in this case. This may simply be because of variance in the
 measurements.
 
 The running time of input stream was found to be worse when the value
-of $k$ was increased. We speculate that the performance decrease is caused by the operating system's bookkeeping. Normally, one would not use different mappings in the same process but only a single one where each stream would get a pointer to different memory locations.\todo{Et andet argument kunne vaere at det bliver mere tilfaeldigt hvad der bliver laest naeste gang}
+of $k$ was increased. We speculate that the performance decrease is caused by the operating system's bookkeeping. Normally, one would not use different mappings in the same process but only a single one where each stream would get a pointer to different memory locations.
 
 \begin{figure}[h!]
   \centering
@@ -235,13 +255,10 @@ of $k$ was increased. We speculate that the performance decrease is caused by th
 
 A similar plot for the mmap output stream is shown at
 Figure~\ref{fig:mmap-output}. For the output stream it seems like the
-different streams behaves alike for different buffer sizes, except
-when the block size is 8kB. The 8kB block performs substantially
-better when $k = 1$, but worse when $k = 4$\todo{Why? Jeg har nye plots, lad os kigge paa dem}.
-
-Like the input stream, the performance of the output stream is
-decreasing for larger values of $k$, and no test with $k$ greater than
-16 was performed due to long execution times.
+different streams behaves alike for different buffer sizes. Like the
+input stream, the performance of the output stream is decreasing for
+larger values of $k$\todo{Not correct wrt. new measurements.}, and no test with $k$ greater than 64 was
+performed due to long execution times.
 
 \subsection{Other streams}
 \label{sec:other-streams}
@@ -280,18 +297,15 @@ obtained. The results are plotted in Figure~\ref{fig:syscall-streams}.
 
 The input stream has an almost constant running time from $k$ between
 1 and 16. However, for $k = 64$ a small increase in running time is
-seen, which ...\todo{Describe why? naar vi kommer tilbage til foerste stream, er alt ude af cachen pga readahead*64>8MB cache}.
+seen, which we believe to be due to cache constraints for look-ahead.
 
 As mentioned earlier, only one measurement was done for the output
 stream. It is a bit surprising that the output stream is so much
-slower than the input stream. The the smallest unit able to be written
-to the disk is a sector, which on the test machine is
-512B. If smaller amount should be written, it is\todo{Probably BS}
-required that the sector is read, modified in memory and then written
-back to the disk. When the \texttt{write} system call is used without
-buffering, this happens every time an integer is written to the
-stream, causing a tremendous overhead, resulting in the extremely
-large running time.
+slower than the input stream. The smallest unit able to be written to
+the disk is a sector, which on the test machine is 512B.  We have
+found that the writing to disk is delayed until 512B have been
+written, while for reading we have read-ahead, which can explain the
+slow behaviour of writing.
 
 \subsection{Relative comparison}
 In order to determine which stream to use, it is very important that
@@ -330,10 +344,7 @@ experiment performed in Section~\ref{sec:buffered-streams}, it was
 found that a small buffer was significantly worse if data was forced
 to be written to the disk instantly after the buffer is full. This is
 the case for sorting, since the operations in the next iteration
-relies on these data. Therefore we have chosen to use the buffered
-output stream with a 2MB buffer, even though
-Figure~\ref{fig:best-output} seems to suggest it is performing
-slightly worse at $k = 256$\todo{Do another plot justifying this? Nope, slet det med write, fokuser paa read}.
+relies on these data.
 
 \begin{figure}[h!]
   \centering

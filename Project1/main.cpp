@@ -102,7 +102,7 @@ int main(int argc, char *argv[]) {
   sanity_test<BufferedIStream, BufferedOStream>();
   sanity_test<MMapIStream, MMapOStream>();
   
-  // const uint64_t elements = 1024 * 1024 * 1024 / 2;
+  const uint64_t elements = 1024 * 1024 * 32 / 4;
 
   // kasper_test();
 
@@ -113,12 +113,12 @@ int main(int argc, char *argv[]) {
   // Read/write test
 
   // test_reads<ReadInputStream<uint32_t>>(elements);
-  // test_writes<WriteOutputStream<uint32_t>>(elements);
+  test_writes<WriteOutputStream<uint32_t>>(elements);
 
   // test_reads<FREADInputStream<uint32_t>>(elements);
   // test_writes<FWRITEOutputStream<uint32_t>>(elements);
     
-  test_sort<BufferedIStream, BufferedOStream>();
+  // test_sort<BufferedIStream, BufferedOStream>();
 
   cout << "File counter: " << counter << endl;
 
