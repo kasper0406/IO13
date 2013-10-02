@@ -344,47 +344,54 @@ slightly worse at $k = 256$\todo{Do another plot justifying this? Nope, slet det
 \end{figure}
 
 \section{Sorting}
-\todo{skriv i rapporten k<n/m}
-\todo{hoejde af trae skal med}
-\todo{udregning af hukommelse skal med for plottet}
-\todo{totale IO: N/B log... + N/B}
-This section will describe the external memory merge sort
-implemented. For a given input size $N$, the algorithm has two
-parameters to tweak: The memory size $M$, and the number, $k$, of
-input streams to merge simultaneously.
+This section will investigate how the external memory merge sort
+performs for different choices of parameters. Given the input size
+$N$, the algorithm has two parameters to tweak: The memory size $M$,
+and the number, $k$, of input streams to merge simultaneously.
 
-We have chosen to focus only on optimizing the parameters of the
-external memory sort algorithm when the elements does not fit the main
-memory -- in these cases conventional in-place sorting algorithms are
-superior (see Section~\ref{sec:sort-comparison}).
+There are some constraints on these parameters. It will not make sense
+to have $M$ bigger than the actual memory size, since this corresponds
+to a conventional in-memory sorting. Similarly it must be that $k <
+\frac{N}{M}$, since there should be at least $k$ streams to merge.
 
-Figure~\ref{fig:sorting} shows how different choices for $M$ and $k$
-changes the performance when sorting 2GB of elements. We have also
-tried to make a similar plot for sorting of 1GB elements with the same
-findings.
+Figure~\ref{fig:sorting} plots the running time of sorting 1GB of
+integers, using different settings for the $M$ and $k$ values. It is
+seen, that the measurements seems to form around the same levels of
+running times when varying the parameters. This is due to the number
+of times the file is read on the disk.
+
+For every level in the merge tree, the file is read and written once
+from/to the disk. The height of the merge tree for give parameters is
+$h = \log_k \frac{N}{M}$, since every merge merges $k$ streams, and
+there are $\frac{N}{M}$ streams initially. The levels seen in
+Figure~\ref{fig:sorting} follows this bound very nicely.
+
+There are small variations for the running time of each level, but
+these seems almost negligible in the overall picture. This also
+suggests that the assumption of the I/O model, where only disk
+accesses are the thing to count, indeed seems to be a good model in
+practice when the input does not fit into main memory.
+
+For a given choice of parameters, the amount of memory used to sort
+the file is given by $M + B\frac{N}{M}$. Hence, the different
+measurements with the same height, use a different amount of
+memory. This gives another criteria to optimize when choosing
+parameters: First the height of the merge tree should be minimized,
+then the amount of used memory. There will be some cases where the
+minimum height merge tree is not the best thing to choose, since the
+parameters obtaining this will not fit the memory of the machine. This
+is seen for $M = 2$ and $k \geq 256$ in Figure~\ref{fig:sorting}.
+
+When sorting 1GB of integers, we have found parameters $M = 32MB, k =
+32$ and $M = 64, k = 64$ to be the ones using less memory, both using $96MB$.
 
 \begin{figure}[h!]
   \centering
-  \includegraphics[width=0.8\textwidth]{sorting}
-  \caption{Time for sorting a 2GB file varying the memory size $M$ and
+  \includegraphics[width=0.8\textwidth]{sorting2}
+  \caption{Time for sorting a 1GB file varying the memory size $M$ and
     streams to merge in parallel $k$.}
   \label{fig:sorting}
 \end{figure}
-
-It can be seen from Figure~\ref{fig:sorting} that increasing the value
-of $k$ always seems to improve the performance\todo{Describe.Fordi trae bliver lavere, saa vi laeser filen faerre gange}.
-
-Another thing to notice, is that the performance increases as the
-memory size $M$ is increased, until a point where the main memory
-cannot hold the $M$ elements or the associated stream buffers. As
-described in Section~\ref{sec:buffered-streams} this is very bad for
-performance. In our experiments we see that this is happening when $M
-= 512MB$\todo{Slet! ikke gyldigt laengere}.
-
-An interesting thing to notice, is that there seems to be a very nice
-correspondence between the choice of $M$, $k$ and the running
-time\todo{Why? min streams hoejde -> memory}.
-
 
 \subsection{Comparison with conventional sorting algorithms}
 In order to determine how well the external merge sort is performing,
