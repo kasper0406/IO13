@@ -14,7 +14,7 @@ set ytics nomirror tc lt 1
 set xtics add ("1" 0)
 set xtics add ("4" 2)
 set xtics add ("16" 4)
-set xtics add ("" 5)
+set xtics add ("64" 6)
 
 mytitle(IDX) = (IDX < 5) ? sprintf("%d kB", 4 * (2 ** (11+2*IDX)) / 1024) : sprintf("%d MB", 4 * (2 ** (11+2*IDX)) / (1024 * 1024))
 
