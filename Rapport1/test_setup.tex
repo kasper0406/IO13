@@ -14,16 +14,16 @@ Linux 12.04. The hard drive was an USB2 attached Fujitsu MJA2250BH which has the
 \item 250GB
 \item 5,400 RPM
 \item 8MB cache
-\item 512B sector size\todo{tilfoej readahead}
+\item 512B sector size
 \end{itemize}
 
-The file system had a block size of 4096B.
+The file system had a block size of 4096B and 128kB read ahead.
 
 All implementations have been
 written in C++11 and compiled on Linux using the GCC 4.7 compiler. When measurements were performed, the
 code was compiled using the \texttt{-O3 -flto -funroll-loops}
 optimization flags.
 
-In the beginning we ran our tests 3 times. However, to make it feasible
+In the beginning we ran our tests 3 times and used the median. However, to make it feasible
 to run our tests on bigger inputs, we adjusted our tests to only
 one trial for large inputs.
