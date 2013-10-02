@@ -19,6 +19,12 @@ public:
     if (::write(this->fd, &value, size) != size)
 			throw runtime_error("Failed to write element to output stream!");
 
+    if (++count % 512 / 4 == 0)
+      fsync(this->fd);
+    
 		this->rem--;
   }
+  
+private:
+  uint32_t count = 0;
 };
