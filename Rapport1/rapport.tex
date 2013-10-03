@@ -4,6 +4,7 @@
 \usepackage{listings}
 \usepackage{amsmath}
 \usepackage{mathtools}
+\usepackage{hyperref}
 \usepackage{mathpazo}
 \usepackage{wasysym}
 \usepackage{graphicx}
@@ -16,7 +17,7 @@
 
 \newcommand{\ord}{\operatorname{ord}}
 
-\graphicspath{ {../Project1/measurements/final/} }
+\graphicspath{ {../Project1/measurements/} }
 
 \begin{document}
 
@@ -34,7 +35,7 @@ Kasper Nielsen - 20091182\\}
 \vfill{}
 \begin{description}
 \item [{Implementation~code~and~test~results:}]
-\texttt{http://github.com/kasper0406/IO13/}
+\texttt{\url{https://github.com/kasper0406/IO13/tree/master/Project1/}}
 \end{description}
 \pagebreak{}\tableofcontents{}\pagebreak{}
 
@@ -42,25 +43,26 @@ Kasper Nielsen - 20091182\\}
 \input{introduction.tex}
 
 \section{Setup}
-This section presents the test setup, how measurements are performed
+This section presents the test setup, how measurements were performed
 and gives an overview of the files attached to this report.
 
 \subsection{Test setup}
 \input{test_setup.tex}
 
 \subsection{File structure}
-The following is a description of the different folders handed in with
-the report.
+The following is a description of the different folders available at
+\\
+\texttt{\url{https://github.com/kasper0406/IO13/tree/master/Project1/}}
 \begin{description}
-\item[code] Contains the implementations of the different streams and
+\item[/] Contains the implementations of the different streams and
   the external memory sort.
 
-\item[output] Contains the raw measurements used for the plots in the
+\item[measurements/] Contains the raw measurements used for the plots in the
   report. The plots themselves are also included in a pdf-format.
 \end{description}
 
 \subsubsection{Code structure}
-The code has the following source files.
+The code has the following source files:
 \begin{description}
 \item[main.cpp] Driver code for calling test code.
 \item[test.h] Test framework for testing streams and sorting with
@@ -100,7 +102,7 @@ The code has the following source files.
 
 \section{Streams}
 This section presents how benchmarks of the four different
-streams were performed, and an analysis of their performance. First each stream will
+streams were performed, and contains an analysis of their performance. First each stream will
 be treated separately and the best settings for each stream will be
 used in a relative performance benchmark for finding the stream most
 suitable for sorting.
@@ -116,9 +118,9 @@ number of elements has not been varied for the stream test, as it is not
 expected that streams will behave differently, as long as the data is
 big enough to not fit the main memory.
 
-In the merge step in the sorting application, the input streams are
-used in a very similar way, the output streams are however only used
-in the $k = 1$ case, but we have chosen to do testing of these streams
+In the merge step of the sorting application, the input streams are
+used similarly as in the experiments. However, the output streams are only used
+as in the $k = 1$ case, but we have chosen to do testing of these streams
 for varying values of $k$, to be able to get comparable results
 between input and output streams.
 
@@ -129,7 +131,6 @@ This type of streams are implemented using the \texttt{read} and
 $B$ is added such that the system calls are only called once for $B$ elements. This section investigates how the choice of buffer size and varying
 values of $k$ influences the
 performance.
-
 Figure~\ref{fig:buffered-input} shows a plot of the performance for the buffered input stream.
 
 \begin{figure}[h!]
@@ -147,7 +148,7 @@ As $k$ gets bigger, Figure~\ref{fig:buffered-input} indicates that
 bigger buffers gives better performance, which was expected. However,
 for large buffer sizes in combination with large values of $k$, the
 input stream performs extremely poorly. The decrease in performance happens because the
-buffers partly ends up on disk because of insufficient free memory causing memory thrashing. Experiments with larger buffer sizes were also performed and they
+buffers partly ends up on disk because of insufficient memory which causes memory thrashing. Experiments with larger buffer sizes were also performed and they
 showed a similar behaviour and are therefore of no
 interest for use in sorting.
 
@@ -193,9 +194,8 @@ Figure~\ref{fig:buffered-output}.
 We expected that the plots in Figure~\ref{fig:buffered-input} and
 Figure~\ref{fig:buffered-output} would be similar since the two streams
 are much alike. However, the plots shows that the varying the buffer sizes
-almost have no effect on the performance of the output streams (except
-when they are too big to be in memory.)\todo{This seems to happen before
-  in the write case?}
+almost have no effect on the performance of the output streams, except
+when they are too big to be in memory. Comparing with buffered input streams we see a large decrease in performance earlier with buffered write. We believe it is due to a large write buffer in the operating system to facilitate asynchronous write. Therefore, less memory is available for the output streams.
 
 The disk controller has the choice of delaying writes to the disk platters by using its 8MB cache and wait until it receives more data in the same region of the disk. It thereby avoids random seeks. This could explain why varying buffer sizes performs equally.
 
@@ -206,18 +206,18 @@ called immediately after each write operation. It was found that both
 the input and output streams performed very similar, hence the absence
 of effect in varying buffer sizes showed in
 Figure~\ref{fig:buffered-output} can be explained by the write cache of the disk.
-
+\\
+\\
 A buffer size of 2 MB has been chosen to give the best trade-off
 between running time and memory consumption. From
 Figure~\ref{fig:buffered-output} it seems like a tiny buffer would be
-a better choice but for external Mergesort only $k=1$ is used. Therefore, we choose to base our choice on the performance of the input streams.
+a better choice but for external mergesort only $k=1$ is used. Therefore, we choose to base our choice on the performance of the input streams.
 
 \subsection{MMap streams}
 For the memory mapped streams, the \texttt{mmap} and \texttt{munmap}
 system calls are used for mapping a file into memory. Then the file
 can be accessed as it was loaded into memory, but the actual loading
 is lazy, such that it only happens when it is needed.
-
 Therefore it is expected that the block size mapped into memory each
 time \texttt{mmap} is called, will not have any significant impact on
 the results, since only some memory bookkeeping and different amount
@@ -234,16 +234,12 @@ access.
 \end{figure}
 
 Figure~\ref{fig:mmap-input} shows a plot of the running times for the
-mmapped input stream. Except for the case $k = 256$, the plot shows
+memory mapped input stream. Except for the case $k = 256$, the plot shows
 that the running times for the different block sizes are very close,
 which is expected. For the $k = 256$ case, it seems like some choices
 of block sizes are better than others, but there does not seem to be an
 obvious correlation on how the block sizes influences the running time
-in this case. This may simply be because of variance in the
-measurements.
-
-The running time of input stream was found to be worse when the value
-of $k$ was increased. We speculate that the performance decrease is caused by the operating system's bookkeeping. Normally, one would not use different mappings in the same process but only a single one where each stream would get a pointer to different memory locations.
+in this case.
 
 \begin{figure}[h!]
   \centering
@@ -257,8 +253,7 @@ A similar plot for the mmap output stream is shown at
 Figure~\ref{fig:mmap-output}. For the output stream it seems like the
 different streams behaves alike for different buffer sizes. Like the
 input stream, the performance of the output stream is decreasing for
-larger values of $k$\todo{Not correct wrt. new measurements.}, and no test with $k$ greater than 64 was
-performed due to long execution times.
+increasing $k$. However, for $k=256$ which we do not fully understand but we believe it is due to the synchronization algorithm underlying memory mapped files.
 
 \subsection{Other streams}
 \label{sec:other-streams}
@@ -302,19 +297,18 @@ seen, which we believe to be due to cache constraints for look-ahead.
 As mentioned earlier, only one measurement was done for the output
 stream. It is a bit surprising that the output stream is so much
 slower than the input stream. The smallest unit able to be written to
-the disk is a sector, which on the test machine is 512B.  We have
-found that the writing to disk is delayed until 512B have been
-written, while for reading we have read-ahead, which can explain the
+the disk is a sector, which on the test machine is 512B.  We have made experiments that indicates writing to disk is delayed until 512B have been
+written, while for reading we have read-ahead which is larger than 512B (128kB), which can explain the
 slow behaviour of writing.
 
 \subsection{Relative comparison}
 In order to determine which stream to use, it is very important that
 the input streams performs well for varying values of $k$. This
 however, is not as important for the output stream since it is not
-interleaved, but other disk access may happen in between writes to the
-output stream in the sorting, meaning that it is also is preferable if
+interleaved when sorting, but other disk access may happen in between writes to the
+output stream, meaning that it is also is preferable if
 the output stream performs decently for different $k$ values, as this
-indicate that the output stream is more robust for interleaved disk
+indicates that the output stream is more robust for interleaved disk
 operations.
 
 In order to chose which stream to use in sorting, we have picked out
@@ -339,12 +333,9 @@ Figure~\ref{fig:best-output} shows a plot of the best output
 streams. The only real competition is between the \texttt{fwrite} and
 the buffered output stream with 2MB buffer. As discussed in
 Section~\ref{sec:other-streams} the streams are functioning in almost
-the same way, except they use a different buffer size. From the extra
-experiment performed in Section~\ref{sec:buffered-streams}, it was
-found that a small buffer was significantly worse if data was forced
-to be written to the disk instantly after the buffer is full. This is
-the case for sorting, since the operations in the next iteration
-relies on these data.
+the same way, except they use a different buffer size.
+
+We choose the 2MB buffered output stream since we also choose the corresponding buffered input stream. As indicated by Figure~\ref{fig:best-output} it might have been a better choice to pick a smaller buffer size. Due to time constraints we did not experiments with a smaller buffer size.
 
 \begin{figure}[h!]
   \centering
@@ -355,15 +346,15 @@ relies on these data.
 \end{figure}
 
 \section{Sorting}
-This section will investigate how the external memory merge sort
+This section will investigate how the external memory mergesort
 performs for different choices of parameters. Given the input size
 $N$, the algorithm has two parameters to tweak: The memory size $M$,
 and the number, $k$, of input streams to merge simultaneously.
 
-There are some constraints on these parameters. It will not make sense
+There are some constraints on these parameters. It does not make sense
 to have $M$ bigger than the actual memory size, since this corresponds
-to a conventional in-memory sorting. Similarly it must be that $k <
-\frac{N}{M}$, since there should be at least $k$ streams to merge.
+to a conventional in-memory sorting. Similarly it must be that $k \leq
+\left\lceil\frac{N}{M}\right\rceil$, since there should be at least $k$ streams to merge.
 
 Figure~\ref{fig:sorting} plots the running time of sorting 1GB of
 integers, using different settings for the $M$ and $k$ values. It is
@@ -390,11 +381,11 @@ memory. This gives another criteria to optimize when choosing
 parameters: First the height of the merge tree should be minimized,
 then the amount of used memory. There will be some cases where the
 minimum height merge tree is not the best thing to choose, since the
-parameters obtaining this will not fit the memory of the machine. This
+parameters obtaining this may not fit the memory of the machine. This
 is seen for $M = 2$ and $k \geq 256$ in Figure~\ref{fig:sorting}.
 
-When sorting 1GB of integers, we have found parameters $M = 32MB, k =
-32$ and $M = 64, k = 64$ to be the ones using less memory, both using $96MB$.
+When sorting 1GB of integers, we have found parameters $M = 32\textrm{MB}, k =
+32$ and $M = 64\textrm{MB}, k = 64$ to be the ones using less memory, both using 96MB and simultaneously with the minimum tree height.
 
 \begin{figure}[h!]
   \centering
@@ -405,10 +396,10 @@ When sorting 1GB of integers, we have found parameters $M = 32MB, k =
 \end{figure}
 
 \subsection{Comparison with conventional sorting algorithms}
-In order to determine how well the external merge sort is performing,
-it has been benchmarked against conventional quick sort and heap sort
-implementations. The quick sort is from the C standard library, and
-the heap sort is from STL. A plot of the running time for the
+In order to determine how well the external mergesort is performing,
+it has been benchmarked against conventional quicksort and heapsort
+implementations. The quicksort is from the C standard library, and
+the heapsort is from STL. A plot of the running time for the
 different sorting algorithms is shown in Figure~\ref{fig:best-sort}.
 
 \begin{figure}[h!]
@@ -418,18 +409,18 @@ different sorting algorithms is shown in Figure~\ref{fig:best-sort}.
   \label{fig:best-sort}
 \end{figure}
 
-It can be seen that both quick sort and heap sort outperforms the
-external merge sort when $n \leq 2^{27}$, which is 512MB of
-elements. This is no surprise, since both quick and heap sort are
+It can be seen that both quicksort and heapsort outperforms the
+external mergesort when $n \leq 2^{27}$, which is 512MB of
+elements. This is no surprise, since both quick and heapsort are
 in-place sorts. The test machine was equipped with 1GB memory, hence
 the two sorting algorithms can do everything without going to disk,
-while the external merge sort by construction have to do merging on
+while the external mergesort by construction have to do merging on
 the disk.
 
 The other thing to notice, is that as soon as the input does not fit
 the memory anymore $n \geq 2^{28}$ (1GB of elements), the external
-merge sort beats the quick and heap sorts hands down. This was also
-what we expected, wince the external merge sort should use the disk
+mergesort beats the quicksort and heapsort hands down. This was also
+what we expected, since the external mergesort should use the disk
 much more efficiently.
 
 \section{Conclusion}
