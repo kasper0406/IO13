@@ -5,13 +5,13 @@ implemented streams, which was found it to be buffered streams with
 2MB buffer size.
 
 It was found that the implemented external mergesort tremendously
-improved the performance of sorting large input, compared to
-conventional main memory sorting algorithms -- for sorting 1GB of
+improved the performance of sorting large inputs, compared to
+conventional main memory sorting algorithms. Already for sorting 1GB of
 integer elements, we found a performance increase of a factor $\approx
 2.3$, which becomes significantly bigger for larger inputs.
 
 The overall findings of this project was therefore in agreement with
-what should be expected from the I/O-model for analyzing
+what should be expected from the I/O-model for analysing
 algorithms. Especially our tests varying the parameters for sorting
 shows that I/O is the bottleneck for the running time. We have also
 found a way to choose the parameters, which will minimize the I/O for
