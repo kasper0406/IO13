@@ -4,6 +4,7 @@
 #include <iomanip>
 #include <cassert>
 #include <cstdint>
+#include <cstdlib>
 #include <vector>
 #include <string>
 #include <functional>
@@ -241,9 +242,9 @@ template <template<typename> class IN, template<typename> class OUT>
 }
 
 const uint32_t min_k = 1;
-const uint32_t max_k = 32;
+const uint32_t max_k = 512;
 const uint32_t trials = 1;
-const double time_limit_in_seconds = 60 * 3;
+const double time_limit_in_seconds = 3000;
 
 // TODO(lespeholt): Tildels copy-paste for test_reads og test_writes
 
@@ -252,7 +253,7 @@ const double time_limit_in_seconds = 60 * 3;
 // at koere een sekventielt.
 template <class S>
 void test_reads(uint64_t elements) {
-  const string filename = "test_file";
+  const string filename = "test_file" + to_string(elements);
     
   if (!(elements && !(elements & (elements - 1)))) {
     cout << "Number of elements not a power of 2" << endl;
@@ -264,9 +265,16 @@ void test_reads(uint64_t elements) {
     exit(1);
   }
 
-  generate_file<typename S::type>(filename, random_uint32, elements);
+  ifstream foo(filename);
+
+  if (!foo.good()) {
+    generate_file<typename S::type>(filename, random_uint32, elements);
+  }
+
+  foo.close();
 
   print_test_header<S>(cout, elements);
+  uint32_t sum = 0;
 
   for (uint32_t k = min_k; k <= max_k; k *= 4) {
     vector<S> streams(k);
@@ -276,6 +284,9 @@ void test_reads(uint64_t elements) {
     stringstream test;
     test << setw(16) << to_string(n) + "\t" + to_string(k);
 
+    auto preprocess = [&]() {
+    };
+
     auto read_test = [&]() {
       for (uint32_t i = 0; i < k; ++i) {
         streams[i].open(filename, (uint64_t)i * (elements / k), ((uint64_t)i + 1LL) * (elements / k));
@@ -283,7 +294,7 @@ void test_reads(uint64_t elements) {
 
       for (uint64_t i = 0; i < n; ++i) {
         for (auto& stream : streams) {
-          stream.read_next();
+          sum += stream.read_next();
         }
       }
 
@@ -297,7 +308,8 @@ void test_reads(uint64_t elements) {
       }
     };
 
-    if (measure(cout, test.str(), trials, read_test) > time_limit_in_seconds) {
+    if (measure(cout, test.str(), trials, read_test, preprocess) > time_limit_in_seconds) {
+      cout << "Timelimit " << sum << endl;
       break;
     }
   }
@@ -369,14 +381,16 @@ void print_sort_header(ostream& out) {
 
 template <template <typename> class IN, template <typename> class OUT>
 void test_sort() {
-  const string filename = "test_file";
-  const uint64_t min_M = 1024 * 1024 * 64 / 4;
-  const uint64_t max_M = 1024 * 1024 * 1024 / 2;
+  const string filename = "test_file2";
+  //const uint64_t min_M = 1024 * 1024;
+  //const uint64_t max_M = 1024 * 1024 * 1024 / 4;
+  const uint64_t min_M = 1024 * 1024 * 4;
+  const uint64_t max_M = 1024 * 1024 * 1024 / 8;
   const uint32_t min_d = 2;
-  const uint32_t max_d = 128;
+  const uint32_t max_d = 512;
   // const uint64_t min_elements = 1024 * 1024 * 32;
-  const uint64_t min_elements = 1024 * 1024 * 1024 / 128;
-  const uint64_t max_elements = 1024 * 1024 * 1024 / 2;
+  const uint64_t min_elements = 1024 * 1024 * 1024;
+  const uint64_t max_elements = 1024 * 1024 * 1024;
    
   print_sort_header<IN<uint32_t>, OUT<uint32_t>>(cout);
 
@@ -384,7 +398,14 @@ void test_sort() {
     generate_file<uint32_t>(filename, random_uint32, elements);
 
     for (uint64_t M = min_M; M <= max_M; M *= 2) {
+      if (M > elements) continue;
+
       for (uint32_t d = min_d; d <= max_d; d *= 2) {
+        if ((int)ceil((double)elements / (double)M) < d) continue; 
+        //if ((d+1) * (524288/64) >= M) continue; 
+        if ((d+1) * 524288 > 1024 * 1024 * 1024 / 2) continue;
+        if (log((double)elements / (double)M) / log(d) > 1) continue;
+
         stringstream test;
         test << setw(16) << to_string(elements) << setw(16) << to_string(M) << setw(8) << to_string(d);
 
@@ -393,6 +414,8 @@ void test_sort() {
         };
 
         auto preprocess = [&]() {
+          int counter = 0;
+	  while (!remove(("tmp" + to_string(counter++)).c_str()));
           // generate_file<uint32_t>(filename, random_uint32, elements);
         };
 

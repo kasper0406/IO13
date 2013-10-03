@@ -9,11 +9,11 @@ template <uint64_t B, typename T>
 class BufferedInputStream : public RWStream<T>, public InputStream<T> {
 public:
 	BufferedInputStream() {
-		this->buffer = new T[B];
+		buffer = new T[B];
 		index = length = B;
 	}
 
-  ~BufferedInputStream() {
+  ~BufferedInputStream() noexcept {
     if (this->buffer != nullptr)
       delete[] this->buffer;
   }
@@ -22,6 +22,7 @@ public:
     buffer = other.buffer;
     index = other.index;
     length = other.length;
+    filename_ = other.filename_;
     
     other.buffer = nullptr;
   }
@@ -39,6 +40,7 @@ public:
       buffer = other.buffer;
       index = other.index;
       length = other.length;
+      filename_ = other.filename_;
       
       other.buffer = nullptr;
     }
@@ -48,6 +50,7 @@ public:
   
 	void open(string filename, uint64_t start, uint64_t end) {
 		RWStream<T>::open(filename, start, end, Stream<T>::IN);
+		this->filename_ = filename;
 	}
 
 	T read_next() {
@@ -65,7 +68,15 @@ public:
   bool end_of_stream() {
      return this->rem <= 0;
   }
+
+void closeAndRemove() {
+RWStream<T>::close();
+if (filename_ != "tmp" && remove(this->filename_.c_str()) != 0) {
+throw runtime_error("did not delete " + this->filename_ + " foo");
+}
+}
 private:
+        string filename_;
 	T* buffer;
 	uint64_t index;
 	uint64_t length;

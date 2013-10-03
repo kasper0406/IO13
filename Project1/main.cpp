@@ -14,7 +14,7 @@
 #include "buffered_input_stream.h"
 #include "buffered_output_stream.h"
 
-constexpr uint64_t B = 1 << 21;
+constexpr uint64_t B = 524288;
 template <typename T> using MMapIStream = MMapInputStream<B, T>;
 template <typename T> using MMapOStream = MMapOutputStream<B, T>;
 
@@ -23,13 +23,6 @@ template <typename T> using BufferedOStream = BufferedOutputStream<B, T>;
 #endif
 
 using namespace std;
-
-// TODO(lespeholt): Husk at bruge en ordentlig random generator. Standard
-// versionen har en kort periode!
-
-// TODO(knielsen): Overskriv fseek / lseek etc. med alternativer så alle
-// systemer bruger 64 bit pointers. OS X gør dette auto, men win og linux
-// gør det så vidt jeg kan læse kun med 32 bits.
 
 /*
 void kasper_test() {
@@ -84,17 +77,47 @@ public:
 private:
   template <size_t B>
   static void run() {
-    if (B / 2 >= MinB) {
-      run<B / 2>();
+    if (B / 4 >= MinB) {
+      run<B / 4>();
     }
 
-    // test_reads<MMapInputStream<B, uint32_t>>(elements);
-    // test_writes<MMapOutputStream<B, uint32_t>>(elements);
+    //test_reads<MMapInputStream<B, uint32_t>>(elements);
+    test_writes<MMapOutputStream<B, uint32_t>>(elements);
 
-    test_reads<BufferedInputStream<B, uint32_t>>(elements);
+    //test_reads<BufferedInputStream<B, uint32_t>>(elements);
     test_writes<BufferedOutputStream<B, uint32_t>>(elements);
   }
 };
+
+void lasse_mmap_test() {
+  string filename = "mmap_test_file";
+  const uint64_t elements = 1024 * 1024 * 64;
+  const int times = 1000000;
+  const int trials = 5;
+
+  generate_file<uint32_t>(filename, random_uint32, elements);
+
+  auto small_test = [&]() {
+    for (int i = 0; i < times; ++i) {
+    MMapInputStream<1024*4, uint32_t> s;
+    s.open(filename, 0, 1024*4);
+    s.remap();
+    s.close();
+    }
+  };
+
+  auto large_test = [&]() {
+    for (int i = 0; i < times; ++i) {
+    MMapInputStream<elements, uint32_t> s;
+    s.open(filename, 0, elements);
+    s.remap();
+    s.close();
+    }
+  };
+
+  measure(cout, "Small area", trials, small_test);
+  measure(cout, "Large area", trials, large_test);
+}
 
 int main(int argc, char *argv[]) {
   sanity_test<FREADInputStream, FWRITEOutputStream>();
@@ -102,23 +125,28 @@ int main(int argc, char *argv[]) {
   sanity_test<BufferedIStream, BufferedOStream>();
   sanity_test<MMapIStream, MMapOStream>();
   
-  const uint64_t elements = 1024 * 1024 * 32 / 4;
+  const uint64_t elements = 1024 * 1024 * 1024 / 4;
+  //const uint64_t elements = 1024 * 1024 * 1024 / 16;
+
+  //lasse_mmap_test();
 
   // kasper_test();
 
   // Buffer test
 
-  // BufferTest<1024 * 1024, elements / 2, elements>::run();
+  //BufferTest<2048, 8 * 1024 * 1024, elements>::run();
 
   // Read/write test
 
-  // test_reads<ReadInputStream<uint32_t>>(elements);
-  test_writes<WriteOutputStream<uint32_t>>(elements);
+  //test_reads<ReadInputStream<uint32_t>>(elements);
+  //test_writes<WriteOutputStream<uint32_t>>(elements);
 
-  // test_reads<FREADInputStream<uint32_t>>(elements);
-  // test_writes<FWRITEOutputStream<uint32_t>>(elements);
+  //test_reads<FREADInputStream<uint32_t>>(elements);
+  //test_writes<FWRITEOutputStream<uint32_t>>(elements);
     
-  // test_sort<BufferedIStream, BufferedOStream>();
+  test_sort<BufferedIStream, BufferedOStream>();
+
+  //test_heapsort();
 
   cout << "File counter: " << counter << endl;
 

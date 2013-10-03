@@ -48,21 +48,7 @@ public:
   uint64_t size() const {
     return elements;
   }
-  
-protected:
-  T* memory;
-  T* current;
-  int fd;
-  uint64_t remaining;
-  uint64_t nextBlock;
-  typename Stream<T>::Direction direction;
-  uint64_t elements;
-  uint64_t oldOffWrtPageSize;
-  
-  bool needsRemap() const {
-    return this->memory == NULL || this->current - this->memory >= B + this->oldOffWrtPageSize / sizeof(T);
-  }
-  
+
   void remap() {
     if (memory != NULL) {
       if (munmap(memory, B * sizeof(T) + oldOffWrtPageSize) == -1) {
@@ -93,5 +79,19 @@ protected:
     
     oldOffWrtPageSize = offWrtPageSize;
     nextBlock += B;
+  }
+  
+protected:
+  T* memory;
+  T* current;
+  int fd;
+  uint64_t remaining;
+  uint64_t nextBlock;
+  typename Stream<T>::Direction direction;
+  uint64_t elements;
+  uint64_t oldOffWrtPageSize;
+  
+  bool needsRemap() const {
+    return this->memory == NULL || this->current - this->memory >= B + this->oldOffWrtPageSize / sizeof(T);
   }
 };

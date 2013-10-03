@@ -7,12 +7,12 @@ template <uint64_t B, typename T>
 class BufferedOutputStream : public RWStream<T>, public InputStream<T> {
 public:
 	BufferedOutputStream() {
-		this->buffer = new T[B];
+		buffer = new T[B];
 		index = 0;
 		length = B;
 	}
   
-  ~BufferedOutputStream() {
+  ~BufferedOutputStream() noexcept {
     if (this->buffer != nullptr)
       delete[] this->buffer;
   }

@@ -103,8 +103,9 @@ void sort(uint64_t N, string file, uint64_t M, uint32_t d) {
     
     queue.push(move(merge<T, OUT, IN>(streamsToMerge)));
     
-    for (auto& stream : streamsToMerge)
-      stream.close();
+    for (auto& stream : streamsToMerge) {
+      stream.closeAndRemove();
+    }
   }
   
   IN<T> input = move(queue.front());
