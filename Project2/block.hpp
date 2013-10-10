@@ -16,7 +16,7 @@ public:
 
   // Grab from all children
   void refill();
-  // Sift up to parent
+  // Sift up to parent (recursively)
   void sift();
   void steal_from_last();
   Block* parent();
