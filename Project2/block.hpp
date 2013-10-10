@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cassert>s
+#include <cassert>
 
 template <class S, typename I>
 class ExternalHeap;
@@ -40,16 +40,19 @@ public:
   void write_inc(I element) {
     stream_->write(element);
     element_count_++;
+    assert(element_count_ <= end_ - start_);
   }
 
   // Reads an element and decrements the element counter
   I read_dec() {
     stream_->read_next();
+    assert(element_count_ != 0);
     element_count_--;
   }
 
   // Close block
   void close() {
+    assert(stream_ != nullptr);
     stream_->close();
     delete stream_;
     stream_ = nullptr;
