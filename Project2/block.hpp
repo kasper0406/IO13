@@ -8,7 +8,7 @@ class ExternalHeap;
 template <class S, typename I>
 class Block {
 public:
-  Block(size_t start, size_t end, const ExternalHeap<S, I>* heap)
+  Block(size_t start, size_t end, ExternalHeap<S, I>* heap)
     : start_(start), end_(end), heap_(heap), element_count_(0), stream_(nullptr) {
       // Avoid calling methods on 'heap' in the constructor
       // because it may not be initialized properly at this point
@@ -17,7 +17,9 @@ public:
   // Grab from all children
   void refill();
   // Sift up to parent (recursively)
-  void sift();
+  void recursive_sift() {
+    // TODO(lespeholt): Make sifting
+  }
   void steal_from_last();
   Block* parent();
 
@@ -53,9 +55,20 @@ public:
     stream_ = nullptr;
   }
 
+  bool imperfect() {
+    size_t potential_elements = end_ - start_;
+
+    return element_count_ < (size_t)ceil((double)potential_elements / 2);
+  }
+
+  bool root() {
+    // start_ == 0 is not valid because we may swap some blocks
+    return &heap_->blocks()[0] == this;
+  }
+
 private:
   // Not owned
-  const ExternalHeap<S, I>* heap_;
+  ExternalHeap<S, I>* heap_;
   // Owned (it's a pointer to make sure it doesn't use any memory when not used.)
   S* stream_;
   size_t element_count_;

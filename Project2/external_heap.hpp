@@ -38,7 +38,12 @@ public:
 
       blocks_.back().close();
 
-      // TODO(lespeholt): Sift, etc.
+      // Special case: Former last leaf imperfect?
+      if (!blocks_.back().root() && blocks_[blocks_.size() - 2].imperfect()) {
+        // TODO(lespeholt): Swap and sift. Does not make sense to make until 'extract_max' is done.
+      } else {
+        blocks_.back().recursive_sift();
+      }
     }
 
     // Push element in insert buffer
@@ -51,6 +56,10 @@ public:
   size_t stream_buffer_size() const {
     // TODO(lespeholt): We probably want a separate stream buffer size 
     return buffer_size_;
+  }
+
+  vector<Block<S, I>>& blocks() {
+    return blocks_;
   }
 
 private:
