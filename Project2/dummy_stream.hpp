@@ -11,7 +11,18 @@ public:
     position_ = start;
   }
 
-  I read_next();
+  I peek() {
+    assert(position_ < kMax);
+    assert(position_ < end_);
+    return buffer_[position_];
+  }
+  
+  I read_next() {
+    I res = peek();
+    position_++;
+    return res;
+  }
+  
   void write(I value) {
     assert(position_ < kMax);
     assert(position_ < end_);
@@ -20,6 +31,10 @@ public:
   void close() {}
   void seek(uint64_t position) {
     position_ = position;
+  }
+  
+  bool has_next() {
+    return position_ < end_;
   }
 
   static const size_t kMax = 10000;
