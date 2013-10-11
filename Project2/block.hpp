@@ -29,7 +29,7 @@ public:
       return;
     
     // TODO(knielsen): Maybe reduce space consumption.
-    const uint64_t r = this->element_count_ + parent()->element_count_;
+    const uint64_t r = this->element_count() + parent()->element_count();
     vector<I> buffer;
     buffer.reserve(r);
     
@@ -38,33 +38,31 @@ public:
     
     // Merge into internal memory
     uint64_t h = 0;
-    while (this->stream_->has_next() && parent()->stream_->has_next()) {
-      if (this->stream_->peek() > parent()->stream_->peek()) {
-        buffer.push_back(this->stream_->read_next());
+    while (!this->empty() && !parent()->empty()) {
+      if (this->peek() > parent()->peek()) {
+        buffer.push_back(this->read_dec());
         h++;
       } else {
-        buffer.push_back(parent()->stream_->read_next());
+        buffer.push_back(parent()->read_dec());
       }
     }
-    while (this->stream_->has_next())
-      buffer.push_back(this->stream_->read_next());
-    while (parent()->stream_->has_next())
-      buffer.push_back(parent()->stream_->read_next());
+    while (!this->empty())
+      buffer.push_back(this->read_dec());
+    while (!parent()->empty())
+      buffer.push_back(parent()->read_dec());
     
     // Distribute result to disk
     const uint64_t k = max(r - h, (uint64_t)ceil((double)(end_ - start_) / 2));
     
     // To parent
-    parent()->element_count_ = r - k;
-    parent()->stream_->seek(parent()->end_ - parent()->element_count_);
-    for (uint64_t i = 0; i < parent()->element_count_; i++)
-      parent()->stream_->write(buffer[i]);
+    parent()->seek_back(r - k);
+    for (uint64_t i = 0; i < r - k; i++)
+      parent()->write_inc(buffer[i]);
     
     // To child
-    this->element_count_ = k;
-    this->stream_->seek(this->end_ - this->element_count_);
-    for (uint64_t i = 0; i < this->element_count_; i++)
-      this->stream_->write(buffer[i + (r - k)]);
+    this->seek_back(k);
+    for (uint64_t i = 0; i < k; i++)
+      this->write_inc(buffer[i + (r - k)]);
     
     this->close();
     parent()->close();
@@ -84,12 +82,14 @@ public:
 
   // Opens the block for reading/writing from the first element (descending)
   void open_at_first_element() {
+    assert(stream_ == nullptr);
     open_front();
     stream_->seek(end_ - element_count_);
   }
 
   // Writes and increments the element counter
   void write_inc(I element) {
+    assert(stream_ != nullptr);
     stream_->write(element);
     element_count_++;
     assert(element_count_ <= end_ - start_);
@@ -97,11 +97,23 @@ public:
   
   // Reads an element without changing stream or element counter
   I peek() {
+    assert(stream_ != nullptr);
     return stream_->peek();
+  }
+
+  // Seek from the back (end - 'elements')
+  void seek_back(size_t elements) {
+    assert(stream_ != nullptr);
+    stream_->seek(end_ - elements);
+  }
+
+  bool empty() {
+    return element_count() == 0;
   }
 
   // Reads an element and decrements the element counter
   I read_dec() {
+    assert(stream_ != nullptr);
     I element = stream_->read_next();
     assert(element_count_ != 0);
     element_count_--;
