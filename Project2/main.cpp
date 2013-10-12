@@ -14,13 +14,18 @@ int main(int argc, char *argv[]) {
   ExternalHeap<DummyStream<int>, int, 3> foo(3);
 
   for (int i = 0; i < 100; ++i) {
-    foo.insert(i); // rand());
-    if (i % 3 == 0)
-      foo.extract_max();
+    foo.insert(i * 23 % 100); // rand());
   }
-  ofstream dot("heap.dot");
-  dot << foo.to_dot();
-  dot.close();
+  ofstream before("heap_before.dot");
+  before << foo.to_dot();
+  before.close();
+  
+  for (int i = 0; i < 6; i++)
+    foo.extract_max();
+  
+  ofstream after("heap_after.dot");
+  after << foo.to_dot();
+  after.close();
 
   cout << "Rand max: " << RAND_MAX << endl;
   for (int i = 0; i < 10; ++i) {
