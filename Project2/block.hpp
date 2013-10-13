@@ -40,7 +40,8 @@ public:
       Q.push(ElementChild(child(c)->peek(), c));
     }
     
-    const uint64_t elements_to_refill = min(elements_in_children(), (uint64_t)ceil((double)(end_ - start_) / 2));
+    // const uint64_t elements_to_refill = min(elements_in_children(), (uint64_t)ceil((double)(end_ - start_) / 2));
+    const uint64_t elements_to_refill = min(elements_in_children(), (uint64_t)(end_ - start_ - element_count()));
     
     // TODO(knielsen): Maybe change memory layout to growing the other way. I don't think easy elimination of data movement is possible.
     this->move_back(elements_to_refill);
@@ -60,10 +61,13 @@ public:
     
     this->close();
     
-    for (Child c = 0; c < children(); c++) {
+    for (Child c = 0; c < children(); c++)
       child(c)->close();
-      if (child(c)->imperfect())
-        child(c)->refill();
+    
+    for (Child c = 0; c < children(); c++) {
+      Child reverse = children() - c - 1;
+      if (child(reverse)->imperfect())
+        child(reverse)->refill();
     }
   }
   
@@ -118,9 +122,41 @@ public:
   }
   
   void steal_from_last() {
+    assert(imperfect());
+    
     cout << "Steal" << endl;
     
-    assert(false);
+    if (last()) {
+      if (element_count() == 0)
+        heap_->blocks().pop_back();
+      return ;
+    }
+    
+    const uint64_t half = ceil(((double)(end_ - start_)) / 2);
+    uint64_t s = heap_->last_block()->element_count() + this->element_count();
+    if (s > end_ - start_) {
+      // Case 1
+      move_records(this, heap_->last_block());
+      assert(s == this->element_count() + heap_->last_block()->element_count());
+      recursive_sift();
+    } else if (half <= s && s <= end_ - start_) {
+      // Case 2
+      move_records(this, heap_->last_block());
+      assert(s == this->element_count());
+      assert(0 == heap_->last_block()->element_count());
+      
+      heap_->blocks().pop_back();
+      recursive_sift();
+    } else {
+      // Case 3
+      move_records(this, heap_->last_block());
+      assert(s == this->element_count());
+      assert(0 == heap_->last_block()->element_count());
+      assert(imperfect());
+      
+      heap_->blocks().pop_back();
+      steal_from_last(); // Ensured no to happen twice
+    }
   }
   
   // Opens the block for reading/writing in the beginning of the block
@@ -211,6 +247,10 @@ public:
     return &heap_->blocks()[0] == this;
   }
   
+  bool last() {
+    return &heap_->blocks()[heap_->blocks().size() - 1] == this;
+  }
+  
   Block* parent() {
     return &heap_->blocks()[(heap_->pos(this) - 1) / d];
   }
@@ -260,6 +300,39 @@ private:
       return element < o.element;
     }
   };
+  
+  void move_records(Block* to, Block* from) {
+    const uint64_t block_capacity = to->end_ - to->start_;
+    const uint64_t elements_in_to = to->element_count();
+    
+    vector<I> buffer;
+    buffer.reserve(block_capacity);
+    
+    to->open_at_first_element();
+    from->open_at_first_element();
+    
+    // Merge into internal memory
+    while (!to->empty() && !from->empty() && buffer.size() < block_capacity - elements_in_to) {
+      if (to->peek() > from->peek())
+        buffer.push_back(to->read_dec());
+      else
+        buffer.push_back(from->read_dec());
+    }
+    while (!to->empty()) {
+      assert(buffer.size() < block_capacity);
+      buffer.push_back(to->read_dec());
+    }
+    while (!from->empty() && buffer.size() < block_capacity)
+      buffer.push_back(from->read_dec());
+    
+    from->close();
+    
+    to->seek_back(buffer.size());
+    for (uint64_t i = 0; i < buffer.size(); i++)
+      to->write_inc(buffer[i]);
+    
+    to->close();
+  }
   
   // Not owned
   ExternalHeap<S, I, d>* heap_;

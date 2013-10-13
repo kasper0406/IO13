@@ -59,14 +59,25 @@ public:
   void extract_max() {
     // TODO(knielsen): Keep some elements in the root buffered.
     
-    bool biggest_in_insert_buffer = true;
+    bool biggest_in_insert_buffer;
     if (!insert_buffer_.empty() && !blocks_.empty()) {
       blocks_[0].open_at_first_element();
       biggest_in_insert_buffer = insert_buffer_.front() >= blocks_[0].peek();
       blocks_[0].close();
+    } else if (insert_buffer_.empty() && !blocks_.empty()) {
+      biggest_in_insert_buffer = false;
+    } else if (!insert_buffer_.empty() && blocks_.empty()) {
+      biggest_in_insert_buffer = true;
+    } else {
+      // The heap is empty!
+      throw logic_error("Trying to extract from empty heap!");
     }
     
-    if (!biggest_in_insert_buffer) {
+    if (biggest_in_insert_buffer) {
+      // Biggest is in insert buffer
+      pop_heap(insert_buffer_.begin(), insert_buffer_.end());
+      insert_buffer_.pop_back();
+    } else {
       // Biggest is in root element
       blocks_[0].open_at_first_element();
       blocks_[0].read_dec();
@@ -81,13 +92,6 @@ public:
           blocks_[0].refill();
         }
       }
-    } else if (!insert_buffer_.empty()) {
-      // Biggest is in insert buffer
-      pop_heap(insert_buffer_.begin(), insert_buffer_.end());
-      insert_buffer_.pop_back();
-    } else {
-      // The heap is empty!
-      throw logic_error("Trying to extract from empty heap!");
     }
   }
   
@@ -98,6 +102,10 @@ public:
 
   vector<Block<S, I, d>>& blocks() {
     return blocks_;
+  }
+  
+  Block<S, I, d>* last_block() {
+    return &blocks_[blocks_.size() - 1];
   }
   
   uint64_t pos(Block<S,I,d>* block) {

@@ -14,13 +14,13 @@ int main(int argc, char *argv[]) {
   ExternalHeap<DummyStream<int>, int, 3> foo(3);
 
   for (int i = 0; i < 100; ++i) {
-    foo.insert(i * 23 % 100); // rand());
+    foo.insert(i * 67 % 100); // rand());
   }
   ofstream before("heap_before.dot");
   before << foo.to_dot();
   before.close();
   
-  for (int i = 0; i < 6; i++)
+  for (int i = 0; i < 90; i++)
     foo.extract_max();
   
   ofstream after("heap_after.dot");
