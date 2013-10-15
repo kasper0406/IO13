@@ -4,6 +4,7 @@
 #include <cmath>
 #include <vector>
 #include <queue>
+#include <stdexcept>
 
 using namespace std;
 
@@ -78,6 +79,7 @@ public:
     
     // TODO(knielsen): Maybe reduce space consumption.
     const uint64_t r = this->element_count() + parent()->element_count();
+    const uint64_t elements_in_parent_before = parent()->element_count();
     vector<I> buffer;
     buffer.reserve(r);
     
@@ -85,24 +87,33 @@ public:
     parent()->open_at_first_element();
     
     // Merge into internal memory
-    uint64_t h = 0;
+    uint64_t elements_in_child_less_than_max_in_parent = 0;
+    bool max_from_parent_taken = false;
+    bool element_in_child_moved_to_parent = false;
+    
     while (!this->empty() && !parent()->empty()) {
       if (this->peek() > parent()->peek()) {
+        element_in_child_moved_to_parent = true;
         buffer.push_back(this->read_dec());
-        h++;
+        if (max_from_parent_taken)
+          elements_in_child_less_than_max_in_parent++;
       } else {
         buffer.push_back(parent()->read_dec());
+        max_from_parent_taken = true;
       }
     }
-    while (!this->empty())
+    while (!this->empty()) {
       buffer.push_back(this->read_dec());
+      assert(max_from_parent_taken == true);
+      elements_in_child_less_than_max_in_parent++;
+    }
     while (!parent()->empty())
       buffer.push_back(parent()->read_dec());
     
     // Distribute result to disk
     // TODO(knielsen): Undersøg om det her er korrekt.
     //                 Forstår ikke hvad de gør i paperet.
-    const uint64_t k = end_ - start_; // max(r - h, (uint64_t)ceil((double)(end_ - start_) / 2));
+    const uint64_t k = min((uint64_t)buffer.size() / 2, elements_in_parent_before + elements_in_child_less_than_max_in_parent);
     
     // To parent
     parent()->seek_back(r - k);
@@ -117,7 +128,7 @@ public:
     this->close();
     parent()->close();
     
-    if (h != 0)
+    if (element_in_child_moved_to_parent)
       parent()->recursive_sift();
   }
   
@@ -282,6 +293,37 @@ public:
       child(c)->to_dot(ss);
   }
 
+  void consistency_check() {
+#ifndef NDEBUG
+    if (!last())
+      assert(!imperfect());
+    
+    if (!root()) {
+      // Check heap invariant
+      this->open_at_first_element();
+      parent()->open_front();
+      parent()->seek_back(1);
+
+      I min_in_parent = parent()->peek();
+      I max_in_this = this->peek();
+      assert(max_in_this <= min_in_parent);
+      
+      parent()->close();
+      this->close();
+    }
+    
+    // Check that elements are sorted
+    this->open_at_first_element();
+    I before = stream_->read_next();
+    while (stream_->has_next()) {
+      I next = stream_->read_next();
+      assert(before >= next);
+      before = next;
+    }
+    this->close();
+#endif
+  }
+  
 private:
   uint64_t elements_in_children() {
     uint64_t count = 0;

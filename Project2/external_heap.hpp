@@ -47,6 +47,8 @@ public:
       } else {
         blocks_.back().recursive_sift();
       }
+      
+      consistency_check();
     }
 
     // Push element in insert buffer
@@ -93,6 +95,8 @@ public:
         }
       }
     }
+    
+    consistency_check();
   }
   
   size_t stream_buffer_size() const {
@@ -123,6 +127,11 @@ public:
     return ss.str();
   }
 
+  void consistency_check() {
+    if (!blocks_.empty())
+      blocks_[0].consistency_check();
+  }
+  
 private:
   size_t buffer_size_;
   vector<I> insert_buffer_;
