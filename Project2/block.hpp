@@ -22,6 +22,33 @@ public:
       // because it may not be initialized properly at this point
   }
 
+  // Move constructor.
+  Block(const Block&& other) {
+    assert(other.stream_ == nullptr);
+    element_count_ = other.element_count_;
+    start_ = other.start_;
+    end_ = other.end_;
+    stream_ = nullptr;
+    heap_ = other.heap_;
+  }
+
+  Block& operator=(Block&& other) {
+    assert(heap_ == other.heap_);
+    assert(stream_ == nullptr);
+    if (this != &other)
+    {
+      element_count_ = other.element_count_;
+      start_ = other.start_;
+      end_ = other.end_;
+    }
+    return *this;
+  }
+
+  // Copy constructor.
+  Block(const Block& other) {
+    assert(false);
+  }
+
   // Grab from all children
   void refill() {
     assert(imperfect());
@@ -321,6 +348,10 @@ public:
       before = next;
     }
     this->close();
+
+    for (int i = 0; i < children(); ++i) {
+      child(i)->consistency_check();
+    }
 #endif
   }
   
