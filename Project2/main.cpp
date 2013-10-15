@@ -44,41 +44,41 @@ void test_swap_sift_test() {
 }
 
 void kasper_test() {
-  ExternalHeap<DummyStream<int>, int, 10> foo(10);
+  ExternalHeap<DummyStream<int>, int, 100> foo(100);
 
-  for (int i = 0; i < 100000; ++i) {
-    foo.insert(i * 977 % 100000); // rand());
+  const uint64_t N = 10000000;
+  for (int i = 0; i < N; ++i) {
+    foo.insert(i * 977 % N); // rand());
   }
+  
+  /*
   ofstream before("heap_before.dot");
   before << foo.to_dot();
   before.close();
+   */
   
-  for (int i = 0; i < 100000; i++) {
-    /*
-    if (i == 60) {
-      ofstream intermediate("heap_intermediate_before.dot");
-      intermediate << foo.to_dot();
-      intermediate.close();
-    }
-     */
+  uint64_t prev = numeric_limits<uint64_t>::max();
+  for (int i = 0; i < N; i++) {
+    assert(prev >= foo.peek_max());
+    prev = foo.peek_max();
     
     foo.extract_max();
-    
-    /*
-    if (i == 60) {
-      ofstream intermediate("heap_intermediate_after.dot");
-      intermediate << foo.to_dot();
-      intermediate.close();
-    }
-     */
   }
   
+  /*
   ofstream after("heap_after.dot");
   after << foo.to_dot();
   after.close();
+   */
 }
 
 int main(int argc, char *argv[]) {
+#ifdef NDEBUG
+  cout << "Release mode" << endl;
+#else
+  cout << "Debug mode" << endl;
+#endif
+  
   srand(time(NULL));
 
   kasper_test();

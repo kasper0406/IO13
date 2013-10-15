@@ -108,8 +108,6 @@ public:
     if (root())
       return;
     
-    const uint64_t elements_before = heap_->elements_in_heap();
-    
     // TODO(knielsen): Maybe reduce space consumption.
     const uint64_t r = this->element_count() + parent()->element_count();
     const uint64_t elements_in_parent_before = parent()->element_count();
@@ -158,8 +156,6 @@ public:
     
     this->close();
     parent()->close();
-    
-    assert(elements_before == heap_->elements_in_heap());
     
     if (element_in_child_moved_to_parent)
       parent()->recursive_sift();

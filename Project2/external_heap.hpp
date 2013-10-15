@@ -16,7 +16,7 @@ const char* filename = "heap";
 template <class S, typename I, uint64_t d>
 class ExternalHeap {
 public:
-  ExternalHeap(size_t buffer_size) : buffer_size_(buffer_size) {
+  ExternalHeap(size_t buffer_size) : size_(0), buffer_size_(buffer_size) {
     // With this, the capacity changes to *at least* 'buffer_size'.
     // To make sure we use precisely a buffer of size 'buffer_size'
     // 'buffer_size_' is set (instead of using insert_buffer_.capacity().)
@@ -24,7 +24,7 @@ public:
   }
 
   void insert(I element) {
-    const size_t elements_before = elements_in_heap();
+    size_++;
     
     if (insert_buffer_.size() >= buffer_size_) {
       // Inserts new block at the end, opens its stream and store the insert buffer in sorted order (descending)
@@ -59,14 +59,33 @@ public:
     // Push element in insert buffer
     insert_buffer_.push_back(element);
     push_heap(insert_buffer_.begin(), insert_buffer_.end());
-    
-    assert(elements_in_heap() == elements_before + 1);
   }
 
-  I peek_max();
+  I peek_max() {
+    if (!insert_buffer_.empty() && !blocks_.empty()) {
+      blocks_[0].open_at_first_element();
+      I res;
+      if (insert_buffer_.front() >= blocks_[0].peek())
+        res = insert_buffer_.front();
+      else
+        res = blocks_[0].peek();
+      blocks_[0].close();
+      return res;
+    } else if (insert_buffer_.empty() && !blocks_.empty()) {
+      blocks_[0].open_at_first_element();
+      I res = blocks_[0].peek();
+      blocks_[0].close();
+      return res;
+    } else if (!insert_buffer_.empty() && blocks_.empty()) {
+      return insert_buffer_.front();
+    } else {
+      // The heap is empty!
+      throw logic_error("Trying to extract from empty heap!");
+    }
+  }
   
   void extract_max() {
-    const size_t elements_before = elements_in_heap();
+    size_--;
     
     // TODO(knielsen): Keep some elements in the root buffered.
     
@@ -106,7 +125,6 @@ public:
     }
     
     consistency_check();
-    assert(elements_in_heap() == elements_before - 1);
   }
   
   size_t stream_buffer_size() const {
@@ -142,14 +160,16 @@ public:
       blocks_[0].consistency_check();
   }
   
-  size_t elements_in_heap() {
-    size_t size = insert_buffer_.size();
-    for (uint64_t i = 0; i < blocks_.size(); i++)
-      size += blocks_[i].element_count();
-    return size;
+  size_t size() const {
+    return size_;
+  }
+  
+  bool empty() const {
+    return size() == 0;
   }
   
 private:
+  size_t size_;
   size_t buffer_size_;
   vector<I> insert_buffer_;
   vector<Block<S, I, d>> blocks_;
