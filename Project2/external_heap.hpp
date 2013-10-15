@@ -24,6 +24,8 @@ public:
   }
 
   void insert(I element) {
+    const size_t elements_before = elements_in_heap();
+    
     if (insert_buffer_.size() >= buffer_size_) {
       // Inserts new block at the end, opens its stream and store the insert buffer in sorted order (descending)
 
@@ -54,11 +56,15 @@ public:
     // Push element in insert buffer
     insert_buffer_.push_back(element);
     push_heap(insert_buffer_.begin(), insert_buffer_.end());
+    
+    assert(elements_in_heap() == elements_before + 1);
   }
 
   I peek_max();
   
   void extract_max() {
+    const size_t elements_before = elements_in_heap();
+    
     // TODO(knielsen): Keep some elements in the root buffered.
     
     bool biggest_in_insert_buffer;
@@ -97,6 +103,7 @@ public:
     }
     
     consistency_check();
+    assert(elements_in_heap() == elements_before - 1);
   }
   
   size_t stream_buffer_size() const {
@@ -130,6 +137,13 @@ public:
   void consistency_check() {
     if (!blocks_.empty())
       blocks_[0].consistency_check();
+  }
+  
+  size_t elements_in_heap() {
+    size_t size = insert_buffer_.size();
+    for (uint64_t i = 0; i < blocks_.size(); i++)
+      size += blocks_[i].element_count();
+    return size;
   }
   
 private:

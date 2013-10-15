@@ -11,7 +11,7 @@ using namespace std;
 int main(int argc, char *argv[]) {
   srand(time(NULL));
 
-  ExternalHeap<DummyStream<int>, int, 5> foo(5);
+  ExternalHeap<DummyStream<int>, int, 10> foo(10);
 
   for (int i = 0; i < 1000; ++i) {
     foo.insert(i * 977 % 1000); // rand());
@@ -20,8 +20,25 @@ int main(int argc, char *argv[]) {
   before << foo.to_dot();
   before.close();
   
-  for (int i = 0; i < 500; i++)
+  for (int i = 0; i < 1000; i++) {
+    /*
+    if (i == 60) {
+      ofstream intermediate("heap_intermediate_before.dot");
+      intermediate << foo.to_dot();
+      intermediate.close();
+    }
+     */
+    
     foo.extract_max();
+    
+    /*
+    if (i == 60) {
+      ofstream intermediate("heap_intermediate_after.dot");
+      intermediate << foo.to_dot();
+      intermediate.close();
+    }
+     */
+  }
   
   ofstream after("heap_after.dot");
   after << foo.to_dot();

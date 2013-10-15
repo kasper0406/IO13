@@ -21,12 +21,10 @@ public:
       // Avoid calling methods on 'heap' in the constructor
       // because it may not be initialized properly at this point
   }
-
+  
   // Grab from all children
   void refill() {
     assert(imperfect());
-    
-    cout << "Refill" << endl;
     
     if (children() == 0) {
       steal_from_last();
@@ -41,8 +39,8 @@ public:
       Q.push(ElementChild(child(c)->peek(), c));
     }
     
-    // const uint64_t elements_to_refill = min(elements_in_children(), (uint64_t)ceil((double)(end_ - start_) / 2));
-    const uint64_t elements_to_refill = min(elements_in_children(), (uint64_t)(end_ - start_ - element_count()));
+    const uint64_t elements_to_refill = min(elements_in_children(), (uint64_t)ceil((double)(end_ - start_) / 2));
+    // const uint64_t elements_to_refill = min(elements_in_children(), (uint64_t)(end_ - start_ - element_count()));
     
     // TODO(knielsen): Maybe change memory layout to growing the other way. I don't think easy elimination of data movement is possible.
     this->move_back(elements_to_refill);
@@ -65,10 +63,16 @@ public:
     for (Child c = 0; c < children(); c++)
       child(c)->close();
     
-    for (Child c = 0; c < children(); c++) {
-      Child reverse = children() - c - 1;
+    const uint64_t children_before = children(); // Needed since children() may change while refilling recursively!
+    for (Child c = 0; c < children_before; c++) {
+      Child reverse = children_before - c - 1;
       if (child(reverse)->imperfect())
         child(reverse)->refill();
+    }
+    
+    if (imperfect()) {
+      assert(children() == 0);
+      steal_from_last();
     }
   }
   
@@ -76,6 +80,8 @@ public:
   void recursive_sift() {
     if (root())
       return;
+    
+    const uint64_t elements_before = heap_->elements_in_heap();
     
     // TODO(knielsen): Maybe reduce space consumption.
     const uint64_t r = this->element_count() + parent()->element_count();
@@ -87,25 +93,19 @@ public:
     parent()->open_at_first_element();
     
     // Merge into internal memory
-    uint64_t elements_in_child_less_than_max_in_parent = 0;
-    bool max_from_parent_taken = false;
     bool element_in_child_moved_to_parent = false;
     
     while (!this->empty() && !parent()->empty()) {
       if (this->peek() > parent()->peek()) {
         element_in_child_moved_to_parent = true;
         buffer.push_back(this->read_dec());
-        if (max_from_parent_taken)
-          elements_in_child_less_than_max_in_parent++;
       } else {
         buffer.push_back(parent()->read_dec());
-        max_from_parent_taken = true;
       }
     }
+    const uint64_t elements_in_child_less_than_min_in_parent = this->element_count();
     while (!this->empty()) {
       buffer.push_back(this->read_dec());
-      assert(max_from_parent_taken == true);
-      elements_in_child_less_than_max_in_parent++;
     }
     while (!parent()->empty())
       buffer.push_back(parent()->read_dec());
@@ -113,7 +113,8 @@ public:
     // Distribute result to disk
     // TODO(knielsen): Undersøg om det her er korrekt.
     //                 Forstår ikke hvad de gør i paperet.
-    const uint64_t k = min((uint64_t)buffer.size() / 2, elements_in_parent_before + elements_in_child_less_than_max_in_parent);
+    // const uint64_t k = min((uint64_t)buffer.size() / 2, elements_in_parent_before + elements_in_child_less_than_min_in_parent);
+    const uint64_t k = r - elements_in_parent_before;
     
     // To parent
     parent()->seek_back(r - k);
@@ -122,11 +123,16 @@ public:
     
     // To child
     this->seek_back(k);
-    for (uint64_t i = 0; i < k; i++)
+    uint64_t counter = 0;
+    for (uint64_t i = 0; i < k; i++) {
       this->write_inc(buffer[i + (r - k)]);
+      counter++;
+    }
     
     this->close();
     parent()->close();
+    
+    assert(elements_before == heap_->elements_in_heap());
     
     if (element_in_child_moved_to_parent)
       parent()->recursive_sift();
@@ -134,8 +140,6 @@ public:
   
   void steal_from_last() {
     assert(imperfect());
-    
-    cout << "Steal" << endl;
     
     if (last()) {
       if (element_count() == 0)
@@ -201,6 +205,7 @@ public:
   // Seek from the back (end - 'elements')
   void seek_back(size_t elements) {
     assert(stream_ != nullptr);
+    assert(elements <= end_ - start_);
     stream_->seek(end_ - elements);
   }
   
@@ -321,6 +326,18 @@ public:
       before = next;
     }
     this->close();
+    
+    for (Child c = 0; c < children(); c++)
+      child(c)->consistency_check();
+    
+    bool found = false;
+    for (uint64_t i = 0; i < heap_->blocks().size(); i++) {
+      if (&heap_->blocks()[i] == this) {
+        found = true;
+        break;
+      }
+    }
+    assert(found);
 #endif
   }
   
@@ -354,20 +371,26 @@ private:
     from->open_at_first_element();
     
     // Merge into internal memory
-    while (!to->empty() && !from->empty() && buffer.size() < block_capacity - elements_in_to) {
-      if (to->peek() > from->peek())
+    uint64_t elements_from_from = 0;
+    while (!to->empty() && !from->empty() && elements_from_from < block_capacity - elements_in_to) {
+      if (to->peek() >= from->peek())
         buffer.push_back(to->read_dec());
-      else
+      else {
+        elements_from_from++;
         buffer.push_back(from->read_dec());
+      }
     }
     while (!to->empty()) {
       assert(buffer.size() < block_capacity);
       buffer.push_back(to->read_dec());
     }
-    while (!from->empty() && buffer.size() < block_capacity)
+    while (!from->empty() && elements_from_from < block_capacity - elements_in_to) {
+      elements_from_from++;
       buffer.push_back(from->read_dec());
+    }
     
     from->close();
+    assert(buffer.size() <= block_capacity);
     
     to->seek_back(buffer.size());
     for (uint64_t i = 0; i < buffer.size(); i++)

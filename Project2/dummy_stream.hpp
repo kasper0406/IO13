@@ -37,7 +37,7 @@ public:
     return position_ < end_;
   }
 
-  static const size_t kMax = 10000;
+  static const size_t kMax = 1000000;
   static I buffer_[kMax];
 
 private:
