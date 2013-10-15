@@ -21,7 +21,34 @@ public:
       // Avoid calling methods on 'heap' in the constructor
       // because it may not be initialized properly at this point
   }
-  
+
+  // Move constructor.
+  Block(const Block&& other) noexcept {
+    assert(other.stream_ == nullptr);
+    element_count_ = other.element_count_;
+    start_ = other.start_;
+    end_ = other.end_;
+    stream_ = nullptr;
+    heap_ = other.heap_;
+  }
+
+  Block& operator=(Block&& other) noexcept {
+    assert(heap_ == other.heap_);
+    assert(stream_ == nullptr);
+    if (this != &other)
+    {
+      element_count_ = other.element_count_;
+      start_ = other.start_;
+      end_ = other.end_;
+    }
+    return *this;
+  }
+
+  // Copy constructor.
+  Block(const Block& other) {
+    assert(false);
+  }
+
   // Grab from all children
   void refill() {
     assert(imperfect());
@@ -103,7 +130,7 @@ public:
         buffer.push_back(parent()->read_dec());
       }
     }
-    const uint64_t elements_in_child_less_than_min_in_parent = this->element_count();
+    // const uint64_t elements_in_child_less_than_min_in_parent = this->element_count();
     while (!this->empty()) {
       buffer.push_back(this->read_dec());
     }
@@ -329,15 +356,6 @@ public:
     
     for (Child c = 0; c < children(); c++)
       child(c)->consistency_check();
-    
-    bool found = false;
-    for (uint64_t i = 0; i < heap_->blocks().size(); i++) {
-      if (&heap_->blocks()[i] == this) {
-        found = true;
-        break;
-      }
-    }
-    assert(found);
 #endif
   }
   

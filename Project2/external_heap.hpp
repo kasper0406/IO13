@@ -44,8 +44,11 @@ public:
 
       // Special case: Former last leaf imperfect?
       if (!blocks_.back().root() && blocks_[blocks_.size() - 2].imperfect()) {
-        // TODO(lespeholt): Swap and sift. Does not make sense to make until 'extract_max' is done.
-        assert(false);
+        swap(blocks_.back(), blocks_[blocks_.size() - 2]);
+        // TODO(lespeholt): Muligvis lidt optimering her, hvor der kan undgaas kald
+        // TODO(lespeholt): Raekkefoelge?
+        blocks_.back().recursive_sift();
+        blocks_[blocks_.size() - 2].recursive_sift();
       } else {
         blocks_.back().recursive_sift();
       }
