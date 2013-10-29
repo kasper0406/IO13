@@ -7,6 +7,7 @@
 #include "dummy_stream.hpp"
 #include "sys_stream.hpp"
 #include "mmap_stream.hpp"
+#include "cached_stream.hpp"
 
 using namespace std;
 
@@ -108,6 +109,25 @@ void mmap_stream_test() {
   stream.close();
 }
 
+void cached_stream_test() {
+  const uint64_t N = 100;
+  CachedStream<uint64_t, MMapStream<uint64_t>, 7> stream;
+  
+  // Write some content
+  stream.open("test.bin", 0, N, 0);
+  for (int i = 0; i < N; i++)
+    stream.write(i);
+  stream.close();
+  
+  // Read from the stream, closing it after every read
+  for (int i = 0; i < N; i++) {
+    stream.open("test.bin", 0, N, 0);
+    stream.seek(i);
+    cout << stream.read_next() << endl;
+    stream.close();
+  }
+}
+
 int main(int argc, char *argv[]) {
 #ifdef NDEBUG
   cout << "Release mode" << endl;
@@ -118,7 +138,8 @@ int main(int argc, char *argv[]) {
   srand(time(NULL));
 
   // resize_test();
-  kasper_test();
+  // kasper_test();
+  cached_stream_test();
   // test_swap_sift_test();
   // mmap_stream_test();
   
