@@ -54,8 +54,6 @@ public:
       // Special case: Former last leaf imperfect?
       if (!blocks_.back().root() && blocks_[blocks_.size() - 2].imperfect()) {
         swap(blocks_.back(), blocks_[blocks_.size() - 2]);
-        // TODO(lespeholt): Muligvis lidt optimering her, hvor der kan undgaas kald
-        // TODO(lespeholt): Raekkefoelge?
         blocks_.back().recursive_sift();
         blocks_[blocks_.size() - 2].recursive_sift();
       } else {
@@ -71,48 +69,38 @@ public:
   }
 
   I peek_max() {
-    if (!insert_buffer_.empty() && !blocks_.empty()) {
-      blocks_[0].open_at_first_element();
-      I res;
-      if (insert_buffer_.front() >= blocks_[0].peek())
-        res = insert_buffer_.front();
-      else
-        res = blocks_[0].peek();
-      blocks_[0].close();
-      return res;
-    } else if (insert_buffer_.empty() && !blocks_.empty()) {
-      blocks_[0].open_at_first_element();
-      I res = blocks_[0].peek();
-      blocks_[0].close();
-      return res;
-    } else if (!insert_buffer_.empty() && blocks_.empty()) {
-      return insert_buffer_.front();
-    } else {
+    I insert_buffer_candidate = numeric_limits<I>::min();
+    I root_candidate = numeric_limits<I>::min();
+
+    if (insert_buffer_.empty() && blocks_.empty()) {
       // The heap is empty!
-      throw logic_error("Trying to extract from empty heap!");
+      throw logic_error("Trying to peek in empty heap!");
     }
+
+    if (!insert_buffer_.empty()) {
+      insert_buffer_candidate = insert_buffer_.front();
+    }
+
+    if (!blocks_.empty()) {
+      blocks_[0].open_at_first_element();
+      root_candidate = blocks_[0].peek();
+      blocks_[0].close();
+    }
+
+    return max(insert_buffer_candidate, root_candidate);
   }
   
   void extract_max() {
+    if (insert_buffer_.empty() && blocks_.empty()) {
+      // The heap is empty!
+      throw logic_error("Trying to extract from empty heap!");
+    }
+
     size_--;
     
     // TODO(knielsen): Keep some elements in the root buffered.
     
-    bool biggest_in_insert_buffer;
-    if (!insert_buffer_.empty() && !blocks_.empty()) {
-      blocks_[0].open_at_first_element();
-      biggest_in_insert_buffer = insert_buffer_.front() >= blocks_[0].peek();
-      blocks_[0].close();
-    } else if (insert_buffer_.empty() && !blocks_.empty()) {
-      biggest_in_insert_buffer = false;
-    } else if (!insert_buffer_.empty() && blocks_.empty()) {
-      biggest_in_insert_buffer = true;
-    } else {
-      // The heap is empty!
-      throw logic_error("Trying to extract from empty heap!");
-    }
-    
-    if (biggest_in_insert_buffer) {
+    if (!insert_buffer_.empty() && insert_buffer_.front() == peek_max()) {
       // Biggest is in insert buffer
       pop_heap(insert_buffer_.begin(), insert_buffer_.end());
       insert_buffer_.pop_back();
