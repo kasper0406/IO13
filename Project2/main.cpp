@@ -6,6 +6,7 @@
 #include "external_heap.hpp"
 #include "dummy_stream.hpp"
 #include "sys_stream.hpp"
+#include "mmap_stream.hpp"
 
 using namespace std;
 
