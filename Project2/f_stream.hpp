@@ -15,11 +15,13 @@
 template <typename I>
 class FStream {
 public:
+  FStream() : pFile(nullptr) {}
+  
   void open(string filename, uint64_t start, uint64_t end, size_t buffer_size) {
     end_ = end;
     start_ = start;
 
-    pFile = fopen(filename.c_str(), "w+b	");
+    pFile = fopen(filename.c_str(), "r+b	");
 
     if (pFile == nullptr) {
       perror("Error open file");
@@ -65,6 +67,7 @@ public:
       perror("Error closing");
       exit(1);
     }
+    pFile = nullptr;
   }
   
   void seek(uint64_t position) {
@@ -75,7 +78,9 @@ public:
   }
   
   bool has_next() {
-    return ftell(pFile) / sizeof(I) - 1 < end_;
+    auto pos = ftell(pFile);
+    auto value = pos / (long)sizeof(I);
+    return value < end_;
   }
 
 private:
