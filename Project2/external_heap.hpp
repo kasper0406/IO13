@@ -12,6 +12,12 @@
 
 using namespace std;
 
+#ifdef WIN32
+  #define _fseeki64 _fseeki64
+#else
+  #define _fseeki64 fseek
+#endif
+
 template <class S, typename I, uint64_t d>
 class ExternalHeap {
 public:

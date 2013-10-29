@@ -10,7 +10,8 @@
 
 using namespace std;
 
-typedef DummyStream<int> TestStream;
+// typedef DummyStream<int> TestStream;
+typedef MMapStream<int> TestStream;
 
 void resize_test() {
   ExternalHeap<TestStream, int, 3> foo("resize_heap", 5);
@@ -55,9 +56,9 @@ void test_swap_sift_test() {
 }
 
 void kasper_test() {
-  ExternalHeap<TestStream, int, 100> foo("heap2", 100);
+  ExternalHeap<TestStream, int, 1024> foo("heap2", 1024);
 
-  const uint64_t N = 1000;
+  const uint64_t N = 1000000;
   for (int i = 0; i < N; ++i) {
     foo.insert(i * 977 % N); // rand());
   }
@@ -70,6 +71,9 @@ void kasper_test() {
   
   uint64_t prev = numeric_limits<uint64_t>::max();
   for (int i = 0; i < N; i++) {
+    if (prev < foo.peek_max())
+      throw runtime_error("ERROR!");
+    
     assert(prev >= foo.peek_max());
     prev = foo.peek_max();
     
@@ -113,10 +117,10 @@ int main(int argc, char *argv[]) {
   
   srand(time(NULL));
 
-  resize_test();
-  // kasper_test();
+  // resize_test();
+  kasper_test();
   // test_swap_sift_test();
-  mmap_stream_test();
+  // mmap_stream_test();
   
   return 0;
 }

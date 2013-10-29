@@ -15,9 +15,9 @@ public:
   MMapStream() : fd_(-1), mapped_(nullptr) { }
   
   void open(string filename, uint64_t start, uint64_t end, size_t buffer_size) {
+    position_ = 0;
     end_ = end;
     start_ = start;
-    position_ = start;
     
     // Open file. It is ensured by ExternalHeap that the file is big enough.
     fd_ = ::open(filename.c_str(), O_RDWR, S_IRUSR | S_IWUSR);
@@ -26,7 +26,7 @@ public:
     
     // MMap file into memory
     const uint64_t elements = end_ - start_;
-    const uint64_t offset = start_;
+    const uint64_t offset = start_ * sizeof(I);
     
     assert(offset % sysconf(_SC_PAGE_SIZE) == 0); // Offset should be multiple of page size
     mapped_ = (I*) mmap(NULL, sizeof(I) * elements, PROT_READ | PROT_WRITE, MAP_SHARED, fd_, offset);
@@ -35,7 +35,7 @@ public:
   }
   
   I peek() {
-    assert(position_ < end_);
+    assert(position_ < end_ - start_);
     return mapped_[position_];
   }
   
@@ -46,7 +46,7 @@ public:
   }
   
   void write(I value) {
-    assert(position_ < end_);
+    assert(position_ < end_ - start_);
     mapped_[position_++] = value;
   }
   
@@ -64,12 +64,13 @@ public:
   }
   
   void seek(uint64_t position) {
-    assert(position < end_ - start_);
-    position_ = position;
+    assert(position >= start_);
+    assert(position < end_);
+    position_ = position - start_;
   }
   
   bool has_next() {
-    return position_ < end_;
+    return position_ < end_ - start_;
   }
   
 private:
