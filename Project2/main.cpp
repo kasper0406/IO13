@@ -5,11 +5,22 @@
 #include "test.hpp"
 #include "external_heap.hpp"
 #include "dummy_stream.hpp"
+#include "sys_stream.hpp"
+#include "f_stream.hpp"
 
 using namespace std;
 
+typedef DummyStream<int> TestStream;
+
+void resize_test() {
+  ExternalHeap<TestStream, int, 3> foo("resize_heap", 5);
+  for (int i = 0; i < 11; ++i) {
+    foo.insert(100);
+  }
+}
+
 void test_swap_sift_test() {
-  ExternalHeap<DummyStream<int>, int, 3> foo(5);
+  ExternalHeap<TestStream, int, 3> foo("heap", 5);
 
   // Full tree
   for (int i = 0; i < 5; ++i) {
@@ -44,9 +55,9 @@ void test_swap_sift_test() {
 }
 
 void kasper_test() {
-  ExternalHeap<DummyStream<int>, int, 100> foo(100);
+  ExternalHeap<TestStream, int, 100> foo("heap2", 100);
 
-  const uint64_t N = 10000000;
+  const uint64_t N = 1000;
   for (int i = 0; i < N; ++i) {
     foo.insert(i * 977 % N); // rand());
   }
@@ -81,6 +92,7 @@ int main(int argc, char *argv[]) {
   
   srand(time(NULL));
 
+  resize_test();
   kasper_test();
   test_swap_sift_test();
 

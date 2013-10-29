@@ -8,6 +8,12 @@
 
 using namespace std;
 
+#ifdef WIN32
+#define NOEXCEPT
+#else
+#define NOEXCEPT noexcept
+#endif
+
 template <class S, typename I, uint64_t d>
 class ExternalHeap;
 
@@ -23,7 +29,7 @@ public:
   }
 
   // Move constructor.
-  Block(const Block&& other) noexcept {
+  Block(const Block&& other) NOEXCEPT {
     assert(other.stream_ == nullptr);
     element_count_ = other.element_count_;
     start_ = other.start_;
@@ -32,7 +38,7 @@ public:
     heap_ = other.heap_;
   }
 
-  Block& operator=(Block&& other) noexcept {
+  Block& operator=(Block&& other) NOEXCEPT {
     assert(heap_ == other.heap_);
     assert(stream_ == nullptr);
     if (this != &other)
@@ -201,7 +207,7 @@ public:
   void open_front() {
     assert(stream_ == nullptr);
     stream_ = new S();
-    stream_->open(start_, end_, heap_->stream_buffer_size());
+    stream_->open(heap_->filename(), start_, end_, heap_->stream_buffer_size());
   }
 
   // Opens the block for reading/writing from the first element (descending)

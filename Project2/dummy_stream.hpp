@@ -6,9 +6,10 @@
 template <typename I>
 class DummyStream {
 public:
-  void open(uint64_t start, uint64_t end, size_t buffer_size) {
+  void open(string filename, uint64_t start, uint64_t end, size_t buffer_size) {
     end_ = end;
     position_ = start;
+    filename_ = filename;
   }
 
   I peek() {
@@ -43,6 +44,7 @@ public:
 private:
   uint64_t position_;
   uint64_t end_;
+  string filename_;
 };
 
 template <typename I>

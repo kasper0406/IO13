@@ -8,19 +8,19 @@
 #include <sstream>
 
 #include "block.hpp"
+#include <string>
 
 using namespace std;
-
-const char* filename = "heap";
 
 template <class S, typename I, uint64_t d>
 class ExternalHeap {
 public:
-  ExternalHeap(size_t buffer_size) : size_(0), buffer_size_(buffer_size) {
+  ExternalHeap(string filename, size_t buffer_size) : size_(0), buffer_size_(buffer_size) {
     // With this, the capacity changes to *at least* 'buffer_size'.
     // To make sure we use precisely a buffer of size 'buffer_size'
     // 'buffer_size_' is set (instead of using insert_buffer_.capacity().)
     insert_buffer_.reserve(buffer_size);
+    filename_ = filename;
   }
 
   void insert(I element) {
@@ -28,6 +28,9 @@ public:
     
     if (insert_buffer_.size() >= buffer_size_) {
       // Inserts new block at the end, opens its stream and store the insert buffer in sorted order (descending)
+
+      // Resize file
+      add_block_to_file();
 
       blocks_.push_back(Block<S,I,d>(buffer_size_ * blocks_.size(), buffer_size_ * (blocks_.size() + 1), this));
       blocks_.back().open_front();
@@ -135,6 +138,10 @@ public:
   vector<Block<S, I, d>>& blocks() {
     return blocks_;
   }
+
+  const string& filename() const { 
+    return filename_;
+  }
   
   Block<S, I, d>* last_block() {
     return &blocks_[blocks_.size() - 1];
@@ -169,8 +176,26 @@ public:
   }
   
 private:
+  void add_block_to_file() {
+    FILE* pFile = fopen(filename().c_str(), "w+");
+    assert(pFile != nullptr);
+
+    if (_fseeki64(pFile, (blocks().size() + 1) * buffer_size_ * sizeof(I) - 1, SEEK_SET) != 0) {
+      throw logic_error("Seek failed");
+    }
+
+    if (fputs("1", pFile) < 0) {
+      throw logic_error("Extend file failed");
+    }
+    
+    if (fclose(pFile) != 0) {
+      throw logic_error("Failed to close file");
+    }
+  }
+
   size_t size_;
   size_t buffer_size_;
   vector<I> insert_buffer_;
   vector<Block<S, I, d>> blocks_;
+  string filename_;
 };
