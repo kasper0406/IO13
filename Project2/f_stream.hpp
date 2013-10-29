@@ -19,21 +19,24 @@ public:
     end_ = end;
     start_ = start;
 
-    pFile = fopen(filename().c_str(), "w+");
+    pFile = fopen(filename.c_str(), "w+b	");
 
     if (pFile == nullptr) {
-      throw logic_error("Failed to open file");
+      perror("Error open file");
+      exit(1);
     }
 
     if (_fseeki64(pFile, start * sizeof(I), SEEK_SET) != 0) {
-      throw logic_error("Failed to seek");
+      perror("Error seek in open");
+      exit(1);
     }
   }
 
   I peek() {
     I element;
     if (fread(&element, sizeof(I), 1, pFile) != 1) {
-      throw logic_error("Failed to read from file");
+      perror("Error peek");
+      exit(1);
     }
     _fseeki64(pFile, -sizeof(I), SEEK_CUR);
 
@@ -43,7 +46,8 @@ public:
   I read_next() {
     I element;
     if (fread(&element, sizeof(I), 1, pFile) != 1) {
-      throw logic_error("Failed to read from file");
+      perror("Error reading");
+      exit(1);
     }
 
     return element;
@@ -51,17 +55,22 @@ public:
   
   void write(I value) {
     if (fwrite(&value, sizeof(I), 1, pFile) != 1) {
-      throw logic_error("Failed to write");
+      perror("Error writing");
+      exit(1);
     }
   }
+  
   void close() {
     if (fclose(pFile) != 0) {
-      throw logic_error("Failed to close file");
+      perror("Error closing");
+      exit(1);
     }
   }
+  
   void seek(uint64_t position) {
     if (_fseeki64(pFile, position * sizeof(I), SEEK_SET) != 0) {
-      throw logic_error("Seek failed");
+      perror("Error seek");
+      exit(1);
     }
   }
   
