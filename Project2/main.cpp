@@ -193,9 +193,6 @@ int main(int argc, char *argv[]) {
   
   srand(time(NULL));
   
-  // simple_fstream_test();
-  // resize_test();
-
   simple_sanity_test<DummyStream<int>>();
   simple_sanity_test<FStream<int>>();
   simple_sanity_test<MMapStream<int>>();
