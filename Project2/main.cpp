@@ -129,15 +129,17 @@ void cached_stream_test() {
   }
 }
 
-void simple_fstream_test() {
-  fstream create("monkey", fstream::out);
+template <typename S>
+void simple_sanity_test() {
+  fstream create("monkey", fstream::out | fstream::binary);
   if (!create.is_open()) {
     cout << "Could not create file" << endl;
     exit(1);
   }
+  create << 1;
   create.close();
   
-  FStream<int> stream;
+  S stream;
   stream.open("monkey", 0, 1, 0);
   
   if (!stream.has_next()) {
@@ -184,7 +186,10 @@ int main(int argc, char *argv[]) {
   
   srand(time(NULL));
   
-  simple_fstream_test();
+  simple_sanity_test<DummyStream<int>>();
+  simple_sanity_test<FStream<int>>();
+  simple_sanity_test<MMapStream<int>>();
+  // simple_sanity_test<CachedStream<DummyStream<int>, int, 10>>();
   resize_test();
   kasper_test();
   // cached_stream_test();
