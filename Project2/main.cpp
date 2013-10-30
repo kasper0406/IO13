@@ -192,6 +192,8 @@ void simple_sanity_test(size_t buffer_size = 0) {
     cout << "Error has_next/read_next " << endl;
     exit(1);
   }
+  
+  stream.close();
 
   S stream2;
   stream2.open("monkey", 0, 1, buffer_size);
@@ -202,6 +204,18 @@ void simple_sanity_test(size_t buffer_size = 0) {
   }
 
   stream2.close();
+  
+  fstream filesize("monkey", fstream::in | fstream::binary);
+  if (!filesize.is_open()) {
+    cout << "Could not open file" << endl;
+    exit(1);
+  }
+  filesize.seekg(0, ifstream::end);
+  if (filesize.tellg() != 4) {
+    cout << "Wrong filesize" << endl;
+    exit(1);
+  };
+  filesize.close();
 }
 
 int main(int argc, char *argv[]) {
@@ -223,6 +237,7 @@ int main(int argc, char *argv[]) {
   // simple_sanity_test<CachedStream<int, DummyStream, 10>>();
   simple_sanity_test<CachedStream<int, MMapStream, 10>>();
   simple_sanity_test<CachedStream<int, FStream, 10>>();
+  simple_sanity_test<CachedStream<int, BufferedStream, 10>>(2);
 
   resize_test();
   kasper_test();

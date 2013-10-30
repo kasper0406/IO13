@@ -16,7 +16,7 @@ public:
     end_ = end;
     start_ = start;
     position_ = start;
-    buffer_start_ = numeric_limits<int64_t>::min();
+    buffer_start_ = -1000000000000;
     buffer_size_ = buffer_size;
 
     buffer_ = new I[buffer_size];
@@ -35,35 +35,22 @@ public:
   }
 
   I peek() {
-    I element;
-    if (::read(fd, &element, sizeof(I)) != sizeof(I)) {
-      perror("Error peek");
-      exit(1);
-    }
-    ::lseek(fd, -sizeof(I), SEEK_CUR);
-
-    return element;
+    return read_from_buffer();
   }
   
   I read_next() {
-    I element;
-    if (::read(fd, &element, sizeof(I)) != sizeof(I)) {
-      perror("Error reading");
-      exit(1);
-    }
-
-    return element;
+    I result = read_from_buffer();
+    position_++;
+    return result;
   }
   
   void write(I value) {
-    if (::write(fd, &value, sizeof(I)) != sizeof(I)) {
-      perror("Error writing");
-      exit(1);
-    }
+    write_to_buffer(value);
+    position_++;
   }
   
   void close() {
-    // TODO(lespeholt): Flush buffer, og lav test
+    flush_buffer();
 
     if (::close(fd) == -1) {
       perror("Error closing");
@@ -75,27 +62,70 @@ public:
   }
   
   void seek(uint64_t position) {
-    if (::lseek(fd, position * sizeof(I), SEEK_SET) == -1) {
-      perror("Error seek");
-      exit(1);
-    }
+    assert(start_ <= position);
+    assert(position < end_);
+    position_ = position;
   }
   
   bool has_next() {
-    auto pos = lseek(fd, 0, SEEK_CUR);
-    auto value = pos / (long)sizeof(I);
-    return value < end_;
+    return position_ < end_;
+  }
+
+private:
+  // Does not change position_
+  I read_from_buffer() {
+    assert(position_ < end_);
+    assert(start_ <= position_);
+
+    int buffer_position = position_ - buffer_start_;
+
+    if (0 <= buffer_position && buffer_position < buffer_size_) {
+      return buffer_[buffer_position];
+    } else {
+      refresh_buffer();
+
+      return read_from_buffer();  // Should not cycle
+    }
+  }
+
+  // Does not change position_
+  void write_to_buffer(I value) {
+    assert(position_ < end_);
+    assert(start_ <= position_);
+
+    int buffer_position = position_ - buffer_start_;
+
+    if (buffer_position < buffer_size_) {
+      buffer_[buffer_position] = value;
+    } else {
+      refresh_buffer();
+
+      write_to_buffer(value);  // Should not cycle
+    }
+  }
+
+  void flush_buffer() {
+    if (buffer_start_ < 0) return;  // Not even read.
+    
+    if (::lseek(fd, buffer_start_ * sizeof(I), SEEK_SET) == -1) {
+      perror("Error seek");
+      exit(1);
+    }
+
+    if (::write(fd, buffer_, utilized_buffer_size_ * sizeof(I)) != utilized_buffer_size_ * sizeof(I)) {
+      perror("Error writing");
+      exit(1);
+    }
   }
 
   void refresh_buffer() {
-    // TODO(lespeholt): Flush buffer, og lav test
-
+    flush_buffer();
 
     // TODO(lespeholt): Heuristik, hvis nye position er foer, saa laes bagud, ellers forud
     // 'position_' is in the middle of the new buffer
-    buffer_start_ = position_ - (buffer_size_ / 2);
+    buffer_start_ = max(position_ - (buffer_size_ / 2), (int64_t)0);
     int64_t buffer_end = min(buffer_start_ + buffer_size_, end_);
-    int64_t utilized_buffer_size = buffer_end - buffer_start_;
+    utilized_buffer_size_ = buffer_end - buffer_start_;
 
     if (::lseek(fd, buffer_start_ * sizeof(I), SEEK_SET) == -1) {
       perror("Error seek");
@@ -104,17 +134,17 @@ public:
 
     // TODO(lespeholt): Not really necessary to read buffer when only writes are performed!
 
-    if (::read(fd, buffer_, utilized_buffer_size) != utilized_buffer_size) {
+    if (::read(fd, buffer_, utilized_buffer_size_ * sizeof(I)) != utilized_buffer_size_ * sizeof(I)) {
       perror("Error reading");
     }
   }
 
-private:
-  uint64_t start_;
-  uint64_t end_;
+  int64_t start_;
+  int64_t end_;
   int fd;
   I* buffer_;
-  size_t buffer_size_;
+  int64_t buffer_size_;
+  int64_t utilized_buffer_size_;
   int64_t buffer_start_;
-  size_t position_;
+  int64_t position_;
 };
