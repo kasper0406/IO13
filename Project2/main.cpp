@@ -189,7 +189,7 @@ int main(int argc, char *argv[]) {
   simple_sanity_test<DummyStream<int>>();
   simple_sanity_test<FStream<int>>();
   simple_sanity_test<MMapStream<int>>();
-  // simple_sanity_test<CachedStream<DummyStream<int>, int, 10>>();
+  simple_sanity_test<CachedStream<int, DummyStream<int>, 10>>();
   resize_test();
   kasper_test();
   // cached_stream_test();
