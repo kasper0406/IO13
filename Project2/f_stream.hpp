@@ -21,7 +21,7 @@ public:
     end_ = end;
     start_ = start;
 
-    pFile = fopen(filename.c_str(), "r+b	");
+    pFile = fopen(filename.c_str(), "r+b");
 
     if (pFile == nullptr) {
       perror("Error open file");

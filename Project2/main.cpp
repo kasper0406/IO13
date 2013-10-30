@@ -19,7 +19,7 @@ using namespace std;
 typedef CachedStream<int, MMapStream<int>, 128> TestStream;
 
 void resize_test() {
-  ExternalHeap<TestStream, int, 3> foo("resize_heap", 5);
+  ExternalHeap<FStream<int>, int, 3> foo("resize_heap", 5);
   for (int i = 0; i < 11; ++i) {
     foo.insert(100);
   }
@@ -62,7 +62,7 @@ void test_swap_sift_test() {
 
 void kasper_test() {
   ExternalHeap<TestStream, int, 1024> foo("heap2", 1024);
-  const uint64_t N = 1000000;
+  const uint64_t N = 10000;
   
   for (int i = 0; i < N; ++i) {
     foo.insert(i * 977 % N); // rand());
@@ -136,15 +136,17 @@ void cached_stream_test() {
   }
 }
 
-void simple_fstream_test() {
-  fstream create("monkey", fstream::out);
+template <typename S>
+void simple_sanity_test() {
+  fstream create("monkey", fstream::out | fstream::binary);
   if (!create.is_open()) {
     cout << "Could not create file" << endl;
     exit(1);
   }
+  create << 1;
   create.close();
   
-  FStream<int> stream;
+  S stream;
   stream.open("monkey", 0, 1, 0);
   
   if (!stream.has_next()) {
@@ -193,9 +195,14 @@ int main(int argc, char *argv[]) {
   
   // simple_fstream_test();
   // resize_test();
-  // cached_stream_test();
+
+  simple_sanity_test<DummyStream<int>>();
+  simple_sanity_test<FStream<int>>();
+  simple_sanity_test<MMapStream<int>>();
+  simple_sanity_test<CachedStream<int, DummyStream<int>, 10>>();
+
+  resize_test();
   kasper_test();
-  // test_swap_sift_test();
   
   return 0;
 }
