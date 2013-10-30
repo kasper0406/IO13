@@ -90,6 +90,8 @@ public:
   void refresh_buffer() {
     // TODO(lespeholt): Flush buffer, og lav test
 
+
+    // TODO(lespeholt): Heuristik, hvis nye position er foer, saa laes bagud, ellers forud
     // 'position_' is in the middle of the new buffer
     buffer_start_ = position_ - (buffer_size_ / 2);
     int64_t buffer_end = min(buffer_start_ + buffer_size_, end_);
