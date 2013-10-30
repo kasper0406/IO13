@@ -16,7 +16,7 @@ using namespace std;
 // typedef FStream<int> TestStream;
 // typedef MMapStream<int> TestStream;
 // typedef CachedStream<int, FStream<int>, 128> TestStream;
-typedef CachedStream<int, MMapStream<int>, 128> TestStream;
+typedef CachedStream<int, MMapStream, 128> TestStream;
 
 void resize_test() {
   ExternalHeap<FStream<int>, int, 3> foo("resize_heap", 5);
@@ -119,7 +119,7 @@ void cached_stream_test() {
   const uint64_t N = 4096;
   const uint64_t start = 2 * N;
   
-  CachedStream<int, MMapStream<int>, 7> stream;
+  CachedStream<int, MMapStream, 7> stream;
   
   // Write some content
   stream.open("test.bin", start, start + N, 0);
@@ -199,7 +199,9 @@ int main(int argc, char *argv[]) {
   simple_sanity_test<DummyStream<int>>();
   simple_sanity_test<FStream<int>>();
   simple_sanity_test<MMapStream<int>>();
-  simple_sanity_test<CachedStream<int, DummyStream<int>, 10>>();
+  simple_sanity_test<CachedStream<int, DummyStream, 10>>();
+  simple_sanity_test<CachedStream<int, MMapStream, 10>>();
+  simple_sanity_test<CachedStream<int, FStream, 10>>();
 
   resize_test();
   kasper_test();

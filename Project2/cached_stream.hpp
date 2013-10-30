@@ -10,9 +10,7 @@
 
 using namespace std;
 
-// TODO(knielsen): Refactor s.t. I is found from the supplied stream.
-//                 or such that the stream is instiansiated with type I.
-template<class I, class S, uint64_t cache_size>
+template<class I, template<typename> class S, uint64_t cache_size>
 class CachedStream {
 public:
   CachedStream() : stream_(nullptr), cache_(nullptr) { }
@@ -141,7 +139,7 @@ private:
    */
   void prepare_stream() {
     if (stream_ == nullptr) {
-      stream_ = new S();
+      stream_ = new S<I>();
       stream_->open(stream_info_.filename, stream_info_.start, stream_info_.end, stream_info_.buffer_size);
     }
     if (seek_required_) {
@@ -163,7 +161,7 @@ private:
     return stream_info_.start + offset;
   }
   
-  S* stream_;
+  S<I>* stream_;
   uint64_t position_; // The location seeked to in the stream.
   uint64_t cache_pos_; // The location the cache begins.
   bool seek_required_; // Indicates if seek should be called on the stream before calling any operations on it.
