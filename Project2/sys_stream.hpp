@@ -5,6 +5,7 @@
 #include <cstdio>
 #include <cstdint>
 #include <cassert>
+#include <unistd.h>
 
 template <typename I>
 class SysStream {
@@ -30,18 +31,18 @@ public:
 
   I peek() {
     I element;
-    if (fread(&element, sizeof(I), 1, pFile) != 1) {
+    if (::read(fd, &element, sizeof(I)) != sizeof(I)) {
       perror("Error peek");
       exit(1);
     }
-    _fseeki64(pFile, -sizeof(I), SEEK_CUR);
+    ::lseek(fd, -sizeof(I), SEEK_CUR);
 
     return element;
   }
   
   I read_next() {
     I element;
-    if (fread(&element, sizeof(I), 1, pFile) != 1) {
+    if (::read(fd, &element, sizeof(I)) != sizeof(I)) {
       perror("Error reading");
       exit(1);
     }
@@ -50,7 +51,7 @@ public:
   }
   
   void write(I value) {
-    if (fwrite(&value, sizeof(I), 1, pFile) != 1) {
+    if (::write(fd, &value, sizeof(I)) != sizeof(I)) {
       perror("Error writing");
       exit(1);
     }
@@ -65,14 +66,14 @@ public:
   }
   
   void seek(uint64_t position) {
-    if (_fseeki64(pFile, position * sizeof(I), SEEK_SET) != 0) {
+    if (::lseek(fd, position * sizeof(I), SEEK_SET) == -1) {
       perror("Error seek");
       exit(1);
     }
   }
   
   bool has_next() {
-    auto pos = ftell(pFile);
+    auto pos = lseek(fd, 0, SEEK_CUR);
     auto value = pos / (long)sizeof(I);
     return value < end_;
   }
@@ -80,5 +81,5 @@ public:
 private:
   uint64_t start_;
   uint64_t end_;
-  ind fd;
+  int fd;
 };

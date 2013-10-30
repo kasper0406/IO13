@@ -196,6 +196,7 @@ int main(int argc, char *argv[]) {
   simple_sanity_test<DummyStream<int>>();
   simple_sanity_test<FStream<int>>();
   simple_sanity_test<MMapStream<int>>();
+  simple_sanity_test<SysStream<int>>();
   simple_sanity_test<CachedStream<int, DummyStream, 10>>();
   simple_sanity_test<CachedStream<int, MMapStream, 10>>();
   simple_sanity_test<CachedStream<int, FStream, 10>>();
