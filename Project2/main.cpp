@@ -9,6 +9,7 @@
 #include "mmap_stream.hpp"
 #include "cached_stream.hpp"
 #include "f_stream.hpp"
+#include "buffered_stream.hpp"
 
 using namespace std;
 
@@ -137,51 +138,70 @@ void cached_stream_test() {
 }
 
 template <typename S>
-void simple_sanity_test() {
+void simple_sanity_test(size_t buffer_size = 0) {
   fstream create("monkey", fstream::out | fstream::binary);
   if (!create.is_open()) {
     cout << "Could not create file" << endl;
     exit(1);
   }
-  create << 1;
+  int value = 1;
+  create.write(reinterpret_cast<const char*>(&value), sizeof(int));
   create.close();
   
   S stream;
-  stream.open("monkey", 0, 1, 0);
+  stream.open("monkey", 0, 1, buffer_size);
   
   if (!stream.has_next()) {
-    cout << "Error has_next in FStream" << endl;
+    cout << "Error has_next" << endl;
     exit(1);
   }
+
+  int read = stream.read_next();
+  if (read != 1) {
+    cout << "Error read_next" << endl;
+    exit(1);
+  }
+
+  stream.seek(0);
   
   stream.write(42);
   
   if (stream.has_next()) {
-    cout << "Error has_next/write in FStream" << endl;
+    cout << "Error has_next/write" << endl;
     exit(1);
   }
   
   stream.seek(0);
   
   if (!stream.has_next()) {
-    cout << "Error has_next/seek in FStream" << endl;
+    cout << "Error has_next/seek" << endl;
     exit(1);
   }
   
   if (stream.peek() != 42) {
-    cout << "Error peek in FStream" << endl;
+    cout << "Error peek" << endl;
     exit(1);
   }
   
   if (stream.read_next() != 42) {
-    cout << "Error read_next in FStream" << endl;
+    cout << "Error read_next" << endl;
     exit(1);
   }
   
   if (stream.has_next()) {
-    cout << "Error has_next/read_next in FStream" << endl;
+    cout << "Error has_next/read_next " << endl;
     exit(1);
   }
+
+  S stream2;
+  stream2.open("monkey", 0, 1, buffer_size);
+
+  if (stream2.has_next() && stream2.read_next() != 42) {
+    cout << "Error, buffer not flushed?" << endl;
+    exit(1);
+  }
+
+  stream2.close();
 }
 
 int main(int argc, char *argv[]) {
@@ -193,10 +213,13 @@ int main(int argc, char *argv[]) {
   
   srand(time(NULL));
   
-  simple_sanity_test<DummyStream<int>>();
+  // simple_sanity_test<DummyStream<int>>(); Fails sanity check because it doesn't read a real file
   simple_sanity_test<FStream<int>>();
   simple_sanity_test<MMapStream<int>>();
   simple_sanity_test<SysStream<int>>();
+  simple_sanity_test<BufferedStream<int>>(2);  
+  simple_sanity_test<BufferedStream<int>>(3);  
+  simple_sanity_test<BufferedStream<int>>(4);  
   simple_sanity_test<CachedStream<int, DummyStream, 10>>();
   simple_sanity_test<CachedStream<int, MMapStream, 10>>();
   simple_sanity_test<CachedStream<int, FStream, 10>>();
