@@ -13,7 +13,10 @@
 using namespace std;
 
 // typedef DummyStream<int> TestStream;
-typedef FStream<int> TestStream;
+// typedef FStream<int> TestStream;
+// typedef MMapStream<int> TestStream;
+// typedef CachedStream<int, FStream<int>, 128> TestStream;
+typedef CachedStream<int, MMapStream<int>, 128> TestStream;
 
 void resize_test() {
   ExternalHeap<TestStream, int, 3> foo("resize_heap", 5);
@@ -59,8 +62,8 @@ void test_swap_sift_test() {
 
 void kasper_test() {
   ExternalHeap<TestStream, int, 1024> foo("heap2", 1024);
-  
   const uint64_t N = 1000000;
+  
   for (int i = 0; i < N; ++i) {
     foo.insert(i * 977 % N); // rand());
   }
@@ -73,8 +76,10 @@ void kasper_test() {
   
   uint64_t prev = numeric_limits<uint64_t>::max();
   for (int i = 0; i < N; i++) {
-    if (prev < foo.peek_max())
-      throw runtime_error("ERROR!");
+    if (prev < foo.peek_max()) {
+      cerr << "Wrong value! prev: " << prev << "\tcur: " << foo.peek_max() << endl;
+      // throw runtime_error("ERROR!");
+    }
     
     assert(prev >= foo.peek_max());
     prev = foo.peek_max();
@@ -111,19 +116,21 @@ void mmap_stream_test() {
 }
 
 void cached_stream_test() {
-  const uint64_t N = 1000;
-  CachedStream<uint64_t, TestStream, 7> stream;
+  const uint64_t N = 4096;
+  const uint64_t start = 2 * N;
+  
+  CachedStream<int, MMapStream<int>, 7> stream;
   
   // Write some content
-  stream.open("test.bin", 0, N, 0);
+  stream.open("test.bin", start, start + N, 0);
   for (int i = 0; i < N; i++)
     stream.write(i);
   stream.close();
   
   // Read from the stream, closing it after every read
   for (int i = 0; i < N; i++) {
-    stream.open("test.bin", 0, N, 0);
-    stream.seek(i);
+    stream.open("test.bin", start, start + N, 0);
+    stream.seek(i + start);
     cout << stream.read_next() << endl;
     stream.close();
   }
@@ -184,12 +191,11 @@ int main(int argc, char *argv[]) {
   
   srand(time(NULL));
   
-  simple_fstream_test();
-  resize_test();
-  kasper_test();
+  // simple_fstream_test();
+  // resize_test();
   // cached_stream_test();
-  test_swap_sift_test();
-  // mmap_stream_test();
+  kasper_test();
+  // test_swap_sift_test();
   
   return 0;
 }

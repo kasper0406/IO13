@@ -6,6 +6,8 @@
 #include <queue>
 #include <stdexcept>
 
+#include "cached_stream.hpp"
+
 using namespace std;
 
 #ifdef WIN32
@@ -23,24 +25,24 @@ public:
   typedef uint64_t Child;
   
   Block(size_t start, size_t end, ExternalHeap<S, I, d>* heap)
-    : heap_(heap), stream_(nullptr), element_count_(0), start_(start), end_(end) {
+    : heap_(heap), stream_(S()), element_count_(0), start_(start), end_(end) {
       // Avoid calling methods on 'heap' in the constructor
       // because it may not be initialized properly at this point
   }
 
   // Move constructor.
-  Block(const Block&& other) NOEXCEPT {
-    assert(other.stream_ == nullptr);
+  Block(Block&& other) NOEXCEPT {
+    // assert(other.stream_ == nullptr);
     element_count_ = other.element_count_;
     start_ = other.start_;
     end_ = other.end_;
-    stream_ = nullptr;
+    stream_ = move(other.stream_);
     heap_ = other.heap_;
   }
 
   Block& operator=(Block&& other) NOEXCEPT {
     assert(heap_ == other.heap_);
-    assert(stream_ == nullptr);
+    // assert(stream_ == nullptr);
     if (this != &other)
     {
       element_count_ = other.element_count_;
@@ -205,37 +207,37 @@ public:
   
   // Opens the block for reading/writing in the beginning of the block
   void open_front() {
-    assert(stream_ == nullptr);
-    stream_ = new S();
-    stream_->open(heap_->filename(), start_, end_, heap_->stream_buffer_size());
+    // assert(stream_ == nullptr);
+    // stream_ = new S();
+    stream_.open(heap_->filename(), start_, end_, heap_->stream_buffer_size());
   }
 
   // Opens the block for reading/writing from the first element (descending)
   void open_at_first_element() {
-    assert(stream_ == nullptr);
+    // assert(stream_ == nullptr);
     open_front();
-    stream_->seek(end_ - element_count_);
+    stream_.seek(end_ - element_count_);
   }
 
   // Writes and increments the element counter
   void write_inc(I element) {
-    assert(stream_ != nullptr);
-    stream_->write(element);
+    // assert(stream_ != nullptr);
+    stream_.write(element);
     element_count_++;
     assert(element_count_ <= end_ - start_);
   }
   
   // Reads an element without changing stream or element counter
   I peek() {
-    assert(stream_ != nullptr);
-    return stream_->peek();
+    // assert(stream_ != nullptr);
+    return stream_.peek();
   }
 
   // Seek from the back (end - 'elements')
   void seek_back(size_t elements) {
-    assert(stream_ != nullptr);
+    // assert(stream_ != nullptr);
     assert(elements <= end_ - start_);
-    stream_->seek(end_ - elements);
+    stream_.seek(end_ - elements);
   }
   
   // Moves the contents of the stream back 'elements' positions.
@@ -262,8 +264,8 @@ public:
 
   // Reads an element and decrements the element counter
   I read_dec() {
-    assert(stream_ != nullptr);
-    I element = stream_->read_next();
+    // assert(stream_ != nullptr);
+    I element = stream_.read_next();
     assert(element_count_ != 0);
     element_count_--;
     return element;
@@ -271,10 +273,10 @@ public:
 
   // Close block
   void close() {
-    assert(stream_ != nullptr);
-    stream_->close();
-    delete stream_;
-    stream_ = nullptr;
+    // assert(stream_ != nullptr);
+    stream_.close();
+    // delete stream_;
+    // stream_ = nullptr;
   }
 
   uint64_t element_count() {
@@ -311,9 +313,9 @@ public:
   void to_dot(stringstream& ss) {
     stringstream label;
     open_at_first_element();
-    while (stream_->has_next()) {
-      label << stream_->read_next();
-      if (stream_->has_next())
+    while (stream_.has_next()) {
+      label << stream_.read_next();
+      if (stream_.has_next())
         label << " ";
     }
     close();
@@ -348,9 +350,9 @@ public:
     
     // Check that elements are sorted
     this->open_at_first_element();
-    I before = stream_->read_next();
-    while (stream_->has_next()) {
-      I next = stream_->read_next();
+    I before = stream_.read_next();
+    while (stream_.has_next()) {
+      I next = stream_.read_next();
       assert(before >= next);
       before = next;
     }
@@ -422,7 +424,7 @@ private:
   // Not owned
   ExternalHeap<S, I, d>* heap_;
   // Owned (it's a pointer to make sure it doesn't use any memory when not used.)
-  S* stream_;
+  S stream_;
   size_t element_count_;
   size_t start_;
   size_t end_;

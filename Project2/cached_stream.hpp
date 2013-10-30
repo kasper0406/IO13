@@ -15,7 +15,7 @@ using namespace std;
 template<class I, class S, uint64_t cache_size>
 class CachedStream {
 public:
-  CachedStream() : cache_(nullptr) { }
+  CachedStream() : stream_(nullptr), cache_(nullptr) { }
   
   ~CachedStream() {
     if (cache_ != nullptr)
@@ -24,12 +24,29 @@ public:
   }
   
   // Move constructor
-  CachedStream(const CachedStream&& other) NOEXCEPT {
-    assert(false);
+  CachedStream(CachedStream&& other) NOEXCEPT {
+    stream_ = other.stream_;
+    position_ = other.position_;
+    cache_pos_ = other.cache_pos_;
+    cache_ = other.cache_;
+    stream_info_ = other.stream_info_;
+    
+    other.cache_ = nullptr;
+    other.stream_ = nullptr;
   }
   
   CachedStream& operator=(CachedStream&& other) NOEXCEPT {
-    assert(false);
+    if (this != &other) {      
+      stream_ = other.stream_;
+      position_ = other.position_;
+      cache_pos_ = other.cache_pos_;
+      cache_ = other.cache_;
+      stream_info_ = other.stream_info_;
+      
+      other.cache_ = nullptr;
+      other.stream_ = nullptr;
+    }
+    return *this;
   }
   
   // Copy constructor.
@@ -37,7 +54,7 @@ public:
     assert(false);
   }
   
-  CachedStream& operator=(CachedStream& other) {
+  CachedStream& operator=(const CachedStream& other) {
     assert(false);
   }
   
@@ -61,14 +78,20 @@ public:
   I read_next() {
     I element = peek();
     position_++;
+    seek_required_ = true;
     return element;
   }
   
   void write(I value) {
     assert(position_ < stream_info_.end - stream_info_.start);
-    if (stream_ == nullptr)
-      open_stream();
+    if (is_cached()) {
+      // Update the cache to the new value
+      cache_[position_ - cache_pos_] = value;
+    }
+    
+    prepare_stream();
     stream_->write(value);
+    position_++;
   }
   
   void close() {
@@ -79,6 +102,7 @@ public:
     assert(position >= stream_info_.start);
     assert(position < stream_info_.end);
     position_ = position - stream_info_.start;
+    seek_required_ = true;
   }
   
   bool has_next() {
@@ -95,7 +119,7 @@ private:
   }
   
   I get_from_stream() {
-    open_stream();
+    prepare_stream();
     
     I res = stream_->read_next();
     
@@ -111,10 +135,19 @@ private:
     return res;
   }
   
-  void open_stream() {
-    stream_ = new S();
-    stream_->open(stream_info_.filename, stream_info_.start, stream_info_.end, stream_info_.buffer_size);
-    stream_->seek(stream_pos(position_));
+  /**
+   * Initializes and opens the stream if the stream is not open.
+   * Seek to the correct position in the stream.
+   */
+  void prepare_stream() {
+    if (stream_ == nullptr) {
+      stream_ = new S();
+      stream_->open(stream_info_.filename, stream_info_.start, stream_info_.end, stream_info_.buffer_size);
+    }
+    if (seek_required_) {
+      stream_->seek(stream_pos(position_));
+      seek_required_ = false;
+    }
   }
   
   void close_stream() {
@@ -133,6 +166,7 @@ private:
   S* stream_;
   uint64_t position_; // The location seeked to in the stream.
   uint64_t cache_pos_; // The location the cache begins.
+  bool seek_required_; // Indicates if seek should be called on the stream before calling any operations on it.
   
   struct StreamInfo {
     string filename;
