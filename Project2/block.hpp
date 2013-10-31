@@ -357,6 +357,9 @@ public:
     if (!last())
       assert(!imperfect());
     
+    // A block must not be over loaded.
+    assert(element_count() <= end_ - start_);
+    
     if (!root()) {
       // Check heap invariant
       this->open_at_first_element();

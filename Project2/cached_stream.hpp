@@ -98,7 +98,7 @@ public:
   
   void seek(uint64_t position) {
     assert(position >= stream_info_.start);
-    assert(position < stream_info_.end);
+    assert(position <= stream_info_.end); // Seek is allowed to be on the non-existing end element. Hence the <=.
     position_ = position - stream_info_.start;
     seek_required_ = true;
   }

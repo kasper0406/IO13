@@ -65,7 +65,7 @@ public:
   
   void seek(uint64_t position) {
     assert(position >= start_);
-    assert(position < end_);
+    assert(position <= end_);
     position_ = position - start_;
   }
   

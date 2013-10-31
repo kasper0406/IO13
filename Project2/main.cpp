@@ -19,8 +19,8 @@ using namespace std;
 // typedef MMapStream<int> TestStream;
 // typedef MMapFileStream<int> TestStream;
 // typedef CachedStream<int, FStream<int>, 128> TestStream;
-// typedef CachedStream<int, MMapStream, 128> TestStream;
-typedef FStream<int> TestStream;
+typedef CachedStream<int, MMapStream, 128> TestStream;
+// typedef CachedStream<int, FStream, 8> TestStream;
 
 void resize_test() {
   ExternalHeap<FStream<int>, int, 3> foo("resize_heap", 5);
@@ -108,8 +108,8 @@ void lasse_test() {
 
 void kasper_test() {
   cout << "Kasper test" << endl;
-  ExternalHeap<TestStream, int, 8> foo("heap2", 8);
-  const uint64_t N = 1000;
+  ExternalHeap<TestStream, int, 8> foo("heap2", 1024);
+  const uint64_t N = 10000;
   
   for (int i = 0; i < N; ++i) {
     foo.insert(N - i);
