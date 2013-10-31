@@ -73,6 +73,8 @@ public:
     return position_ < end_ - start_;
   }
   
+  static void cleanup() { }
+  
 private:
   uint64_t position_;
   uint64_t start_;

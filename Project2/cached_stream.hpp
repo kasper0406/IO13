@@ -107,6 +107,8 @@ public:
     return position_ < stream_info_.end - stream_info_.start;
   }
   
+  static void cleanup() { }
+  
 private:
   bool is_cached() {
     return cache_ != nullptr && position_ >= cache_pos_ && position_ < cache_pos_ + cache_size;

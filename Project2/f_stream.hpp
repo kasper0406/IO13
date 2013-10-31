@@ -82,6 +82,8 @@ public:
     auto value = pos / (long)sizeof(I);
     return value < end_;
   }
+  
+  static void cleanup() { }
 
 private:
   uint64_t start_;

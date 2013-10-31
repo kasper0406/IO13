@@ -40,6 +40,10 @@ public:
 
   static const size_t kMax = 100000000;
   static I buffer_[kMax];
+  
+  static void cleanup() {
+    delete[] buffer_;
+  }
 
 private:
   uint64_t position_;

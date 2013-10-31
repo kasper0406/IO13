@@ -28,6 +28,11 @@ public:
     insert_buffer_.reserve(buffer_size);
     filename_ = filename;
   }
+  
+  ~ExternalHeap() {
+    // TODO(knielsen): Consider a better design.
+    S::cleanup(); // Required for MMapFileStream.
+  }
 
   void insert(I element) {
     size_++;

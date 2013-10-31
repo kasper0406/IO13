@@ -9,14 +9,17 @@
 #include "mmap_stream.hpp"
 #include "cached_stream.hpp"
 #include "f_stream.hpp"
+#include "mmap_file_stream.hpp"
 
 using namespace std;
 
 // typedef DummyStream<int> TestStream;
 // typedef FStream<int> TestStream;
 // typedef MMapStream<int> TestStream;
+// typedef MMapFileStream<int> TestStream;
 // typedef CachedStream<int, FStream<int>, 128> TestStream;
-typedef CachedStream<int, MMapStream, 128> TestStream;
+// typedef CachedStream<int, MMapStream, 128> TestStream;
+typedef CachedStream<int, MMapFileStream, 128> TestStream;
 
 void resize_test() {
   ExternalHeap<FStream<int>, int, 3> foo("resize_heap", 5);
@@ -62,7 +65,7 @@ void test_swap_sift_test() {
 
 void kasper_test() {
   ExternalHeap<TestStream, int, 1024> foo("heap2", 1024);
-  const uint64_t N = 10000;
+  const uint64_t N = 10000000;
   
   for (int i = 0; i < N; ++i) {
     foo.insert(i * 977 % N); // rand());
@@ -113,6 +116,47 @@ void mmap_stream_test() {
     cout << read << endl;
   }
   stream.close();
+}
+
+void mmap_file_stream_test() {
+  const int stream_count = 3;
+  const string filename = "test.bin";
+  const int B = 8;
+  
+  vector<MMapFileStream<int>> streams(stream_count, MMapFileStream<int>());
+  
+  // Write test
+  for (int i = 0; i < stream_count; i++) {
+    streams[i].open(filename, i * B, (i + 1) * B, 0);
+  }
+  
+  for (int k = 0; k < B; k++) {
+    for (int i = 0; i < stream_count; i++) {
+      streams[i].write(k + i * B);
+    }
+  }
+  
+  for (int i = 0; i < stream_count; i++) {
+    streams[i].close();
+  }
+  
+  // Read test
+  for (int i = 0; i < stream_count; i++) {
+    streams[i].open(filename, i * B, (i + 1) * B, 0);
+  }
+  
+  for (int k = 0; k < B; k++) {
+    for (int i = 0; i < stream_count; i++) {
+      cout << streams[i].read_next() << "\t";
+    }
+    cout << endl;
+  }
+  
+  for (int i = 0; i < stream_count; i++) {
+    streams[i].close();
+  }
+  
+  MMapFileStream<int>::cleanup();
 }
 
 void cached_stream_test() {
@@ -202,6 +246,7 @@ int main(int argc, char *argv[]) {
 
   resize_test();
   kasper_test();
+  // mmap_file_stream_test();
   
   return 0;
 }
