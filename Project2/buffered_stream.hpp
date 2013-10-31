@@ -13,6 +13,7 @@ public:
   BufferedStream() : fd(-1), buffer_(nullptr), buffer_start_(-1) {}
   
   void open(string filename, uint64_t start, uint64_t end, size_t buffer_size) {
+    assert(buffer_size > 0);
     end_ = end;
     start_ = start;
     position_ = start;
@@ -71,6 +72,8 @@ public:
     return position_ < end_;
   }
 
+  static void cleanup() {}
+
 private:
   // Does not change position_
   I read_from_buffer() {
@@ -95,7 +98,7 @@ private:
 
     int buffer_position = position_ - buffer_start_;
 
-    if (buffer_position < buffer_size_) {
+    if (0 <= buffer_position && buffer_position < buffer_size_) {
       buffer_[buffer_position] = value;
     } else {
       refresh_buffer();
