@@ -11,6 +11,8 @@ template <typename I>
 class SysStream {
 public:
   SysStream() : fd(-1) {}
+
+  static void cleanup() {}
   
   void open(string filename, uint64_t start, uint64_t end, size_t buffer_size) {
     end_ = end;

@@ -20,7 +20,7 @@ using namespace std;
 // typedef MMapFileStream<int> TestStream;
 // typedef CachedStream<int, FStream<int>, 128> TestStream;
 // typedef CachedStream<int, MMapStream, 128> TestStream;
-typedef CachedStream<int, MMapFileStream, 128> TestStream;
+typedef FStream<int> TestStream;
 
 void resize_test() {
   ExternalHeap<FStream<int>, int, 3> foo("resize_heap", 5);
@@ -64,16 +64,59 @@ void test_swap_sift_test() {
   }
 }
 
+void lasse_test() {
+  cout << "Lasse test" << endl;
+  
+  ExternalHeap<SysStream<int>, int, 2> foo("heap3", 4);
+  foo.insert(10);
+  foo.insert(10);
+  foo.insert(8);
+  foo.insert(8);
+  foo.insert(5);
+  
+  assert(foo.peek_max() == 10);
+  foo.extract_max();
+  
+  {
+    ofstream before("heap3_before.dot");
+    before << foo.to_dot();
+    before.close();
+  }
+  
+  foo.insert(5);
+  foo.insert(5);
+  
+  {
+    ofstream before("heap3_after.dot");
+    before << foo.to_dot();
+    before.close();
+  }
+
+  assert(foo.peek_max() == 10);
+  foo.extract_max();
+  assert(foo.peek_max() == 8);
+  foo.extract_max();
+  assert(foo.peek_max() == 8);
+  foo.extract_max();
+  assert(foo.peek_max() == 5);
+  foo.extract_max();
+  assert(foo.peek_max() == 5);
+  foo.extract_max();
+  assert(foo.peek_max() == 5);
+  foo.extract_max();
+}
+
 void kasper_test() {
-  ExternalHeap<TestStream, int, 1024> foo("heap2", 1024);
-  const uint64_t N = 10000;
+  cout << "Kasper test" << endl;
+  ExternalHeap<TestStream, int, 4> foo("heap2", 8);
+  const uint64_t N = 1000;
   
   for (int i = 0; i < N; ++i) {
-    foo.insert(i * 977 % N); // rand());
+    foo.insert(N - i);
   }
   
   /*
-  ofstream before("heap_before.dot");
+lk  ofstream before("heap_before.dot");
   before << foo.to_dot();
   before.close();
    */
@@ -85,7 +128,6 @@ void kasper_test() {
       // throw runtime_error("ERROR!");
     }
     
-    assert(prev >= foo.peek_max());
     prev = foo.peek_max();
     
     foo.extract_max();
@@ -124,11 +166,11 @@ void mmap_file_stream_test() {
   const string filename = "test.bin";
   const int B = 8;
   
-  vector<MMapFileStream<int>> streams(stream_count, MMapFileStream<int>());
+  vector<BufferedStream<int>> streams(stream_count, BufferedStream<int>());
   
   // Write test
   for (int i = 0; i < stream_count; i++) {
-    streams[i].open(filename, i * B, (i + 1) * B, 0);
+    streams[i].open(filename, i * B, (i + 1) * B, 4);
   }
   
   for (int k = 0; k < B; k++) {
@@ -143,7 +185,7 @@ void mmap_file_stream_test() {
   
   // Read test
   for (int i = 0; i < stream_count; i++) {
-    streams[i].open(filename, i * B, (i + 1) * B, 0);
+    streams[i].open(filename, i * B, (i + 1) * B, 4);
   }
   
   for (int k = 0; k < B; k++) {
@@ -164,17 +206,17 @@ void cached_stream_test() {
   const uint64_t N = 4096;
   const uint64_t start = 2 * N;
   
-  CachedStream<int, MMapStream, 7> stream;
+  BufferedStream<int> stream;
   
   // Write some content
-  stream.open("test.bin", start, start + N, 0);
+  stream.open("test.bin", start, start + N, 100);
   for (int i = 0; i < N; i++)
     stream.write(i);
   stream.close();
   
   // Read from the stream, closing it after every read
   for (int i = 0; i < N; i++) {
-    stream.open("test.bin", start, start + N, 0);
+    stream.open("test.bin", start, start + N, 100);
     stream.seek(i + start);
     cout << stream.read_next() << endl;
     stream.close();
@@ -271,6 +313,8 @@ int main(int argc, char *argv[]) {
   
   srand(time(NULL));
   
+//cached_stream_test();
+
   // simple_sanity_test<DummyStream<int>>(); Fails sanity check because it doesn't read a real file
   simple_sanity_test<FStream<int>>();
   simple_sanity_test<MMapStream<int>>();
@@ -283,9 +327,10 @@ int main(int argc, char *argv[]) {
   simple_sanity_test<CachedStream<int, FStream, 10>>();
   simple_sanity_test<CachedStream<int, BufferedStream, 10>>(2);
 
-  resize_test();
+  // resize_test();
+  lasse_test();
   kasper_test();
-  // mmap_file_stream_test();
+  //mmap_file_stream_test();
   
   return 0;
 }

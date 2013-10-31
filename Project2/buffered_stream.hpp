@@ -126,7 +126,7 @@ private:
 
     // TODO(lespeholt): Heuristik, hvis nye position er foer, saa laes bagud, ellers forud
     // 'position_' is in the middle of the new buffer
-    buffer_start_ = max(position_ - (buffer_size_ / 2), (int64_t)0);
+    buffer_start_ = max(position_ - (buffer_size_ / 2), (int64_t)start_);
     int64_t buffer_end = min(buffer_start_ + buffer_size_, end_);
     utilized_buffer_size_ = buffer_end - buffer_start_;
 

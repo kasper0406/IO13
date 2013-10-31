@@ -74,10 +74,11 @@ public:
       Q.push(ElementChild(child(c)->peek(), c));
     }
     
+    // TODO(lespeholt): Test hvilken der er bedst
     const uint64_t elements_to_refill = min(elements_in_children(), (uint64_t)ceil((double)(end_ - start_) / 2));
     // const uint64_t elements_to_refill = min(elements_in_children(), (uint64_t)(end_ - start_ - element_count()));
     
-    // TODO(knielsen): Maybe change memory layout to growing the other way. I don't think easy elimination of data movement is possible.
+    // TODO(knielsen): Maybe change memory layout to queue. I don't think easy elimination of data movement is possible.
     this->move_back(elements_to_refill);
     
     this->open_front();
@@ -136,7 +137,7 @@ public:
         buffer.push_back(parent()->read_dec());
       }
     }
-    // const uint64_t elements_in_child_less_than_min_in_parent = this->element_count();
+    const uint64_t elements_in_child_less_than_min_in_parent = this->element_count();
     while (!this->empty()) {
       buffer.push_back(this->read_dec());
     }
@@ -148,7 +149,16 @@ public:
     //                 Forstår ikke hvad de gør i paperet.
     // const uint64_t k = min((uint64_t)buffer.size() / 2, elements_in_parent_before + elements_in_child_less_than_min_in_parent);
     const uint64_t k = r - elements_in_parent_before;
-    
+    // const uint64_t k = r - (uint64_t)ceil(((double)end_ - (double)start_)/2);
+
+    // const uint64_t k = max((uint64_t)ceil(((double)end_ - (double)start_)/2), r - (end_ - start_));
+    // const uint64_t k = min(r - (uint64_t)ceil(((double)end_ - (double)start_)/2), );
+
+    // The paper wrote the following, but it is clearly wrong because all the
+    // elements might end up in the child.
+    // Ex, assume block size of 1024, r = 2048, h = 0 => k = 2048 > 1024 <-!!!
+    // const uint64_t k = max(r - elements_in_child_less_than_min_in_parent, (uint64_t)ceil(((double)end_ - (double)start_)/2));
+
     // To parent
     parent()->seek_back(r - k);
     for (uint64_t i = 0; i < r - k; i++)

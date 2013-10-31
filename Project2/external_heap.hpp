@@ -176,7 +176,7 @@ public:
   
 private:
   void add_block_to_file() {
-    FILE* pFile = fopen(filename().c_str(), "w+");
+    FILE* pFile = fopen(filename().c_str(), "r+");
     assert(pFile != nullptr);
 
     if (_fseeki64(pFile, (blocks().size() + 1) * buffer_size_ * sizeof(I) - 1, SEEK_SET) != 0) {

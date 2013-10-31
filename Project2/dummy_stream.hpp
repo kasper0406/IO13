@@ -42,7 +42,6 @@ public:
   static I buffer_[kMax];
   
   static void cleanup() {
-    delete[] buffer_;
   }
 
 private:
