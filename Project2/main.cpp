@@ -108,7 +108,7 @@ void lasse_test() {
 
 void kasper_test() {
   cout << "Kasper test" << endl;
-  ExternalHeap<TestStream, int, 4> foo("heap2", 8);
+  ExternalHeap<TestStream, int, 8> foo("heap2", 8);
   const uint64_t N = 1000;
   
   for (int i = 0; i < N; ++i) {
@@ -116,7 +116,7 @@ void kasper_test() {
   }
   
   /*
-lk  ofstream before("heap_before.dot");
+  ofstream before("heap_before.dot");
   before << foo.to_dot();
   before.close();
    */
@@ -129,7 +129,6 @@ lk  ofstream before("heap_before.dot");
     }
     
     prev = foo.peek_max();
-    
     foo.extract_max();
   }
   

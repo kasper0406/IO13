@@ -120,6 +120,7 @@ public:
     // TODO(knielsen): Maybe reduce space consumption.
     const uint64_t r = this->element_count() + parent()->element_count();
     const uint64_t elements_in_parent_before = parent()->element_count();
+    
     vector<I> buffer;
     buffer.reserve(r);
     
@@ -127,11 +128,13 @@ public:
     parent()->open_at_first_element();
     
     // Merge into internal memory
-    bool element_in_child_moved_to_parent = false;
+    bool element_in_child_moved_to_parent = false; // TODO(knielsen): Get rid of this one
+    uint64_t child_elements_greater_than_min_in_parent = 0;
     
     while (!this->empty() && !parent()->empty()) {
       if (this->peek() > parent()->peek()) {
         element_in_child_moved_to_parent = true;
+        child_elements_greater_than_min_in_parent++;
         buffer.push_back(this->read_dec());
       } else {
         buffer.push_back(parent()->read_dec());
@@ -148,12 +151,22 @@ public:
     // TODO(knielsen): Undersøg om det her er korrekt.
     //                 Forstår ikke hvad de gør i paperet.
     // const uint64_t k = min((uint64_t)buffer.size() / 2, elements_in_parent_before + elements_in_child_less_than_min_in_parent);
-    const uint64_t k = r - elements_in_parent_before;
+    // const uint64_t k = r - elements_in_parent_before;
     // const uint64_t k = r - (uint64_t)ceil(((double)end_ - (double)start_)/2);
 
     // const uint64_t k = max((uint64_t)ceil(((double)end_ - (double)start_)/2), r - (end_ - start_));
     // const uint64_t k = min(r - (uint64_t)ceil(((double)end_ - (double)start_)/2), );
 
+    // TODO(knielsen): Prettyfy this
+    const uint64_t minimum_block_size = ceil((double)(end_ - start_) / 2);
+    const uint64_t maximum_block_size = end_ - start_;
+    uint64_t k = max(elements_in_child_less_than_min_in_parent, minimum_block_size);
+    if (r - k > maximum_block_size) {
+      // Too many elements assigned to the parent.
+      // Transfer some of them to the child.
+      k += (r - k) - maximum_block_size;
+    }
+    
     // The paper wrote the following, but it is clearly wrong because all the
     // elements might end up in the child.
     // Ex, assume block size of 1024, r = 2048, h = 0 => k = 2048 > 1024 <-!!!
