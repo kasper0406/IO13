@@ -16,6 +16,11 @@ using namespace std;
 #define NOEXCEPT noexcept
 #endif
 
+// TODO(knielsen): Consider a nicer design for this!
+// Flag indicating which sift strategy should be used.
+// #define recursive_sift recursive_sift_memory_wasting
+#define recursive_sift recursive_sift_memory_efficient
+
 template <class S, typename I, uint64_t d>
 class ExternalHeap;
 
@@ -34,6 +39,7 @@ public:
   Block(Block&& other) NOEXCEPT {
     // assert(other.stream_ == nullptr);
     element_count_ = other.element_count_;
+    cached_minimum_ = other.cached_minimum_;
     start_ = other.start_;
     end_ = other.end_;
     stream_ = move(other.stream_);
@@ -46,6 +52,7 @@ public:
     if (this != &other)
     {
       element_count_ = other.element_count_;
+      cached_minimum_ = other.cached_minimum_;
       start_ = other.start_;
       end_ = other.end_;
     }
@@ -113,11 +120,107 @@ public:
   }
   
   // Sift up to parent (recursively)
-  void recursive_sift() {
+  // This version writes backwards and use the cached minimum element in parent,
+  // but only uses a block of memory.
+  void recursive_sift_memory_efficient() {
     if (root())
       return;
     
-    // TODO(knielsen): Maybe reduce space consumption.
+    const uint64_t r = this->element_count() + parent()->element_count();
+    
+    vector<I> buffer;
+    buffer.reserve(end_ - start_); // Reserve 1 block of buffer space
+    
+    // Read the elements of the child (this) into the buffer
+    uint64_t elements_in_child_less_than_min_in_parent = 0;
+    this->open_at_first_element();
+    while (!this->empty()) {
+      if (this->peek() < parent()->minimum_element())
+        elements_in_child_less_than_min_in_parent++;
+      
+      buffer.push_back(this->read_dec());
+    }
+    
+    assert(this->element_count() == 0);
+    
+    // Find out how many elements goes to the child (k), and how many to the parent (r - k).
+    // TODO(knielsen): Prettyfy this?
+    const uint64_t minimum_block_size = ceil((double)(end_ - start_) / 2);
+    const uint64_t maximum_block_size = end_ - start_;
+    uint64_t k = max(elements_in_child_less_than_min_in_parent, minimum_block_size);
+    if (r - k > maximum_block_size) {
+      // Too many elements assigned to the parent.
+      // Transfer some of them to the child.
+      k += (r - k) - maximum_block_size;
+    }
+    
+    // Write elements to the child
+    parent()->open_at_last_element();
+    this->seek_back(1);
+    while (!parent()->empty() && !buffer.empty() && this->element_count() < k) {
+      if (parent()->peek() < buffer.back()) {
+        I element = parent()->backward_read_dec();
+        this->backward_write_inc(element);
+      } else {
+        this->backward_write_inc(buffer.back());
+        buffer.pop_back();
+      }
+    }
+    while (!buffer.empty() && this->element_count() < k) {
+      this->backward_write_inc(buffer.back());
+      buffer.pop_back();
+    }
+    while (!parent()->empty() && this->element_count() < k) {
+      I element = parent()->backward_read_dec();
+      this->backward_write_inc(element);
+    }
+    
+    assert(this->element_count() == k);
+    this->close();
+    
+    // Move the rest of the parent elements into the buffer and do internal memory merging,
+    // writing the result to parent.
+    const int64_t buffer_split = buffer.size(); // Note signed, because of index comparisons.
+    while (!parent()->empty())
+      buffer.push_back(parent()->backward_read_dec());
+    
+    assert(buffer.size() == r - k); // The buffer should contain exactly the elements going to the parent
+    assert(parent()->element_count() == 0);
+    
+    // Merge two piles of the buffer into the parent node
+    parent()->seek_back(r - k);
+    int64_t pile1_index = 0;                 // Indexes for the two piles to be merged in the buffer
+    int64_t pile2_index = buffer.size() - 1; // pile1 grows to the right, pile2 grows to the left.
+                                             // Note that these needs to be signed, as buffer_split could be 0.
+    while (pile1_index < buffer_split && pile2_index >= buffer_split) {
+      if (buffer[pile1_index] > buffer[pile2_index]) {
+        parent()->write_inc(buffer[pile1_index++]);
+      } else {
+        parent()->write_inc(buffer[pile2_index--]);
+      }
+    }
+    while (pile1_index < buffer_split)
+      parent()->write_inc(buffer[pile1_index++]);
+    while (pile2_index >= buffer_split)
+      parent()->write_inc(buffer[pile2_index--]);
+    
+    assert(parent()->element_count() == r - k);
+    
+    parent()->close();
+    
+    // If buffer_split != 0, then some elements from the child
+    // was moved to the parent node.
+    if (buffer_split != 0)
+      parent()->recursive_sift();
+  }
+  
+  // Sift up to parent (recursively)
+  // This version is using 2x memory, but is writing forward,
+  // and not using the cached minimum element in parent.
+  void recursive_sift_memory_wasting() {
+    if (root())
+      return;
+    
     const uint64_t r = this->element_count() + parent()->element_count();
     const uint64_t elements_in_parent_before = parent()->element_count();
     
@@ -148,16 +251,7 @@ public:
       buffer.push_back(parent()->read_dec());
     
     // Distribute result to disk
-    // TODO(knielsen): Undersøg om det her er korrekt.
-    //                 Forstår ikke hvad de gør i paperet.
-    // const uint64_t k = min((uint64_t)buffer.size() / 2, elements_in_parent_before + elements_in_child_less_than_min_in_parent);
-    // const uint64_t k = r - elements_in_parent_before;
-    // const uint64_t k = r - (uint64_t)ceil(((double)end_ - (double)start_)/2);
-
-    // const uint64_t k = max((uint64_t)ceil(((double)end_ - (double)start_)/2), r - (end_ - start_));
-    // const uint64_t k = min(r - (uint64_t)ceil(((double)end_ - (double)start_)/2), );
-
-    // TODO(knielsen): Prettyfy this
+    // TODO(knielsen): Prettyfy this?
     const uint64_t minimum_block_size = ceil((double)(end_ - start_) / 2);
     const uint64_t maximum_block_size = end_ - start_;
     uint64_t k = max(elements_in_child_less_than_min_in_parent, minimum_block_size);
@@ -234,6 +328,11 @@ public:
     // stream_ = new S();
     stream_.open(heap_->filename(), start_, end_, heap_->stream_buffer_size());
   }
+  
+  void open_at_last_element() {
+    open_front();
+    seek_back(1);
+  }
 
   // Opens the block for reading/writing from the first element (descending)
   void open_at_first_element() {
@@ -244,9 +343,38 @@ public:
 
   // Writes and increments the element counter
   void write_inc(I element) {
+    /*
+    if (stream_.position() == end_ - 1) {
+      // We are about to write to the last element
+      // Hance we are updating the minimum
+      cached_minimum_ = element;
+    }
+     */
+    
     // assert(stream_ != nullptr);
     stream_.write(element);
     element_count_++;
+    
+    if (!stream_.has_next()) {
+      // We are about to write to the last element
+      // Hance we are updating the minimum
+      cached_minimum_ = element;
+    }
+    
+    assert(element_count_ <= end_ - start_);
+  }
+  
+  // Writes backward and increments the element counter.
+  void backward_write_inc(I element) {
+    if (stream_.position() == end_ - 1) {
+      // We are about to write to the last element
+      // Hance we are updating the minimum
+      cached_minimum_ = element;
+    }
+    
+    stream_.backward_write(element);
+    element_count_++;
+    
     assert(element_count_ <= end_ - start_);
   }
   
@@ -289,6 +417,14 @@ public:
   I read_dec() {
     // assert(stream_ != nullptr);
     I element = stream_.read_next();
+    assert(element_count_ != 0);
+    element_count_--;
+    return element;
+  }
+  
+  // Reads an elements backward from the stream and decrements the element counter
+  I backward_read_dec() {
+    I element = stream_.read_prev();
     assert(element_count_ != 0);
     element_count_--;
     return element;
@@ -341,6 +477,7 @@ public:
       if (stream_.has_next())
         label << " ";
     }
+    label << " | " << cached_minimum_;
     close();
     
     ss << "n" << heap_->pos(this) << " [label=\"" << label.str() << "\",shape=box];" << endl;
@@ -360,6 +497,17 @@ public:
     // A block must not be over loaded.
     assert(element_count() <= end_ - start_);
     
+    // Check that elements are sorted
+    this->open_at_first_element();
+    I before = stream_.read_next();
+    while (stream_.has_next()) {
+      I next = stream_.read_next();
+      assert(before >= next);
+      before = next;
+    }
+    this->close();
+    assert(before == cached_minimum_); // Ensure that the cached_minimum_ is up to date.
+    
     if (!root()) {
       // Check heap invariant
       this->open_at_first_element();
@@ -373,16 +521,6 @@ public:
       parent()->close();
       this->close();
     }
-    
-    // Check that elements are sorted
-    this->open_at_first_element();
-    I before = stream_.read_next();
-    while (stream_.has_next()) {
-      I next = stream_.read_next();
-      assert(before >= next);
-      before = next;
-    }
-    this->close();
     
     for (Child c = 0; c < children(); c++)
       child(c)->consistency_check();
@@ -447,6 +585,10 @@ private:
     to->close();
   }
   
+  I minimum_element() const {
+    return cached_minimum_;
+  }
+  
   // Not owned
   ExternalHeap<S, I, d>* heap_;
   // Owned (it's a pointer to make sure it doesn't use any memory when not used.)
@@ -454,4 +596,6 @@ private:
   size_t element_count_;
   size_t start_;
   size_t end_;
+  
+  I cached_minimum_;
 };
