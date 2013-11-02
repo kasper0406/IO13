@@ -22,21 +22,28 @@ template <typename S>
 void client(size_t elements, size_t block_size, size_t buffer_size, size_t d) {
   ExternalHeap<S, int> heap("heap", block_size, buffer_size, d);
 
-  // TODO(lespeholt): Skulle laeses fra en anden fil
+  S stream;
+  stream.open("testfile", 0, elements, buffer_size);
+
   for (uint64_t i = 0; i < elements; ++i) {
-    // TODO(lespeholt): Muligvis anden 'rand' funktion
-    heap.insert(rand());
+    heap.insert(stream.read_next());
   }
 
-  // TODO(lespeholt): Skulle skrives tilbage i fil
+  stream.seek(0);
+
   int previous = numeric_limits<int>::max();
   for (uint64_t i = 0; i < elements; ++i) {
-    if (previous < heap.peek_max()) {
+    int current = heap.peek_max();
+    if (previous < current) {
       cout << "Error in heap" << endl;
       exit(3);
     }
+    stream.write(current);
     heap.extract_max();
+    previous = current;
   }
+
+  stream.close();
 }
 
 pair<int,	 string> exec(string cmd) {
@@ -106,10 +113,26 @@ int main(int argc, char *argv[]) {
       cerr << "Input matching failed." << endl;
       exit(10);
     };
+
+    typedef FStream<int> Stream;
+
+    // TODO(lespeholt): Maybe cache file and write it faster!
+    fstream create("testfile", fstream::out | fstream::binary);
+    if (!create.is_open()) {
+      cout << "Could not create file" << endl;
+      exit(1);
+    }
+
+    for (int64_t i = 0; i < elements; ++i) {
+      int value = rand();  // TODO(lespeholt): Maybe other rand function
+      create.write(reinterpret_cast<const char*>(&value), sizeof(int));
+    }
+
+    create.close();
     
     auto beginning = high_resolution_clock::now();
     
-    client<DummyStream<int>>(elements, block_size, buffer_size, d);
+    client<Stream>(elements, block_size, buffer_size, d);
 
     high_resolution_clock::duration duration = high_resolution_clock::now() - beginning;
   
