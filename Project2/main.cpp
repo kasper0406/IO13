@@ -15,22 +15,22 @@
 using namespace std;
 
 // typedef DummyStream<int> TestStream;
-// typedef FStream<int> TestStream;
+typedef FStream<int> TestStream;
 // typedef MMapStream<int> TestStream;
 // typedef MMapFileStream<int> TestStream;
 // typedef CachedStream<int, FStream<int>, 128> TestStream;
-typedef CachedStream<int, MMapStream, 128> TestStream;
+// typedef CachedStream<int, MMapStream, 128> TestStream;
 // typedef CachedStream<int, FStream, 8> TestStream;
 
 void resize_test() {
-  ExternalHeap<FStream<int>, int, 3> foo("resize_heap", 5);
+  ExternalHeap<FStream<int>, int, 3> foo("resize_heap", 5, 3);
   for (int i = 0; i < 11; ++i) {
     foo.insert(100);
   }
 }
 
 void test_swap_sift_test() {
-  ExternalHeap<TestStream, int, 3> foo("heap", 5);
+  ExternalHeap<TestStream, int, 3> foo("heap", 5, 3);
   
   // Full tree
   for (int i = 0; i < 5; ++i) {
@@ -67,7 +67,7 @@ void test_swap_sift_test() {
 void lasse_test() {
   cout << "Lasse test" << endl;
   
-  ExternalHeap<SysStream<int>, int, 2> foo("heap3", 4);
+  ExternalHeap<SysStream<int>, int, 2> foo("heap3", 4, 2);
   foo.insert(10);
   foo.insert(10);
   foo.insert(8);
@@ -108,7 +108,7 @@ void lasse_test() {
 
 void kasper_test() {
   cout << "Kasper test" << endl;
-  ExternalHeap<TestStream, int, 8> foo("heap2", 1024);
+  ExternalHeap<TestStream, int, 8> foo("heap2", 1024, 512);
   const uint64_t N = 10000;
   
   for (int i = 0; i < N; ++i) {
@@ -277,13 +277,39 @@ void simple_sanity_test(size_t buffer_size = 0) {
     cout << "Error has_next/read_next " << endl;
     exit(1);
   }
-  
+
+  if (stream.position() != 1) {
+    cout << "Error position" << endl;
+    exit(1);
+  }
+
+  stream.seek(0);
+
+  if (stream.read_prev() != 42) {
+    cout << "Error read_back" << endl;
+    exit(1);
+  }
+
+  if (stream.position() != -1) {
+    cout << "Error position" << endl;
+    exit(1);
+  }
+
+  stream.seek(0);
+
+  stream.backward_write(41);
+
+  if (stream.position() != -1) {
+    cout << "Error position" << endl;
+    exit(1);
+  }
+
   stream.close();
 
   S stream2;
   stream2.open("monkey", 0, 1, buffer_size);
 
-  if (stream2.has_next() && stream2.read_next() != 42) {
+  if (stream2.has_next() && stream2.read_next() != 41) {
     cout << "Error, buffer not flushed?" << endl;
     exit(1);
   }
@@ -316,19 +342,19 @@ int main(int argc, char *argv[]) {
 
   // simple_sanity_test<DummyStream<int>>(); Fails sanity check because it doesn't read a real file
   simple_sanity_test<FStream<int>>();
-  simple_sanity_test<MMapStream<int>>();
+  // simple_sanity_test<MMapStream<int>>();
   simple_sanity_test<SysStream<int>>();
   simple_sanity_test<BufferedStream<int>>(2);  
-  simple_sanity_test<BufferedStream<int>>(3);  
-  simple_sanity_test<BufferedStream<int>>(4);  
+  simple_sanity_test<BufferedStream<int>>(3);
+  simple_sanity_test<BufferedStream<int>>(4);
   // simple_sanity_test<CachedStream<int, DummyStream, 10>>();
-  simple_sanity_test<CachedStream<int, MMapStream, 10>>();
-  simple_sanity_test<CachedStream<int, FStream, 10>>();
-  simple_sanity_test<CachedStream<int, BufferedStream, 10>>(2);
+  // simple_sanity_test<CachedStream<int, MMapStream, 10>>();
+  // simple_sanity_test<CachedStream<int, FStream, 10>>();
+  // simple_sanity_test<CachedStream<int, BufferedStream, 10>>(2);
 
   // resize_test();
-  lasse_test();
-  kasper_test();
+//  lasse_test();
+//  kasper_test();
   //mmap_file_stream_test();
   
   return 0;

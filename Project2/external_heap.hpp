@@ -21,7 +21,8 @@ using namespace std;
 template <class S, typename I, uint64_t d>
 class ExternalHeap {
 public:
-  ExternalHeap(string filename, size_t buffer_size) : size_(0), buffer_size_(buffer_size) {
+  ExternalHeap(string filename, size_t buffer_size, size_t stream_buffer_size)
+      : size_(0), buffer_size_(buffer_size), stream_buffer_size_(stream_buffer_size) {
     // With this, the capacity changes to *at least* 'buffer_size'.
     // To make sure we use precisely a buffer of size 'buffer_size'
     // 'buffer_size_' is set (instead of using insert_buffer_.capacity().)
@@ -130,8 +131,7 @@ public:
   }
   
   size_t stream_buffer_size() const {
-    // TODO(lespeholt): We probably want a separate stream buffer size 
-    return buffer_size_;
+    return stream_buffer_size_;
   }
 
   vector<Block<S, I, d>>& blocks() {
@@ -194,6 +194,7 @@ private:
 
   size_t size_;
   size_t buffer_size_;
+  size_t stream_buffer_size_;
   vector<I> insert_buffer_;
   vector<Block<S, I, d>> blocks_;
   string filename_;

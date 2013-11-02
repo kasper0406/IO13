@@ -21,8 +21,7 @@ using namespace std::chrono;
 template <typename S>
 void client(size_t elements, size_t block_size, size_t buffer_size) {
   // TODO(lespeholt): Faa d til at vaere constructor parameter saa det kan testes lettere
-  // TODO(lespeholt): Lav saerskilt block size og buffer size
-  ExternalHeap<S, int, 2> heap("heap", buffer_size);
+  ExternalHeap<S, int, 2> heap("heap", block_size, buffer_size);
 
   // TODO(lespeholt): Skulle laeses fra en anden fil
   for (uint64_t i = 0; i < elements; ++i) {
