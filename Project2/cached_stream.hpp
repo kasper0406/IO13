@@ -82,6 +82,7 @@ public:
   
   I read_prev() {
     assert(position_ < stream_info_.end - stream_info_.start);
+    assert(position_ >= 0);
     I result;
     if (is_cached())
       result = get_from_cache();
@@ -171,6 +172,7 @@ private:
   I get_from_stream_backwards() {
     const int64_t position_before = position_;
     position_ = max((int64_t)0, position_ - cache_size);
+    seek_required_ = true;
     prepare_stream();
     
     // Fill up the cache
@@ -189,8 +191,6 @@ private:
       assert(stream_->has_next());
       result = stream_->read_next();
     }
-    // position_--;
-    // stream_->seek(stream_pos(position_));
     return result;
   }
   
