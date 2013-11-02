@@ -79,7 +79,7 @@ public:
     position_ = position;
   }
 
-  uint64_t position() {
+  int64_t position() {
     return position_;
   }
   

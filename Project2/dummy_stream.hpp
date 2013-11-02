@@ -54,7 +54,7 @@ public:
     return position_ < end_;
   }
   
-  uint64_t position() const {
+  int64_t position() const {
     return position_;
   }
 

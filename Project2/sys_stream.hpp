@@ -61,7 +61,7 @@ public:
     return result;
   }
 
-  uint64_t position() {
+  int64_t position() {
     uint64_t position = lseek(fd, 0, SEEK_CUR);
     if (position == -1) {
       perror("Error get position");

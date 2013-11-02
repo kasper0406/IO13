@@ -64,7 +64,7 @@ public:
     return result;
   }
 
-  uint64_t position() {
+  int64_t position() {
     return ftell(pFile) / (long)sizeof(I);
   }
   
