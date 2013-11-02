@@ -17,6 +17,7 @@ public:
   void open(string filename, uint64_t start, uint64_t end, size_t buffer_size) {
     end_ = end;
     start_ = start;
+    position_ = start;
 
     fd = ::open(filename.c_str(), O_RDWR, S_IRUSR | S_IWUSR);
 
@@ -32,6 +33,7 @@ public:
   }
 
   I peek() {
+    assert(position_ >= start_ && position_ < end_);
     I element;
     if (::read(fd, &element, sizeof(I)) != sizeof(I)) {
       perror("Error peek");
@@ -43,31 +45,31 @@ public:
   }
   
   I read_next() {
+    assert(position_ >= start_ && position_ < end_);
     I element;
     if (::read(fd, &element, sizeof(I)) != sizeof(I)) {
       perror("Error reading");
       exit(1);
     }
+    position_++;
 
     return element;
   }
 
   I read_prev() {
+    assert(position_ >= start_ && position_ < end_);
     I result = read_next();
-    if (::lseek(fd, -2 * sizeof(I), SEEK_CUR) == -1) {
+    if (position_ != 1 && ::lseek(fd, -2 * sizeof(I), SEEK_CUR) == -1) {
       perror("Error seek");
       exit(1);
     }
+    position_-=2;
+
     return result;
   }
 
   int64_t position() {
-    uint64_t position = lseek(fd, 0, SEEK_CUR);
-    if (position == -1) {
-      perror("Error get position");
-      exit(1);
-    }
-    return position / (long)sizeof(I);
+    return position_;
   }
   
   void write(I value) {
@@ -75,14 +77,16 @@ public:
       perror("Error writing");
       exit(1);
     }
+    position_++;
   }
 
   void backward_write(I value) {
     write(value);
-    if (::lseek(fd, -2 * sizeof(I), SEEK_CUR) == -1) {
+    if (position_ != 1 && ::lseek(fd, -2 * sizeof(I), SEEK_CUR) == -1) {
       perror("Error seek");
       exit(1);
     }
+    position_-=2;
   }
   
   void close() {
@@ -98,6 +102,7 @@ public:
       perror("Error seek");
       exit(1);
     }
+    position_ = position;
   }
   
   bool has_next() {
@@ -108,4 +113,5 @@ private:
   uint64_t start_;
   uint64_t end_;
   int fd;
+  int64_t position_;
 };
