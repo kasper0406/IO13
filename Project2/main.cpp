@@ -23,14 +23,14 @@ typedef FStream<int> TestStream;
 // typedef CachedStream<int, FStream, 8> TestStream;
 
 void resize_test() {
-  ExternalHeap<FStream<int>, int, 3> foo("resize_heap", 5, 3);
+  ExternalHeap<FStream<int>, int> foo("resize_heap", 5, 3, 3);
   for (int i = 0; i < 11; ++i) {
     foo.insert(100);
   }
 }
 
 void test_swap_sift_test() {
-  ExternalHeap<TestStream, int, 3> foo("heap", 5, 3);
+  ExternalHeap<TestStream, int> foo("heap", 5, 3, 3);
   
   // Full tree
   for (int i = 0; i < 5; ++i) {
@@ -67,7 +67,7 @@ void test_swap_sift_test() {
 void lasse_test() {
   cout << "Lasse test" << endl;
   
-  ExternalHeap<SysStream<int>, int, 2> foo("heap3", 4, 2);
+  ExternalHeap<SysStream<int>, int> foo("heap3", 4, 2, 2);
   foo.insert(10);
   foo.insert(10);
   foo.insert(8);
@@ -108,7 +108,7 @@ void lasse_test() {
 
 void kasper_test() {
   cout << "Kasper test" << endl;
-  ExternalHeap<TestStream, int, 8> foo("heap2", 1024, 512);
+  ExternalHeap<TestStream, int> foo("heap2", 1024, 512, 8);
   const uint64_t N = 10000;
   
   for (int i = 0; i < N; ++i) {
