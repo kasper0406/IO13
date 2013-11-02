@@ -54,10 +54,31 @@ public:
 
     return element;
   }
+
+  I read_prev() {
+    I result = read_next();
+    if (_fseeki64(pFile, -2 * sizeof(I), SEEK_CUR) != 0) {
+      perror("Error seek");
+      exit(1);
+    }
+    return result;
+  }
+
+  int64_t position() {
+    return ftell(pFile) / (long)sizeof(I);
+  }
   
   void write(I value) {
     if (fwrite(&value, sizeof(I), 1, pFile) != 1) {
       perror("Error writing");
+      exit(1);
+    }
+  }
+
+  void backward_write(I value) {
+    write(value);
+    if (_fseeki64(pFile, -2 * sizeof(I), SEEK_CUR) != 0) {
+      perror("Error seek");
       exit(1);
     }
   }
@@ -78,9 +99,7 @@ public:
   }
   
   bool has_next() {
-    auto pos = ftell(pFile);
-    auto value = pos / (long)sizeof(I);
-    return value < end_;
+    return position() < end_;
   }
   
   static void cleanup() { }
