@@ -80,6 +80,20 @@ public:
     return element;
   }
   
+  I read_prev() {
+    cout << "Read prev!" << endl;
+    assert(position_ < stream_info_.end - stream_info_.start);
+    I result;
+    if (is_cached())
+      result = get_from_cache();
+    else {
+      result = get_from_stream_backwards();
+    }
+    seek_required_ = true;
+    position_--;
+    return result;
+  }
+  
   void write(I value) {
     assert(position_ < stream_info_.end - stream_info_.start);
     if (is_cached()) {
@@ -90,6 +104,18 @@ public:
     prepare_stream();
     stream_->write(value);
     position_++;
+  }
+  
+  void backward_write(I value) {
+    assert(position_ < stream_info_.end - stream_info_.start);
+    if (is_cached()) {
+      // Update the cache to the new value
+      cache_[position_ - cache_pos_] = value;
+    }
+    
+    prepare_stream();
+    stream_->backward_write(value);
+    position_--;
   }
   
   void close() {
@@ -105,6 +131,10 @@ public:
   
   bool has_next() {
     return position_ < stream_info_.end - stream_info_.start;
+  }
+  
+  uint64_t position() const {
+    return stream_info_.start + position_;
   }
   
   static void cleanup() { }
@@ -133,6 +163,38 @@ private:
     stream_->seek(stream_pos(position_));
     
     return res;
+  }
+  
+  /*
+   * Rewind position such that the cached is filled up reading from left to right,
+   * and return the element requested.
+   */
+  I get_from_stream_backwards() {
+    cout << "Backward cache read" << endl;
+    
+    const uint64_t position_before = position_;
+    position_ = max((uint64_t)0, position_ - cache_size - 1);
+    prepare_stream();
+    
+    // Fill up the cache
+    cache_pos_ = position_;
+    if (cache_ == nullptr)
+      cache_ = new I[cache_size];
+    
+    for (uint64_t i = 0; i < cache_size && stream_->has_next(); i++)
+      cache_[i] = stream_->read_next();
+    
+    position_ = position_before;
+    I result;
+    if (is_cached())
+      result = get_from_cache();
+    else {
+      assert(stream_->has_next());
+      result = stream_->read_next();
+    }
+    // position_--;
+    // stream_->seek(stream_pos(position_));
+    return result;
   }
   
   /**
