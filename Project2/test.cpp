@@ -28,8 +28,10 @@ void client(size_t elements, size_t block_size, size_t buffer_size, size_t d) {
   stream.open("testfile", 0, elements, buffer_size);
 
   for (uint64_t i = 0; i < elements; ++i) {
-    heap.insert(stream.read_next());
+    heap.insert(stream.read_next(), true);
   }
+
+  // heap.sift_all();
 
   stream.seek(0);
 
@@ -78,6 +80,7 @@ void server() {
   cout.setf(ios::fixed, ios::floatfield); 
   cout << setw(12) << "Elements";
   cout << setw(12) << "Block size";
+  cout << setw(12) << "d";
   cout << setw(12) << "Buffer size";
   cout << setw(12) << "Time";
   cout << endl;
@@ -89,31 +92,36 @@ void server() {
   int block_size_end = 128 * 128;
   int buffer_size_start = 64;
   int buffer_size_end = 64 * 64;
+  int d_start = 2;
+  int d_end = 4096;
   int64_t elements_start = 128;
   int64_t elements_end = 4096 * 4096;
   
   for (int block_size = block_size_start; block_size <= block_size_end; block_size*=2) {
-    for (int buffer_size = buffer_size_start; buffer_size <= min(buffer_size_end, block_size); buffer_size*=2) {
-      for (int64_t elements = elements_start; elements <= elements_end; elements*=2) {
-        string command = timeout_exec + " " + to_string(timeout_seconds) + " ./Project2Test client "
-        + "\"elements:" + to_string(elements) + " block_size:" + to_string(block_size) + " buffer_size:"
-        + to_string(buffer_size) + "\"";
-        
-        auto result = exec(command);
-        
-        cout << setw(12) << elements;
-        cout << setw(12) << block_size;
-        cout << setw(12) << buffer_size;
+    for (int d = d_start; d <= d_end; d*=2) {
+      for (int buffer_size = buffer_size_start; buffer_size <= min(buffer_size_end, block_size); buffer_size*=2) {
+        for (int64_t elements = elements_start; elements <= elements_end; elements*=2) {
+          string command = timeout_exec + " " + to_string(timeout_seconds) + " ./Project2Test client "
+          + "\"elements:" + to_string(elements) + " block_size:" + to_string(block_size) + " buffer_size:"
+          + to_string(buffer_size) + " d:" + to_string(d) + "\"";
+          
+          auto result = exec(command);
+          
+          cout << setw(12) << elements;
+          cout << setw(12) << block_size;
+          cout << setw(12) << d;
+          cout << setw(12) << buffer_size;
 
-        if (result.first == 0) {
-          double seconds = atof(result.second.c_str());
-          cout << setw(12) << seconds << endl;
-        } else if (result.first == 124) {
-          cout << setw(12) << "Timeout" << endl;
-          break;
-        } else {
-          cout << setw(12) << "Error" << endl;
-          break;
+          if (result.first == 0) {
+            double seconds = atof(result.second.c_str());
+            cout << setw(12) << seconds << endl;
+          } else if (result.first == 124) {
+            cout << setw(12) << "Timeout" << endl;
+            break;
+          } else {
+            cout << setw(12) << "Error" << endl;
+            break;
+          }
         }
       }
     }
@@ -127,10 +135,10 @@ int main(int argc, char *argv[]) {
     int64_t elements;
     int block_size;
     int buffer_size;
-    int d = 2;
+    int d;
     // TODO(lespeholt): Stream type og d
-    if (sscanf(argv[2], "elements:%lli block_size:%i buffer_size:%i",
-               &elements, &block_size, &buffer_size) != 3) {
+    if (sscanf(argv[2], "elements:%lli block_size:%i buffer_size:%i d:%i",
+               &elements, &block_size, &buffer_size, &d) != 4) {
       cerr << "Input matching failed." << endl;
       exit(10);
     };
