@@ -44,10 +44,21 @@ public:
     position_++;
     return result;
   }
+
+  I read_prev() {
+    I result = read_from_buffer();
+    position_--;
+    return result;
+  }
   
   void write(I value) {
     write_to_buffer(value);
     position_++;
+  }
+
+  void backward_write(I value) {
+    write_to_buffer(value);
+    position_--;
   }
   
   void close() {
@@ -66,6 +77,10 @@ public:
     assert(start_ <= position);
     assert(position < end_);
     position_ = position;
+  }
+
+  uint64_t position() {
+    return position_;
   }
   
   bool has_next() {

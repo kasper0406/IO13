@@ -51,10 +51,36 @@ public:
 
     return element;
   }
+
+  I read_prev() {
+    I result = read_next();
+    if (::lseek(fd, -2 * sizeof(I), SEEK_CUR) == -1) {
+      perror("Error seek");
+      exit(1);
+    }
+    return result;
+  }
+
+  uint64_t position() {
+    uint64_t position = lseek(fd, 0, SEEK_CUR);
+    if (position == -1) {
+      perror("Error get position");
+      exit(1);
+    }
+    return position / (long)sizeof(I);
+  }
   
   void write(I value) {
     if (::write(fd, &value, sizeof(I)) != sizeof(I)) {
       perror("Error writing");
+      exit(1);
+    }
+  }
+
+  void backward_write(I value) {
+    write(value);
+    if (::lseek(fd, -2 * sizeof(I), SEEK_CUR) == -1) {
+      perror("Error seek");
       exit(1);
     }
   }
@@ -75,9 +101,7 @@ public:
   }
   
   bool has_next() {
-    auto pos = lseek(fd, 0, SEEK_CUR);
-    auto value = pos / (long)sizeof(I);
-    return value < end_;
+    return position() < end_;
   }
 
 private:
