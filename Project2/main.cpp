@@ -349,12 +349,12 @@ int main(int argc, char *argv[]) {
   simple_sanity_test<BufferedStream<int>>(4);
   // simple_sanity_test<CachedStream<int, DummyStream, 10>>();
   // simple_sanity_test<CachedStream<int, MMapStream, 10>>();
-  // simple_sanity_test<CachedStream<int, FStream, 10>>();
-  // simple_sanity_test<CachedStream<int, BufferedStream, 10>>(2);
+  simple_sanity_test<CachedStream<int, FStream, 10>>();
+  simple_sanity_test<CachedStream<int, BufferedStream, 10>>(2);
 
   // resize_test();
-//  lasse_test();
-//  kasper_test();
+  lasse_test();
+  kasper_test();
   //mmap_file_stream_test();
   
   return 0;

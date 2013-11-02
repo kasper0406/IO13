@@ -4,6 +4,8 @@
 #include <utility>
 #include <chrono>
 #include "sys/wait.h"
+#include <iomanip>
+#include <cstdlib>
 
 #include "test.hpp"
 #include "external_heap.hpp"
@@ -71,30 +73,49 @@ pair<int,	 string> exec(string cmd) {
 
 void server() {
   cout << "Test start" << endl << endl;
-  
+
+  cout.precision(3);
+  cout.setf(ios::fixed, ios::floatfield); 
+  cout << setw(12) << "Elements";
+  cout << setw(12) << "Block size";
+  cout << setw(12) << "Buffer size";
+  cout << setw(12) << "Time";
+  cout << endl;
+
   // SET PARAMETERS HERE!
   string timeout_exec = "/usr/local/Cellar/coreutils/8.21/bin/gtimeout";
   int timeout_seconds = 1;
-  int block_size = 10;
-  int buffer_size = 10;
+  int block_size_start = 128;
+  int block_size_end = 128 * 128;
+  int buffer_size_start = 64;
+  int buffer_size_end = 64 * 64;
   int64_t elements_start = 128;
   int64_t elements_end = 4096 * 4096;
   
-  for (int64_t elements = elements_start; elements <= elements_end; elements*=2) {
-    string command = timeout_exec + " " + to_string(timeout_seconds) + " ./Project2Test client "
-    + "\"elements:" + to_string(elements) + " block_size:" + to_string(block_size) + " buffer_size:"
-    + to_string(buffer_size) + "\"";
-    
-    auto result = exec(command);
-    
-    if (result.first == 0) {
-      cout << "Elements: " << elements << " Time: " << result.second << endl;
-    } else if (result.first == 124) {
-      cout << "Elements: " << elements << " Timeout" << endl;
-      break;
-    } else {
-      cout << "Elements: " << elements << " Error" << endl;
-      break;
+  for (int block_size = block_size_start; block_size <= block_size_end; block_size*=2) {
+    for (int buffer_size = buffer_size_start; buffer_size <= min(buffer_size_end, block_size); buffer_size*=2) {
+      for (int64_t elements = elements_start; elements <= elements_end; elements*=2) {
+        string command = timeout_exec + " " + to_string(timeout_seconds) + " ./Project2Test client "
+        + "\"elements:" + to_string(elements) + " block_size:" + to_string(block_size) + " buffer_size:"
+        + to_string(buffer_size) + "\"";
+        
+        auto result = exec(command);
+        
+        cout << setw(12) << elements;
+        cout << setw(12) << block_size;
+        cout << setw(12) << buffer_size;
+
+        if (result.first == 0) {
+          double seconds = atof(result.second.c_str());
+          cout << setw(12) << seconds << endl;
+        } else if (result.first == 124) {
+          cout << setw(12) << "Timeout" << endl;
+          break;
+        } else {
+          cout << setw(12) << "Error" << endl;
+          break;
+        }
+      }
     }
   }
 }
