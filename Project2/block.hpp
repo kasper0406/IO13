@@ -16,11 +16,6 @@ using namespace std;
 #define NOEXCEPT noexcept
 #endif
 
-// TODO(knielsen): Consider a nicer design for this!
-// Flag indicating which sift strategy should be used.
-// #define recursive_sift recursive_sift_memory_wasting
-#define recursive_sift recursive_sift_memory_efficient
-
 template <class S, typename I>
 class ExternalHeap;
 
@@ -118,11 +113,16 @@ public:
       steal_from_last();
     }
   }
+
+  void sift(bool recursive = true) {
+    sift_memory_efficient(recursive);
+    // sift_memory_wasting(recursive);
+  }
   
-  // Sift up to parent (recursively)
+  // Sift up to parent (optionally recursively)
   // This version writes backwards and use the cached minimum element in parent,
   // but only uses a block of memory.
-  void recursive_sift_memory_efficient() {
+  void sift_memory_efficient(bool recursive) {
     if (root())
       return;
     
@@ -210,14 +210,14 @@ public:
     
     // If buffer_split != 0, then some elements from the child
     // was moved to the parent node.
-    if (buffer_split != 0)
-      parent()->recursive_sift();
+    if (buffer_split != 0 && recursive)
+      parent()->sift(true);
   }
   
-  // Sift up to parent (recursively)
+  // Sift up to parent (optionally recursively)
   // This version is using 2x memory, but is writing forward,
   // and not using the cached minimum element in parent.
-  void recursive_sift_memory_wasting() {
+  void sift_memory_wasting(bool recursive) {
     if (root())
       return;
     
@@ -282,8 +282,8 @@ public:
     this->close();
     parent()->close();
     
-    if (element_in_child_moved_to_parent)
-      parent()->recursive_sift();
+    if (element_in_child_moved_to_parent && recursive)
+      parent()->sift(true);
   }
   
   void steal_from_last() {
@@ -301,7 +301,7 @@ public:
       // Case 1
       move_records(this, heap_->last_block());
       assert(s == this->element_count() + heap_->last_block()->element_count());
-      recursive_sift();
+      sift(true);
     } else if (half <= s && s <= end_ - start_) {
       // Case 2
       move_records(this, heap_->last_block());
@@ -309,7 +309,7 @@ public:
       assert(0 == heap_->last_block()->element_count());
       
       heap_->blocks().pop_back();
-      recursive_sift();
+      sift(true);
     } else {
       // Case 3
       move_records(this, heap_->last_block());

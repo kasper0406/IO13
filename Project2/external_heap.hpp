@@ -35,7 +35,13 @@ public:
     S::cleanup(); // Required for MMapFileStream.
   }
 
-  void insert(I element) {
+  void sift_all() {
+    for (int i = blocks().size() - 1; i >= 0; --i) {
+      blocks()[i].sift(false);
+    }
+  }
+
+  void insert(I element, bool sift = true) {
     size_++;
     
     if (insert_buffer_.size() >= buffer_size_) {
@@ -60,10 +66,14 @@ public:
       // Special case: Former last leaf imperfect?
       if (!blocks_.back().root() && blocks_[blocks_.size() - 2].imperfect()) {
         swap(blocks_.back(), blocks_[blocks_.size() - 2]);
-        blocks_.back().recursive_sift();
-        blocks_[blocks_.size() - 2].recursive_sift();
+        if (sift) {
+          blocks_.back().sift();
+          blocks_[blocks_.size() - 2].sift();
+        }
       } else {
-        blocks_.back().recursive_sift();
+        if (sift) {
+          blocks_.back().sift();
+        }
       }
       
       consistency_check();
