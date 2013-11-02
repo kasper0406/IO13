@@ -19,10 +19,8 @@ using namespace std;
 using namespace std::chrono;
 
 template <typename S>
-void client(size_t elements, size_t block_size, size_t buffer_size) {
-  // TODO(lespeholt): Faa d til at vaere constructor parameter saa det kan testes lettere
-  // TODO(lespeholt): Lav saerskilt block size og buffer size
-  ExternalHeap<S, int, 2> heap("heap", buffer_size);
+void client(size_t elements, size_t block_size, size_t buffer_size, size_t d) {
+  ExternalHeap<S, int> heap("heap", block_size, buffer_size, d);
 
   // TODO(lespeholt): Skulle laeses fra en anden fil
   for (uint64_t i = 0; i < elements; ++i) {
@@ -101,7 +99,8 @@ int main(int argc, char *argv[]) {
     int64_t elements;
     int block_size;
     int buffer_size;
-    // TODO(lespeholt): Stream type
+    int d = 2;
+    // TODO(lespeholt): Stream type og d
     if (sscanf(argv[2], "elements:%lli block_size:%i buffer_size:%i",
                &elements, &block_size, &buffer_size) != 3) {
       cerr << "Input matching failed." << endl;
@@ -110,7 +109,7 @@ int main(int argc, char *argv[]) {
     
     auto beginning = high_resolution_clock::now();
     
-    client<DummyStream<int>>(elements, block_size, buffer_size);
+    client<DummyStream<int>>(elements, block_size, buffer_size, d);
 
     high_resolution_clock::duration duration = high_resolution_clock::now() - beginning;
   

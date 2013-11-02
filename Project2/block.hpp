@@ -21,15 +21,15 @@ using namespace std;
 // #define recursive_sift recursive_sift_memory_wasting
 #define recursive_sift recursive_sift_memory_efficient
 
-template <class S, typename I, uint64_t d>
+template <class S, typename I>
 class ExternalHeap;
 
-template <class S, typename I, uint64_t d>
+template <class S, typename I>
 class Block {
 public:
   typedef uint64_t Child;
   
-  Block(size_t start, size_t end, ExternalHeap<S, I, d>* heap)
+  Block(size_t start, size_t end, ExternalHeap<S, I>* heap)
     : heap_(heap), stream_(S()), element_count_(0), start_(start), end_(end) {
       // Avoid calling methods on 'heap' in the constructor
       // because it may not be initialized properly at this point
@@ -458,15 +458,15 @@ public:
   }
   
   Block* parent() {
-    return &heap_->blocks()[(heap_->pos(this) - 1) / d];
+    return &heap_->blocks()[(heap_->pos(this) - 1) / heap_->d()];
   }
   
   Block* child(uint64_t child) {
-    return &heap_->blocks()[d * heap_->pos(this) + 1 + child];
+    return &heap_->blocks()[heap_->d() * heap_->pos(this) + 1 + child];
   }
   
   uint64_t children() {
-    return min(max((int64_t)0, (int64_t)((int64_t)heap_->blocks().size() - (int64_t)(d * heap_->pos(this) + 1))), (int64_t)d);
+    return min(max((int64_t)0, (int64_t)((int64_t)heap_->blocks().size() - (int64_t)(heap_->d() * heap_->pos(this) + 1))), (int64_t)heap_->d());
   }
   
   void to_dot(stringstream& ss) {
@@ -590,7 +590,7 @@ private:
   }
   
   // Not owned
-  ExternalHeap<S, I, d>* heap_;
+  ExternalHeap<S, I>* heap_;
   // Owned (it's a pointer to make sure it doesn't use any memory when not used.)
   S stream_;
   size_t element_count_;

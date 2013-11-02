@@ -18,10 +18,11 @@ using namespace std;
   #define _fseeki64 fseek
 #endif
 
-template <class S, typename I, uint64_t d>
+template <class S, typename I>
 class ExternalHeap {
 public:
-  ExternalHeap(string filename, size_t buffer_size) : size_(0), buffer_size_(buffer_size) {
+  ExternalHeap(string filename, size_t buffer_size, size_t stream_buffer_size, size_t d)
+      : size_(0), buffer_size_(buffer_size), stream_buffer_size_(stream_buffer_size), d_(d) {
     // With this, the capacity changes to *at least* 'buffer_size'.
     // To make sure we use precisely a buffer of size 'buffer_size'
     // 'buffer_size_' is set (instead of using insert_buffer_.capacity().)
@@ -43,7 +44,7 @@ public:
       // Resize file
       add_block_to_file();
 
-      blocks_.push_back(Block<S,I,d>(buffer_size_ * blocks_.size(), buffer_size_ * (blocks_.size() + 1), this));
+      blocks_.push_back(Block<S,I>(buffer_size_ * blocks_.size(), buffer_size_ * (blocks_.size() + 1), this));
       blocks_.back().open_front();
       
       while (!insert_buffer_.empty()) {
@@ -130,23 +131,26 @@ public:
   }
   
   size_t stream_buffer_size() const {
-    // TODO(lespeholt): We probably want a separate stream buffer size 
-    return buffer_size_;
+    return stream_buffer_size_;
   }
 
-  vector<Block<S, I, d>>& blocks() {
+  vector<Block<S, I>>& blocks() {
     return blocks_;
+  }
+
+  size_t d() const {
+    return d_;
   }
 
   const string& filename() const { 
     return filename_;
   }
   
-  Block<S, I, d>* last_block() {
+  Block<S, I>* last_block() {
     return &blocks_[blocks_.size() - 1];
   }
   
-  uint64_t pos(Block<S,I,d>* block) {
+  uint64_t pos(Block<S,I>* block) {
     return block - &blocks_[0];
   }
   
@@ -194,7 +198,9 @@ private:
 
   size_t size_;
   size_t buffer_size_;
+  size_t stream_buffer_size_;
+  size_t d_;
   vector<I> insert_buffer_;
-  vector<Block<S, I, d>> blocks_;
+  vector<Block<S, I>> blocks_;
   string filename_;
 };
