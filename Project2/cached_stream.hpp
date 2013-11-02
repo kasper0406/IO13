@@ -10,7 +10,7 @@
 
 using namespace std;
 
-template<class I, template<typename> class S, uint64_t cache_size>
+template<class I, template<typename> class S, int64_t cache_size>
 class CachedStream {
 public:
   CachedStream() : stream_(nullptr), cache_(nullptr) { }
@@ -81,7 +81,6 @@ public:
   }
   
   I read_prev() {
-    cout << "Read prev!" << endl;
     assert(position_ < stream_info_.end - stream_info_.start);
     I result;
     if (is_cached())
@@ -122,7 +121,7 @@ public:
     close_stream();
   }
   
-  void seek(uint64_t position) {
+  void seek(int64_t position) {
     assert(position >= stream_info_.start);
     assert(position <= stream_info_.end); // Seek is allowed to be on the non-existing end element. Hence the <=.
     position_ = position - stream_info_.start;
@@ -133,7 +132,7 @@ public:
     return position_ < stream_info_.end - stream_info_.start;
   }
   
-  uint64_t position() const {
+  int64_t position() const {
     return stream_info_.start + position_;
   }
   
@@ -170,10 +169,8 @@ private:
    * and return the element requested.
    */
   I get_from_stream_backwards() {
-    cout << "Backward cache read" << endl;
-    
-    const uint64_t position_before = position_;
-    position_ = max((uint64_t)0, position_ - cache_size - 1);
+    const int64_t position_before = position_;
+    position_ = max((int64_t)0, position_ - cache_size);
     prepare_stream();
     
     // Fill up the cache
@@ -221,13 +218,13 @@ private:
   }
   
   // Returns the position in the stream when seeking to a specific offset in the block.
-  uint64_t stream_pos(uint64_t offset) {
+  int64_t stream_pos(int64_t offset) {
     return stream_info_.start + offset;
   }
   
   S<I>* stream_;
-  uint64_t position_; // The location seeked to in the stream.
-  uint64_t cache_pos_; // The location the cache begins.
+  int64_t position_; // The location seeked to in the stream.
+  int64_t cache_pos_; // The location the cache begins.
   bool seek_required_; // Indicates if seek should be called on the stream before calling any operations on it.
   
   struct StreamInfo {
