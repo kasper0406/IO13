@@ -37,9 +37,20 @@ public:
     return res;
   }
   
+  I read_prev() {
+    I res = peek();
+    position_--;
+    return res;
+  }
+  
   void write(I value) {
     assert(position_ < end_ - start_);
     mapped_[start_ + position_++] = value;
+  }
+  
+  void backward_write(I value) {
+    assert(position_ >= 0);
+    mapped_[start_ + position_--] = value;
   }
   
   void close() {
@@ -47,12 +58,16 @@ public:
   
   void seek(uint64_t position) {
     assert(position >= start_);
-    assert(position < end_);
+    assert(position <= end_);
     position_ = position - start_;
   }
   
   bool has_next() {
     return position_ < end_ - start_;
+  }
+  
+  int64_t position() const {
+    return start_ + position_;
   }
   
   /**
@@ -99,7 +114,7 @@ private:
       throw runtime_error("Failed to map file!");
   }
   
-  uint64_t position_;
+  int64_t position_;
   uint64_t start_;
   uint64_t end_;
   

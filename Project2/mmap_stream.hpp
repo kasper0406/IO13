@@ -45,9 +45,21 @@ public:
     return res;
   }
   
+  I read_prev() {
+    assert(position_ >= 0);
+    I res = peek();
+    position_--;
+    return res;
+  }
+  
   void write(I value) {
     assert(position_ < end_ - start_);
     mapped_[position_++] = value;
+  }
+  
+  void backward_write(I value) {
+    assert(position_ >= 0);
+    mapped_[position_--] = value;
   }
   
   void close() {
@@ -73,10 +85,14 @@ public:
     return position_ < end_ - start_;
   }
   
+  int64_t position() const {
+    return start_ + position_;
+  }
+  
   static void cleanup() { }
   
 private:
-  uint64_t position_;
+  int64_t position_;
   uint64_t start_;
   uint64_t end_;
   
