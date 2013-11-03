@@ -36,8 +36,9 @@ public:
   }
 
   void sift_all() {
+    // TODO(lespeholt): Only leafs
     for (int i = blocks().size() - 1; i >= 0; --i) {
-      blocks()[i].sift(false);
+      blocks()[i].sift(true);
     }
   }
 

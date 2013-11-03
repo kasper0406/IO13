@@ -78,6 +78,7 @@ void server() {
 
   cout.precision(3);
   cout.setf(ios::fixed, ios::floatfield); 
+  cout << setw(12) << "Stream type";
   cout << setw(12) << "Elements";
   cout << setw(12) << "Block size";
   cout << setw(12) << "d";
@@ -96,31 +97,38 @@ void server() {
   int d_end = 4096;
   int64_t elements_start = 128;
   int64_t elements_end = 4096 * 4096;
+  vector<char> stream_types { 'f', 's', 'b', 'm' };
   
-  for (int block_size = block_size_start; block_size <= block_size_end; block_size*=2) {
-    for (int d = d_start; d <= d_end; d*=2) {
-      for (int buffer_size = buffer_size_start; buffer_size <= min(buffer_size_end, block_size); buffer_size*=2) {
-        for (int64_t elements = elements_start; elements <= elements_end; elements*=2) {
-          string command = timeout_exec + " " + to_string(timeout_seconds) + " ./Project2Test client "
-          + "\"elements:" + to_string(elements) + " block_size:" + to_string(block_size) + " buffer_size:"
-          + to_string(buffer_size) + " d:" + to_string(d) + "\"";
-          
-          auto result = exec(command);
-          
-          cout << setw(12) << elements;
-          cout << setw(12) << block_size;
-          cout << setw(12) << d;
-          cout << setw(12) << buffer_size;
+  for (char stream_type : stream_types) {
+    for (int block_size = block_size_start; block_size <= block_size_end; block_size*=2) {
+      for (int d = d_start; d <= d_end; d*=2) {
+        for (int buffer_size = (stream_type == 'b' ? buffer_size_start : 0);
+             buffer_size <= (stream_type == 'b' ? min(buffer_size_end, block_size) : 0); buffer_size= max(1, buffer_size * 2)) {
+          for (int64_t elements = max(elements_start, (int64_t)block_size); elements <= elements_end; elements*=2) {
+            if (d * block_size > elements) continue;
 
-          if (result.first == 0) {
-            double seconds = atof(result.second.c_str());
-            cout << setw(12) << seconds << endl;
-          } else if (result.first == 124) {
-            cout << setw(12) << "Timeout" << endl;
-            break;
-          } else {
-            cout << setw(12) << "Error" << endl;
-            break;
+            string command = timeout_exec + " " + to_string(timeout_seconds) + " ./Project2Test client "
+            + "\"elements:" + to_string(elements) + " block_size:" + to_string(block_size) + " buffer_size:"
+            + to_string(buffer_size) + " d:" + to_string(d) + " stream:" + stream_type + "\"";
+            
+            auto result = exec(command);
+            
+            cout << setw(12) << stream_type;
+            cout << setw(12) << elements;
+            cout << setw(12) << block_size;
+            cout << setw(12) << d;
+            cout << setw(12) << buffer_size;
+
+            if (result.first == 0) {
+              double seconds = atof(result.second.c_str());
+              cout << setw(12) << seconds << endl;
+            } else if (result.first == 124) {
+              cout << setw(12) << "Timeout" << endl;
+              break;
+            } else {
+              cout << setw(12) << "Error" << endl;
+              break;
+            }
           }
         }
       }
@@ -136,14 +144,13 @@ int main(int argc, char *argv[]) {
     int block_size;
     int buffer_size;
     int d;
-    // TODO(lespeholt): Stream type og d
-    if (sscanf(argv[2], "elements:%lli block_size:%i buffer_size:%i d:%i",
-               &elements, &block_size, &buffer_size, &d) != 4) {
+    char stream_type;
+    if (sscanf(argv[2], "elements:%lli block_size:%i buffer_size:%i d:%i stream:%c",
+               &elements, &block_size, &buffer_size, &d, &stream_type) != 5) {
       cerr << "Input matching failed." << endl;
       exit(10);
     };
 
-    typedef FStream<int> Stream;
 
     // TODO(lespeholt): Maybe cache file and write it faster!
     fstream create("testfile", fstream::out | fstream::binary);
@@ -151,7 +158,6 @@ int main(int argc, char *argv[]) {
       cout << "Could not create file" << endl;
       exit(1);
     }
-
     for (int64_t i = 0; i < elements; ++i) {
       int value = rand();  // TODO(lespeholt): Maybe other rand function
       create.write(reinterpret_cast<const char*>(&value), sizeof(int));
@@ -160,11 +166,29 @@ int main(int argc, char *argv[]) {
     create.close();
     
     auto beginning = high_resolution_clock::now();
-    
-    client<Stream>(elements, block_size, buffer_size, d);
+    switch (stream_type) {
+      case 'f':
+        client<FStream<int>>(elements, block_size, buffer_size, d);
+        break;
 
+      case 's':
+        client<SysStream<int>>(elements, block_size, buffer_size, d);
+        break;
+
+      case 'b':
+        client<BufferedStream<int>>(elements, block_size, buffer_size, d);
+        break;
+
+      case 'm':
+        client<MMapFileStream<int>>(elements, block_size, buffer_size, d);
+        break;
+
+      default:
+        cout << "Unknown stream type" << endl;
+        exit(1);
+        break;
+    }
     high_resolution_clock::duration duration = high_resolution_clock::now() - beginning;
-  
     cout << duration_cast<milliseconds>(duration).count() / 1000. << endl;
   } else {
   #ifdef NDEBUG
