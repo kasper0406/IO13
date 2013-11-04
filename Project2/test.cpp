@@ -6,6 +6,7 @@
 #include "sys/wait.h"
 #include <iomanip>
 #include <unistd.h>
+#include <tuple>
 #include <inttypes.h>
 #include <cstdlib>
 
