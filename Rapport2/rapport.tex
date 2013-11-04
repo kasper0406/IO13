@@ -62,8 +62,57 @@ The following is a description of the different folders available at
 \end{description}
 
 \section{Implementation}
+This section will present implementation details on how the heap has
+been implemented, and why these choices were made. Also the details of
+all the implemented streams are discussed.
+
+We define the following:
+\begin{itemize}
+\item $V$ is the maximal number of elements in a node. Hence, a
+  node is imperfect if it contains $< \left\lceil \frac{V}{2}
+  \right\rceil$ elements.
+\end{itemize}
 
 \subsection{Heap}
+In the paper the structure of the heap was represented using pointers,
+such that every node stores pointers to its children and its
+parent. Instead, we have chosen to embed the structure of the heap
+inside an array, such that an array entry contains a reference to a
+node in the heap. Then the index of the parent node and the indices of
+the child node can be calculated using simple integer operations, and
+the corresponding node can be found by looking up in the node array.
+
+Using this representation, it is also very easy to swap the position
+of two nodes, as the two entries in the array can simply be swapped
+(this is required in the insert operation when the last node is
+imperfect).
+
+To store the elements of the heap, a big file have been allocated on
+disk. This file is (virtually) divided into blocks of size $V$, such
+that each block is associated with a node in the tree.
+
+When elements are inserted into the heap, they file may become too
+small. Hence when a new block is added, and the file does not have
+enough space, the file is extended by $V$ elements. Growing the file
+should be handled by the operating system using only constant IOs, and
+hence there should be no problem in growing the file every time a new
+node is added.
+
+
+When inserting into the heap, the
+
+ - Re-sizing of the heap file
+ - How streams corresponds to blocks
+   * How elements are stored inside a block
+
+ - Merging of blocks (sifting): memory efficient / memory wasting
+   * Caching of minimum element in node
+   * Division of elements (wrong in paper)
+
+\subsubsection{Verifying correctness}
+ * Graphical dot representation
+ * Consistency check function
+ * Check that output is sorted when inserting and then extracting (external heap sorting)
 
 \subsection{Streams}
 
