@@ -224,7 +224,7 @@ int main(int argc, char *argv[]) {
     auto beginning = high_resolution_clock::now();
     switch (stream_type) {
       case 'f':
-        client<CachedStream<int, FStream, 1024>>(elements, block_size, buffer_size, d);
+        client<CachedStream<int, FStream, 128>>(elements, block_size, buffer_size, d);
         break;
 
       case 's':
@@ -232,11 +232,11 @@ int main(int argc, char *argv[]) {
         break;
 
       case 'b':
-        client<BufferedStream<int>>(elements, block_size, buffer_size, d);
+        client<CachedStream<int, BufferedStream, 128>>(elements, block_size, buffer_size, d);
         break;
 
       case 'm':
-        client<CachedStream<int, MMapFileStream, 1024>>(elements, block_size, buffer_size, d);
+        client<CachedStream<int, MMapFileStream, 128>>(elements, block_size, buffer_size, d);
         break;
 
       default:
