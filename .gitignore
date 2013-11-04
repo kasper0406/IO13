@@ -12,6 +12,12 @@
 *.la
 *.a
 
+*.toc
+*.out
+*.log
+*.pdf
+*.aux
+
 # Build files
 build
 Rapport1/rapport.toc
