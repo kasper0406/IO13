@@ -32,19 +32,7 @@ void client(size_t elements, size_t block_size, size_t buffer_size, size_t d) {
     heap.insert(stream.read_next());
   }
 
-  // {
-  //   ofstream before("heap_before.dot");
-  //   before << heap.to_dot();
-  //   before.close();
-  // }
-
   // heap.sift_all();
-
-  // {
-  //   ofstream before("heap_after.dot");
-  //   before << heap.to_dot();
-  //   before.close();
-  // }
 
   stream.seek(0);
 
@@ -181,8 +169,10 @@ int main(int argc, char *argv[]) {
 
     create.close();
 
-    // auto diskstats = exec("cat /proc/diskstats | grep sdb2");
-    // cout << diskstats.first << " " << diskstats.second;
+#ifdef LINUX
+    auto diskstats = exec("cat /proc/diskstats | grep sdb2");
+    cout << diskstats.first << " " << diskstats.second;
+#endif
     
     auto beginning = high_resolution_clock::now();
     switch (stream_type) {
