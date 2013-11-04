@@ -182,7 +182,7 @@ tuple<int64_t, int64_t, int64_t, int64_t, int64_t> disk_activity() {
   auto diskstats = exec("cat /proc/diskstats | grep sdb2");
   if (diskstats.first != 0) {
     cout << "Something went wrong fetching disk activity" << endl;
-    return {0,0};
+    return {0,0,0,0,0};
   }
   char junk[128];
   int64_t field1,field2,field3,field4,field5,field6,field7,field8,field9,field10;
