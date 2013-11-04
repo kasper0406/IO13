@@ -235,7 +235,7 @@ int main(int argc, char *argv[]) {
     auto disk_end = disk_activity();
     cout << duration_cast<milliseconds>(duration).count() / 1000.
         << " " << (disk_end.first - disk_start.first)
-        << " " << (disk_end.second - disk_end.second)
+        << " " << (disk_end.second - disk_start.second)
         << endl;
   } else {
   #ifdef NDEBUG
