@@ -21,6 +21,10 @@
 using namespace std;
 using namespace std::chrono;
 
+#ifdef LINUX
+#define SCNd64 "li"
+#endif
+
 template <typename S>
 void client(size_t elements, size_t block_size, size_t buffer_size, size_t d) {
   ExternalHeap<S, int> heap("heap", block_size, buffer_size, d);
@@ -153,20 +157,23 @@ void server() {
 
 pair<int64_t, int64_t> disk_activity() {
 #ifdef LINUX
-    auto diskstats = exec("cat /proc/diskstats | grep sdb2");
-    if (diskstats.first != 0) {
-      cout << "Something went wrong fetching disk activity" << endl;
-      return {0,0};
-    }
-    int64_t field1,field2,field3,field4,field5,field6,field7;
-    if (sscanf(diskstats.second.c_str(), "[^s]db2 %" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64,
-               &field1, &field2, &field3, &field4, &field5, &field6, &field7) != 7) {
-      cout << "Unable to parse disk activity" << endl;
-      return {0,0};
-    }
-    return {field3, field7};
-#else
+  auto diskstats = exec("cat /proc/diskstats | grep sdb2");
+  if (diskstats.first != 0) {
+    cout << "Something went wrong fetching disk activity" << endl;
     return {0,0};
+  }
+  char junk[128];
+  int64_t field1,field2,field3,field4,field5,field6,field7;
+  int success = sscanf(diskstats.second.c_str(), "%[^s]sdb2 %" SCNd64 " %" SCNd64 " %"
+                                                 SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64,
+                       (char*)&junk, &field1, &field2, &field3, &field4, &field5, &field6, &field7);
+  if (success != 8) {
+    cout << "Unable to parse disk activity" << endl;
+    return {0,0};
+  }
+  return {field3, field7};
+#else
+  return {0,0};
 #endif
 
 }
