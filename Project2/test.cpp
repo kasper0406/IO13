@@ -5,6 +5,7 @@
 #include <chrono>
 #include "sys/wait.h"
 #include <iomanip>
+#include <unistd.h>
 #include <inttypes.h>
 #include <cstdlib>
 
@@ -157,6 +158,7 @@ void server() {
 
 void flush_disk() {
   #ifdef LINUX
+  sync();
   auto result = exec("echo 3 | /proc/sys/vm/drop_caches");
   if (result.first != 0) {
     cout << "Error flushing disk" << endl;
