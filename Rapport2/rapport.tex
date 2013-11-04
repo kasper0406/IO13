@@ -15,9 +15,10 @@
 \usetikzlibrary{fit,shapes.misc,snakes}
 \geometry{verbose,tmargin=2.5cm,bmargin=2.5cm,lmargin=4cm,rmargin=4cm}
 
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
 \newcommand{\ord}{\operatorname{ord}}
 
-\graphicspath{ {../Project2/measurements/} }
+\graphicspath{ {../Project2/measurements/}, {./images/} }
 
 \begin{document}
 
@@ -28,7 +29,7 @@ Kasper Nielsen - 20091182\\}
 
 \maketitle
 \begin{figure}[h!]
-\includegraphics[width=\textwidth]{"images/forside"}
+\includegraphics[width=\textwidth]{forside}
 \end{figure}
 
 \vfill{}
@@ -96,18 +97,88 @@ small. Hence when a new block is added, and the file does not have
 enough space, the file is extended by $V$ elements. Growing the file
 should be handled by the operating system using only constant IOs, and
 hence there should be no problem in growing the file every time a new
-node is added.
+node is added. As we have enough disk space, we have chosen not to
+shrink the file when extracting elements. Again since it should only
+require a constant number of IOs we do not believe this will have any
+significant influence on our benchmarks.
 
+Every node in the tree has an associated stream, which can read and
+write the block associated to the node. Unless mentioned otherwise
+in the stream section, the stream for a given node is opened and
+closed as it is needed. That is, every time an element should be read
+and written, the stream is opened, the operations are executed on the
+stream, and then the stream is closed again. This also means that only
+two streams are active at the same time while doing heap operations.
 
-When inserting into the heap, the
+\begin{figure}
+  \centering
+  \includegraphics[width=6cm]{node_block}
+  \caption{Layout of a block associated with a node. Elements are
+    stored in decreasing sorted order, and is placed as far to the
+    right as possible.}
+  \label{fig:node-block}
+\end{figure}
 
- - Re-sizing of the heap file
- - How streams corresponds to blocks
-   * How elements are stored inside a block
+Inside a block, elements are stored to the right in the block in
+descending sorted order, as illustrated by
+Figure~\ref{fig:node-block}. This layout facilitates forward reading
+when extracting the maximum element.
 
- - Merging of blocks (sifting): memory efficient / memory wasting
-   * Caching of minimum element in node
-   * Division of elements (wrong in paper)
+\subsubsection{Sifting}
+When doing the sift operation, it is required to merge blocks of the
+current node and its parent. When doing this, one should be careful
+about how many elements are assigned to respectively the parent and
+the current node after the merge: If too many elements are transferred
+to the parent, such that an element with strictly lower priority is
+added to the parent, then the heap invariant between the parent and
+its other children may be violated.
+
+On the other hand, it is desired to assign as many elements as
+possible to the parent node, as this may delay future refill
+operations.
+
+In the paper they assign $\max(r - h, \ceil*{\frac{V}{2}})$ elements to
+the child, where $r$ is the sum of the number of elements in the
+parent and in the current node, and $h$ is the number of elements
+having priority higher than or equal to the parent node. On counter
+example to this strategy is when two full blocks are merged, and $h =
+0$ (that is, all the child nodes are smaller than the parent node),
+then all elements will be assigned to the child, which renders the
+parent node imperfect.
+
+We have fixed this by per default to assign
+\[
+  \max \left( \text{child elements less than minimum in parent}, \ceil*{\frac{V}{2}} \right)
+\]
+elements to the child. But then it might be the parent gets
+overfilled, in which case a sufficient number of the smallest elements
+from the parent are transferred to the child node. By construction
+this division will satisfy the invariants of the heap.
+\\
+\\
+Two implementations have been made for merging a block:
+\begin{description}
+\item[Memory inefficient] version where $2V$ elements are buffered,
+  and the merging is done in internal memory. This approach has the
+  advantage that it only reads forward.
+\item[Memory efficient] version where only $V$ elements are
+  buffered. The problem with this implementation is to determine how
+  many elements should go to the child and to the parent, without
+  reading the unbuffered block several times.
+
+  In order to get around this problem, the minimum element in all
+  nodes have been cached, which means that the number of elements
+  going to the current node (and the parent) can be computed when
+  reading the elements of the current node into the buffer. Then the
+  elements going to the current node can be written backwards into its
+  block, by also reading the buffer and the block of the parent node
+  backwards.
+\end{description}
+We have chosen to investigate both techniques, as we are unsure what
+the penalty of reading and writing backwards is, due to read-ahead
+etc.. We believe the effect will be different for different types of
+streams, as some with large buffers or memory mapped files, may handle
+the situation in a better way.
 
 \subsubsection{Verifying correctness}
  * Graphical dot representation
