@@ -181,9 +181,22 @@ streams, as some with large buffers or memory mapped files, may handle
 the situation in a better way.
 
 \subsubsection{Verifying correctness}
- * Graphical dot representation
- * Consistency check function
- * Check that output is sorted when inserting and then extracting (external heap sorting)
+To ensure the correctness of our heap implementation, the following
+three techniques have been used:
+\begin{itemize}
+\item A graphical representation of the data structure have been
+  implemented, enabling us to manually verify small test inputs.
+\item A consistency check function has been implemented, which is
+  called after every insert and extract operation. The consistency
+  check function makes a recursive decent of the nodes in the heap,
+  and check that all invariants are satisfied.
+\item A sanity test function have been made, where $1\cdot 10^6$
+  uniformly random integers was inserted into the heap, and then
+  extracted afterwards. It was tested that the integers came out in
+  sorted order.
+\end{itemize}
+All of the above checks passes in our implementation, and we have no
+knowledge of bugs.
 
 \subsection{Streams}
 
