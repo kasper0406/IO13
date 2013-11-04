@@ -190,7 +190,7 @@ tuple<int64_t, int64_t, int64_t, int64_t, int64_t> disk_activity() {
                                                  SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64
                                                  " %" SCNd64 " %" SCNd64 " %" SCNd64,
                        (char*)&junk, &field1, &field2, &field3, &field4, &field5, &field6, &field7, &field8, &field9, &field10);
-  if (success != 10) {
+  if (success != 11) {
     cout << "Unable to parse disk activity" << endl;
     return make_tuple(0,0,0,0,0);
   }
