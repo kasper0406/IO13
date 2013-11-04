@@ -1,0 +1,5 @@
+Interessante facts:
+
+Read ahead: 512 sectors (512^2 bytes = 256 kB)
+
+Ved hoeje k bliver det hurtigere, nok fordi saa ender vi ud med sekventiel read/write

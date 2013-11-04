@@ -24,14 +24,27 @@ template <typename S>
 void client(size_t elements, size_t block_size, size_t buffer_size, size_t d) {
   ExternalHeap<S, int> heap("heap", block_size, buffer_size, d);
 
-  S stream;
+  // TODO
+  FStream<int> stream;
   stream.open("testfile", 0, elements, buffer_size);
 
   for (uint64_t i = 0; i < elements; ++i) {
-    heap.insert(stream.read_next(), true);
+    heap.insert(stream.read_next());
   }
 
+  // {
+  //   ofstream before("heap_before.dot");
+  //   before << heap.to_dot();
+  //   before.close();
+  // }
+
   // heap.sift_all();
+
+  // {
+  //   ofstream before("heap_after.dot");
+  //   before << heap.to_dot();
+  //   before.close();
+  // }
 
   stream.seek(0);
 
@@ -88,16 +101,16 @@ void server() {
 
   // SET PARAMETERS HERE!
   string timeout_exec = "/usr/local/Cellar/coreutils/8.21/bin/gtimeout";
-  int timeout_seconds = 1;
-  int block_size_start = 128;
-  int block_size_end = 128 * 128;
-  int buffer_size_start = 64;
-  int buffer_size_end = 64 * 64;
-  int d_start = 2;
+  int timeout_seconds = 1000;
+  int block_size_start = 1024;
+  int block_size_end = 1024 * 1024 * 128;
+  int buffer_size_start = 1024;
+  int buffer_size_end = 1024 * 1024 * 8;
+  int d_start = 32;
   int d_end = 4096;
-  int64_t elements_start = 128;
-  int64_t elements_end = 4096 * 4096;
-  vector<char> stream_types { 'f', 's', 'b', 'm' };
+  int64_t elements_start = 1024;
+  int64_t elements_end = 1024 * 1024 * 1024;
+  vector<char> stream_types { 'm' };
   
   for (char stream_type : stream_types) {
     for (int block_size = block_size_start; block_size <= block_size_end; block_size*=2) {
@@ -151,7 +164,6 @@ int main(int argc, char *argv[]) {
       exit(10);
     };
 
-
     // TODO(lespeholt): Maybe cache file and write it faster!
     fstream create("testfile", fstream::out | fstream::binary);
     if (!create.is_open()) {
@@ -159,7 +171,7 @@ int main(int argc, char *argv[]) {
       exit(1);
     }
     for (int64_t i = 0; i < elements; ++i) {
-      int value = rand();  // TODO(lespeholt): Maybe other rand function
+      int value = rand();
       create.write(reinterpret_cast<const char*>(&value), sizeof(int));
     }
 
@@ -168,11 +180,11 @@ int main(int argc, char *argv[]) {
     auto beginning = high_resolution_clock::now();
     switch (stream_type) {
       case 'f':
-        client<FStream<int>>(elements, block_size, buffer_size, d);
+        client<CachedStream<int, FStream, 1024>>(elements, block_size, buffer_size, d);
         break;
 
       case 's':
-        client<SysStream<int>>(elements, block_size, buffer_size, d);
+        client<CachedStream<int, SysStream, 128>>(elements, block_size, buffer_size, d);
         break;
 
       case 'b':
@@ -180,7 +192,7 @@ int main(int argc, char *argv[]) {
         break;
 
       case 'm':
-        client<MMapFileStream<int>>(elements, block_size, buffer_size, d);
+        client<CachedStream<int, MMapFileStream, 1024>>(elements, block_size, buffer_size, d);
         break;
 
       default:

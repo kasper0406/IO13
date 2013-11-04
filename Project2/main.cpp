@@ -15,11 +15,11 @@
 using namespace std;
 
 // typedef DummyStream<int> TestStream;
-typedef FStream<int> TestStream;
+// typedef FStream<int> TestStream;
 // typedef MMapStream<int> TestStream;
 // typedef MMapFileStream<int> TestStream;
 // typedef CachedStream<int, FStream<int>, 128> TestStream;
-// typedef CachedStream<int, MMapStream, 128> TestStream;
+typedef CachedStream<int, MMapFileStream, 128> TestStream;
 // typedef CachedStream<int, FStream, 8> TestStream;
 
 void resize_test() {
@@ -108,11 +108,11 @@ void lasse_test() {
 
 void kasper_test() {
   cout << "Kasper test" << endl;
-  ExternalHeap<TestStream, int> foo("heap2", 1024, 512, 8);
-  const uint64_t N = 10000;
+  ExternalHeap<TestStream, int> foo("heap2", 1024, 0, 32);
+  const uint64_t N = 100000;
   
   for (int i = 0; i < N; ++i) {
-    foo.insert(N - i);
+    foo.insert(rand());
   }
   
   /*

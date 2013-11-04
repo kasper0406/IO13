@@ -31,15 +31,7 @@ public:
   }
   
   ~ExternalHeap() {
-    // TODO(knielsen): Consider a better design.
     S::cleanup(); // Required for MMapFileStream.
-  }
-
-  void sift_all() {
-    // TODO(lespeholt): Only leafs
-    for (int i = blocks().size() - 1; i >= 0; --i) {
-      blocks()[i].sift(true);
-    }
   }
 
   void insert(I element, bool sift = true) {
@@ -77,7 +69,7 @@ public:
         }
       }
       
-      consistency_check();
+      // consistency_check();
     }
 
     // Push element in insert buffer
@@ -114,8 +106,6 @@ public:
     }
 
     size_--;
-    
-    // TODO(knielsen): Keep some elements in the root buffered.
     
     if (!insert_buffer_.empty() && insert_buffer_.front() == peek_max()) {
       // Biggest is in insert buffer

@@ -76,11 +76,8 @@ public:
       Q.push(ElementChild(child(c)->peek(), c));
     }
     
-    // TODO(lespeholt): Test hvilken der er bedst
     const uint64_t elements_to_refill = min(elements_in_children(), (uint64_t)ceil((double)(end_ - start_) / 2));
-    // const uint64_t elements_to_refill = min(elements_in_children(), (uint64_t)(end_ - start_ - element_count()));
     
-    // TODO(knielsen): Maybe change memory layout to queue. I don't think easy elimination of data movement is possible.
     this->move_back(elements_to_refill);
     
     this->open_front();
@@ -144,7 +141,6 @@ public:
     assert(this->element_count() == 0);
     
     // Find out how many elements goes to the child (k), and how many to the parent (r - k).
-    // TODO(knielsen): Prettyfy this?
     const uint64_t minimum_block_size = ceil((double)(end_ - start_) / 2);
     const uint64_t maximum_block_size = end_ - start_;
     uint64_t k = max(elements_in_child_less_than_min_in_parent, minimum_block_size);
@@ -222,7 +218,6 @@ public:
       return;
     
     const uint64_t r = this->element_count() + parent()->element_count();
-    const uint64_t elements_in_parent_before = parent()->element_count();
     
     vector<I> buffer;
     buffer.reserve(r);
@@ -231,12 +226,10 @@ public:
     parent()->open_at_first_element();
     
     // Merge into internal memory
-    bool element_in_child_moved_to_parent = false; // TODO(knielsen): Get rid of this one
     uint64_t child_elements_greater_than_min_in_parent = 0;
     
     while (!this->empty() && !parent()->empty()) {
       if (this->peek() > parent()->peek()) {
-        element_in_child_moved_to_parent = true;
         child_elements_greater_than_min_in_parent++;
         buffer.push_back(this->read_dec());
       } else {
@@ -282,7 +275,7 @@ public:
     this->close();
     parent()->close();
     
-    if (element_in_child_moved_to_parent && recursive)
+    if (elements_in_child_less_than_min_in_parent && recursive)
       parent()->sift(true);
   }
   
