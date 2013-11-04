@@ -155,6 +155,15 @@ void server() {
   }
 }
 
+void flush_disk() {
+  #ifdef LINUX
+  auto result = exec("echo 3 | /proc/sys/vm/drop_caches");
+  if (result.first != 0) {
+    cout << "Error flushing disk" << endl;
+  }
+  #endif
+}
+
 pair<int64_t, int64_t> disk_activity() {
 #ifdef LINUX
   auto diskstats = exec("cat /proc/diskstats | grep sdb2");
@@ -205,6 +214,8 @@ int main(int argc, char *argv[]) {
     }
 
     create.close();
+
+    flush_disk();
 
     auto disk_start = disk_activity();
     
