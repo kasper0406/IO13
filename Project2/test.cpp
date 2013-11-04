@@ -194,7 +194,7 @@ tuple<int64_t, int64_t, int64_t, int64_t, int64_t> disk_activity() {
     cout << "Unable to parse disk activity" << endl;
     return make_tuple(0,0,0,0,0);
   }
-  return {field3, field7, field1, field5, field10};
+  return make_tuple(field3, field7, field1, field5, field10);
 #else
   return make_tuple(0,0,0,0,0);
 #endif
