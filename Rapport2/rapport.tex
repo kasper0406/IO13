@@ -55,49 +55,10 @@ The following is a description of the different folders available at
 \texttt{\url{https://github.com/kasper0406/IO13/tree/master/Project2/}}
 \begin{description}
 \item[root] Contains the implementations of the different streams and
-  the external mergesort.
+  the external heap.
 
-\item[measurements/] Contains the raw measurements used for the plots in the
-  report. The plots themselves are also included in a pdf-format.
-\end{description}
+% TODO:
 
-\subsubsection{Code structure}
-The code has the following source files:
-\begin{description}
-\item[main.cpp] Driver code for calling test code.
-\item[test.h] Test framework for testing streams and sorting with
-  different parameters.
-\item[utils.h] Responsible for generating large files for testing.
-\item[CMakeLists.txt] CMake file for the project specifying
-  compilation options.
-
-\item[rw\_stream.h] Shared code for streams using \texttt{write} and
-  \texttt{read} system calls. The unbuffered streams are implemented
-  in:
-  \begin{itemize}
-  \item read\_input\_stream.h
-  \item write\_output\_stream.h
-  \end{itemize}
-  The buffered streams are implemented in:
-  \begin{itemize}
-  \item buffered\_input\_stream.h
-  \item buffered\_output\_stream.h
-  \end{itemize}
-
-\item[f\_stream.h] Shared code for streams using \texttt{fwrite} and
-  \texttt{fread} functions from the C standard library. Specific
-  stream implementations are:
-  \begin{itemize}
-  \item fread\_input\_stream.h
-  \item fwrite\_output\_stream.h
-  \end{itemize}
-
-\item[mmap\_stream.h] Shared code for streams using memory mapping of
-  files. Specific stream implementations are:
-  \begin{itemize}
-  \item mmap\_input\_stream.h
-  \item mmap\_output\_stream.h
-  \end{itemize}
 \end{description}
 
 \section{Implementation}
@@ -155,11 +116,47 @@ When inserting into the heap, the
 
 \subsection{Streams}
 
-\subsubsection{SysStream}
+To support the heap structure, the stream interface supported the following operations:
 
-\subsubsection{FStream}
+\begin{description}
+\item[{\texttt{open}}] Opens the stream for read/write
+\item[{\texttt{close}}] Closes the stream and deallocates buffers if applicable
+\item[{\texttt{peek}}] Peeks at the current location
+\item[{\texttt{read\_next}}] Reads at the current location and advances the location
+\item[{\texttt{read\_prev}}] Reads at the current location and moves back
+\item[{\texttt{write}}] Writes at the current location and advances the location
+\item[{\texttt{backward\_write}}] Writes at the current location and moves back
+\item[{\texttt{position}}] Return the current location
+\item[{\texttt{seek}}] Changes the location
+\end{description}
+
+\texttt{read\_prev} and \texttt{backward\_write} were needed for the memory efficient sifting algorithm.
+
+\subsubsection{Buffered stream}
+
+The implementation of buffered stream were slightly more complex than the implementation in project 1 because of the extended stream interface with methods like \texttt{seek} and \texttt{read\_prev}.
+
+% TODO: How the final buffered stream looked like. And how we choose those options.
+
+\subsubsection{Memory mapped stream}
+
+In project 1, the memory mapped stream mapped small blocks of the file when they were needed. This is not the most natural way to utilize memory mapped files. Instead, the memory mapped stream used in this projects maps the whole file once and remaps the file if the file size changes. In this way, the operating system is completely in charge of utilizing file caches in the best possible way.
+
+% TODO: Test MMapStream vs. MMapFileStream.
+
+\subsubsection{Cached stream}
+
+To make it very fast to retrieve the maximum element of especially the root but also other nodes, a cached stream were implemented. It caches reads but propagates writes to the underlying stream.
+
+The caching is very important for the analysis of the algorithm. If no cache where used in the root node, every extract max operation would result in an I/O. Hence, the algorithm would have the complexity $O(N\log \frac{N}{B})$ instead of $O(\frac{N}{B}\log \frac{N}{B})$. Furthermore, in the refill operation all the children's maximum element is look at which also would result in an I/O.
+
+\subsubsection{Other streams}
+
+A stream using the POSIX methods \texttt{read} and \texttt{write} and a stream using \texttt{fread} and \texttt{fwrite} were also implemented. The stream interface almost mapped one-to-one and are therefore not explained in more detail.
 
 \section{Benchmarks}
+
+\subsection{Sift algorithm variations}
 
 \subsection{Streams}
 
