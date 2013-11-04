@@ -5,6 +5,7 @@
 #include <chrono>
 #include "sys/wait.h"
 #include <iomanip>
+#include <unistd.h>
 #include <inttypes.h>
 #include <cstdlib>
 
@@ -20,6 +21,10 @@
 
 using namespace std;
 using namespace std::chrono;
+
+#ifdef LINUX
+#define SCNd64 "li"
+#endif
 
 template <typename S>
 void client(size_t elements, size_t block_size, size_t buffer_size, size_t d) {
@@ -151,22 +156,35 @@ void server() {
   }
 }
 
+void flush_disk() {
+  #ifdef LINUX
+  sync();
+  auto result = exec("echo 3 | sudo tee /proc/sys/vm/drop_caches");
+  if (result.first != 0) {
+    cout << "Error flushing disk" << endl;
+  }
+  #endif
+}
+
 pair<int64_t, int64_t> disk_activity() {
 #ifdef LINUX
-    auto diskstats = exec("cat /proc/diskstats | grep sdb2");
-    if (diskstats.first != 0) {
-      cout << "Something went wrong fetching disk activity" << endl;
-      return {0,0};
-    }
-    int64_t field1,field2,field3,field4,field5,field6,field7;
-    if (sscanf(diskstats.second.c_str(), "[^s]db2 %" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64,
-               &field1, &field2, &field3, &field4, &field5, &field6, &field7) != 7) {
-      cout << "Unable to parse disk activity" << endl;
-      return {0,0};
-    }
-    return {field3, field7};
-#else
+  auto diskstats = exec("cat /proc/diskstats | grep sdb2");
+  if (diskstats.first != 0) {
+    cout << "Something went wrong fetching disk activity" << endl;
     return {0,0};
+  }
+  char junk[128];
+  int64_t field1,field2,field3,field4,field5,field6,field7;
+  int success = sscanf(diskstats.second.c_str(), "%[^s]sdb2 %" SCNd64 " %" SCNd64 " %"
+                                                 SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64,
+                       (char*)&junk, &field1, &field2, &field3, &field4, &field5, &field6, &field7);
+  if (success != 8) {
+    cout << "Unable to parse disk activity" << endl;
+    return {0,0};
+  }
+  return {field3, field7};
+#else
+  return {0,0};
 #endif
 
 }
@@ -199,6 +217,8 @@ int main(int argc, char *argv[]) {
 
     create.close();
 
+    flush_disk();
+
     auto disk_start = disk_activity();
     
     auto beginning = high_resolution_clock::now();
@@ -228,7 +248,7 @@ int main(int argc, char *argv[]) {
     auto disk_end = disk_activity();
     cout << duration_cast<milliseconds>(duration).count() / 1000.
         << " " << (disk_end.first - disk_start.first)
-        << " " << (disk_end.second - disk_end.second)
+        << " " << (disk_end.second - disk_start.second)
         << endl;
   } else {
   #ifdef NDEBUG
