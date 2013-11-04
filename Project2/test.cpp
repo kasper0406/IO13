@@ -5,6 +5,7 @@
 #include <chrono>
 #include "sys/wait.h"
 #include <iomanip>
+#include <inttypes.h>
 #include <cstdlib>
 
 #include "test.hpp"
@@ -32,19 +33,7 @@ void client(size_t elements, size_t block_size, size_t buffer_size, size_t d) {
     heap.insert(stream.read_next());
   }
 
-  // {
-  //   ofstream before("heap_before.dot");
-  //   before << heap.to_dot();
-  //   before.close();
-  // }
-
   // heap.sift_all();
-
-  // {
-  //   ofstream before("heap_after.dot");
-  //   before << heap.to_dot();
-  //   before.close();
-  // }
 
   stream.seek(0);
 
@@ -97,10 +86,16 @@ void server() {
   cout << setw(12) << "d";
   cout << setw(12) << "Buffer size";
   cout << setw(12) << "Time";
+  cout << setw(12) << "I";
+  cout << setw(12) << "O";
   cout << endl;
 
   // SET PARAMETERS HERE!
+  #ifdef LINUX
+  string timeout_exec = "/usr/bin/timeout";
+  #else
   string timeout_exec = "/usr/local/Cellar/coreutils/8.21/bin/gtimeout";
+  #endif
   int timeout_seconds = 1000;
   int block_size_start = 1024;
   int block_size_end = 1024 * 1024 * 128;
@@ -132,9 +127,16 @@ void server() {
             cout << setw(12) << d;
             cout << setw(12) << buffer_size;
 
-            if (result.first == 0) {
-              double seconds = atof(result.second.c_str());
-              cout << setw(12) << seconds << endl;
+            double seconds;
+            int64_t disk_i;
+            int64_t disk_o;
+            if (result.first == 0 &&
+                sscanf(result.second.c_str(), "%lf %" SCNd64 " %" SCNd64,
+                         &seconds, &disk_i, &disk_o) == 3) {
+              cout << setw(12) << seconds;
+              cout << setw(12) << disk_i;
+              cout << setw(12) << disk_o;
+              cout << endl;
             } else if (result.first == 124) {
               cout << setw(12) << "Timeout" << endl;
               break;
@@ -149,6 +151,26 @@ void server() {
   }
 }
 
+pair<int64_t, int64_t> disk_activity() {
+#ifdef LINUX
+    auto diskstats = exec("cat /proc/diskstats | grep sdb2");
+    if (diskstats.first != 0) {
+      cout << "Something went wrong fetching disk activity" << endl;
+      return {0,0};
+    }
+    int64_t field1,field2,field3,field4,field5,field6,field7;
+    if (sscanf(diskstats.second.c_str(), "[^s]db2 %" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64,
+               &field1, &field2, &field3, &field4, &field5, &field6, &field7) != 7) {
+      cout << "Unable to parse disk activity" << endl;
+      return {0,0};
+    }
+    return {field3, field7};
+#else
+    return {0,0};
+#endif
+
+}
+
 int main(int argc, char *argv[]) {
   srand(time(NULL));
 
@@ -158,7 +180,7 @@ int main(int argc, char *argv[]) {
     int buffer_size;
     int d;
     char stream_type;
-    if (sscanf(argv[2], "elements:%lli block_size:%i buffer_size:%i d:%i stream:%c",
+    if (sscanf(argv[2], "elements:%" SCNd64 " block_size:%i buffer_size:%i d:%i stream:%c",
                &elements, &block_size, &buffer_size, &d, &stream_type) != 5) {
       cerr << "Input matching failed." << endl;
       exit(10);
@@ -176,6 +198,8 @@ int main(int argc, char *argv[]) {
     }
 
     create.close();
+
+    auto disk_start = disk_activity();
     
     auto beginning = high_resolution_clock::now();
     switch (stream_type) {
@@ -201,7 +225,11 @@ int main(int argc, char *argv[]) {
         break;
     }
     high_resolution_clock::duration duration = high_resolution_clock::now() - beginning;
-    cout << duration_cast<milliseconds>(duration).count() / 1000. << endl;
+    auto disk_end = disk_activity();
+    cout << duration_cast<milliseconds>(duration).count() / 1000.
+        << " " << (disk_end.first - disk_start.first)
+        << " " << (disk_end.second - disk_end.second)
+        << endl;
   } else {
   #ifdef NDEBUG
     cout << "Release mode" << endl;

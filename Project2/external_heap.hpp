@@ -5,6 +5,7 @@
 #include <vector>
 #include <queue>
 #include <cstdint>
+#include <limits>
 #include <sstream>
 
 #include "block.hpp"

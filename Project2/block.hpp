@@ -55,7 +55,7 @@ public:
   }
 
   // Copy constructor.
-  Block(const Block& other) {
+  Block(Block& other) {
     assert(false);
   }
 
