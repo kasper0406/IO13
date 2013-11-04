@@ -182,7 +182,7 @@ tuple<int64_t, int64_t, int64_t, int64_t, int64_t> disk_activity() {
   auto diskstats = exec("cat /proc/diskstats | grep sdb2");
   if (diskstats.first != 0) {
     cout << "Something went wrong fetching disk activity" << endl;
-    return {0,0,0,0,0};
+    return make_tuple(0,0,0,0,0);
   }
   char junk[128];
   int64_t field1,field2,field3,field4,field5,field6,field7,field8,field9,field10;
@@ -192,11 +192,11 @@ tuple<int64_t, int64_t, int64_t, int64_t, int64_t> disk_activity() {
                        (char*)&junk, &field1, &field2, &field3, &field4, &field5, &field6, &field7, &field8, &field9, &field10);
   if (success != 10) {
     cout << "Unable to parse disk activity" << endl;
-    return {0,0,0,0,0};
+    return make_tuple(0,0,0,0,0);
   }
   return {field3, field7, field1, field5, field10};
 #else
-  return {0,0,0,0,0};
+  return make_tuple(0,0,0,0,0);
 #endif
 
 }
