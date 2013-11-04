@@ -100,7 +100,11 @@ void server() {
   cout << endl;
 
   // SET PARAMETERS HERE!
+  #ifdef LINUX
+  string timeout_exec = "timeout";
+  #else
   string timeout_exec = "/usr/local/Cellar/coreutils/8.21/bin/gtimeout";
+  #endif
   int timeout_seconds = 1000;
   int block_size_start = 1024;
   int block_size_end = 1024 * 1024 * 128;
@@ -176,6 +180,9 @@ int main(int argc, char *argv[]) {
     }
 
     create.close();
+
+    auto diskstats = exec("cat /proc/diskstats | grep sdb2");
+    cout << diskstats.first << " " << diskstats.second;
     
     auto beginning = high_resolution_clock::now();
     switch (stream_type) {
