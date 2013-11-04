@@ -91,8 +91,12 @@ void server() {
   cout << setw(12) << "d";
   cout << setw(12) << "Buffer size";
   cout << setw(12) << "Time";
-  cout << setw(12) << "I";
-  cout << setw(12) << "O";
+  cout << setw(12) << "I sectors";
+  cout << setw(12) << "O sectors";
+  cout << setw(12) << "Read ops";
+  cout << setw(12) << "Write ops";
+  cout << setw(12) << "I/O time";
+
   cout << endl;
 
   // SET PARAMETERS HERE!
@@ -135,12 +139,18 @@ void server() {
             double seconds;
             int64_t disk_i;
             int64_t disk_o;
+            int64_t disk_reads;
+            int64_t disk_writes;
+            int64_t disk_time;
             if (result.first == 0 &&
-                sscanf(result.second.c_str(), "%lf %" SCNd64 " %" SCNd64,
-                         &seconds, &disk_i, &disk_o) == 3) {
+                sscanf(result.second.c_str(), "%lf %" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64,
+                         &seconds, &disk_i, &disk_o, &disk_reads, &disk_writes, &disk_time) == 6) {
               cout << setw(12) << seconds;
               cout << setw(12) << disk_i;
               cout << setw(12) << disk_o;
+              cout << setw(12) << disk_reads;
+              cout << setw(12) << disk_writes;
+              cout << setw(12) << ((double)disk_time / 1000);
               cout << endl;
             } else if (result.first == 124) {
               cout << setw(12) << "Timeout" << endl;
@@ -166,7 +176,7 @@ void flush_disk() {
   #endif
 }
 
-pair<int64_t, int64_t> disk_activity() {
+tuple<int64_t, int64_t, int64_t, int64_t, int64_t> disk_activity() {
 #ifdef LINUX
   auto diskstats = exec("cat /proc/diskstats | grep sdb2");
   if (diskstats.first != 0) {
@@ -174,17 +184,18 @@ pair<int64_t, int64_t> disk_activity() {
     return {0,0};
   }
   char junk[128];
-  int64_t field1,field2,field3,field4,field5,field6,field7;
+  int64_t field1,field2,field3,field4,field5,field6,field7,field8,field9,field10;
   int success = sscanf(diskstats.second.c_str(), "%[^s]sdb2 %" SCNd64 " %" SCNd64 " %"
-                                                 SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64,
-                       (char*)&junk, &field1, &field2, &field3, &field4, &field5, &field6, &field7);
-  if (success != 8) {
+                                                 SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64
+                                                 " %" SCNd64 " %" SCNd64 " %" SCNd64,
+                       (char*)&junk, &field1, &field2, &field3, &field4, &field5, &field6, &field7, &field8, &field9, &field10);
+  if (success != 10) {
     cout << "Unable to parse disk activity" << endl;
-    return {0,0};
+    return {0,0,0,0,0};
   }
-  return {field3, field7};
+  return {field3, field7, field1, field5, field10};
 #else
-  return {0,0};
+  return {0,0,0,0,0};
 #endif
 
 }
@@ -247,8 +258,11 @@ int main(int argc, char *argv[]) {
     high_resolution_clock::duration duration = high_resolution_clock::now() - beginning;
     auto disk_end = disk_activity();
     cout << duration_cast<milliseconds>(duration).count() / 1000.
-        << " " << (disk_end.first - disk_start.first)
-        << " " << (disk_end.second - disk_start.second)
+        << " " << (get<0>(disk_end) - get<0>(disk_start))
+        << " " << (get<1>(disk_end) - get<1>(disk_start))
+        << " " << (get<2>(disk_end) - get<2>(disk_start))
+        << " " << (get<3>(disk_end) - get<3>(disk_start))
+        << " " << (get<4>(disk_end) - get<4>(disk_start))
         << endl;
   } else {
   #ifdef NDEBUG
