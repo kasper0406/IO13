@@ -139,10 +139,29 @@ private:
   void refresh_buffer() {
     flush_buffer();
 
-    // TODO(lespeholt): Heuristik, hvis nye position er foer, saa laes bagud, ellers forud
-    // 'position_' is in the middle of the new buffer
-    buffer_start_ = max(position_ - (buffer_size_ / 2), (int64_t)start_);
-    int64_t buffer_end = min(buffer_start_ + buffer_size_, end_);
+    // start count: 1065 end count: 10725 else count: 2922
+    // if (position_ == buffer_start_ + utilized_buffer_size_ || position_ == start_)
+    //   end_count++;
+    // else if (position_ == buffer_start_ - 1 || position_ == end_ - 1)
+    //   start_count++;
+    // else
+    //   else_count++;
+
+    // cout << "start: " << buffer_start_ << " end: " << (buffer_start_ + utilized_buffer_size_) << " new pos: " << position_ << endl;
+    // cout << "start count: " << start_count << " end count: " << end_count << " else count: " << else_count << endl;
+
+    int64_t buffer_end;
+    if (position_ == buffer_start_ + utilized_buffer_size_ || position_ == start_) {
+      buffer_start_ = position_;
+      buffer_end = min(buffer_start_ + buffer_size_, end_);
+    } else if (position_ == buffer_start_ - 1 || position_ == end_ - 1) {
+      buffer_start_ = max(position_ - buffer_size_ + 1, (int64_t)start_);
+      buffer_end = min(buffer_start_ + buffer_size_, position_ + 1);
+    } else {
+      buffer_start_ = max(position_ - (buffer_size_ / 2), (int64_t)start_);
+      buffer_end = min(buffer_start_ + buffer_size_, end_);
+    }
+
     utilized_buffer_size_ = buffer_end - buffer_start_;
 
     if (::lseek(fd, buffer_start_ * sizeof(I), SEEK_SET) == -1) {
@@ -157,6 +176,11 @@ private:
     }
   }
 
+  // TODO(lespeholt): delete
+  static int64_t start_count;
+  static int64_t end_count;
+  static int64_t else_count;
+
   int64_t start_;
   int64_t end_;
   int fd;
@@ -166,3 +190,10 @@ private:
   int64_t buffer_start_;
   int64_t position_;
 };
+
+template <typename I>
+int64_t BufferedStream<I>::start_count = 0;
+template <typename I>
+int64_t BufferedStream<I>::end_count = 0;
+template <typename I>
+int64_t BufferedStream<I>::else_count = 0;
