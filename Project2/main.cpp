@@ -19,7 +19,7 @@ using namespace std;
 // typedef MMapStream<int> TestStream;
 // typedef MMapFileStream<int> TestStream;
 // typedef CachedStream<int, FStream<int>, 128> TestStream;
-typedef CachedStream<int, MMapFileStream, 128> TestStream;
+typedef CachedStream<int, BufferedStream, 128> TestStream;
 // typedef CachedStream<int, FStream, 8> TestStream;
 
 void resize_test() {
@@ -108,7 +108,7 @@ void lasse_test() {
 
 void kasper_test() {
   cout << "Kasper test" << endl;
-  ExternalHeap<TestStream, int> foo("heap2", 1024, 0, 32);
+  ExternalHeap<TestStream, int> foo("heap2", 1024, 2, 32);
   const uint64_t N = 100000;
   
   for (int i = 0; i < N; ++i) {
@@ -322,11 +322,56 @@ void simple_sanity_test(size_t buffer_size = 0) {
     exit(1);
   }
   filesize.seekg(0, ifstream::end);
-  if (filesize.tellg() != 4) {
+  auto tell = filesize.tellg();
+  if (tell != 4) {
     cout << "Wrong filesize" << endl;
     exit(1);
   };
   filesize.close();
+  
+  S stream3;
+  stream3.open("monkey", 0, 4, buffer_size);
+  stream3.write(0);
+  stream3.write(1);
+  stream3.write(2);
+  stream3.write(3);
+  stream3.close();
+  
+  S stream4;
+  stream4.open("monkey", 0, 4, buffer_size);
+  if (stream4.read_next() != 0
+      && stream4.read_next() != 1
+      && stream4.read_next() != 2
+      && stream4.read_next() != 3) {
+    cout << "Wrong result" << endl;
+    exit(1);
+  }
+  stream4.close();
+  
+  S stream5;
+  stream5.open("monkey", 0, 3, buffer_size);
+  stream5.write(42);
+  stream5.seek(2);
+  stream5.write(43);
+  stream5.close();
+  
+  stream5.open("monkey", 2, 4, buffer_size);
+  stream5.seek(3);
+  stream5.write(44);
+  stream5.close();
+  
+  S stream6;
+  stream6.open("monkey", 0, 4, buffer_size);
+  if (stream6.read_next() != 42) {
+    cout << "Wrong result" << endl;
+    exit(1);
+  }
+  stream6.seek(3);
+  if (stream6.read_next() != 44) {
+    cout << "Wrong result" << endl;
+    exit(1);
+  }
+  stream6.close();
 }
 
 int main(int argc, char *argv[]) {
@@ -344,6 +389,7 @@ int main(int argc, char *argv[]) {
   simple_sanity_test<FStream<int>>();
   // simple_sanity_test<MMapStream<int>>();
   simple_sanity_test<SysStream<int>>();
+  simple_sanity_test<BufferedStream<int>>(1);
   simple_sanity_test<BufferedStream<int>>(2);  
   simple_sanity_test<BufferedStream<int>>(3);
   simple_sanity_test<BufferedStream<int>>(4);
