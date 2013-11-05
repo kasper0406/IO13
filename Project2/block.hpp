@@ -113,7 +113,7 @@ public:
 
   void sift(bool recursive = true) {
     sift_memory_efficient(recursive);
-    // sift_memory_wasting(recursive);
+    //sift_memory_wasting(recursive);
   }
   
   // Sift up to parent (optionally recursively)

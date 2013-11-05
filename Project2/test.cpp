@@ -106,24 +106,24 @@ void server() {
   #else
   string timeout_exec = "/usr/local/Cellar/coreutils/8.21/bin/gtimeout";
   #endif
-  int timeout_seconds = 1000;
-  int block_size_start = 1024;
-  int block_size_end = 1024 * 1024 * 128;
+  int timeout_seconds = 100;
+  int block_size_start = 1024 * 128;
+  int block_size_end = 4096 * 4096;
   int buffer_size_start = 1024;
-  int buffer_size_end = 1024 * 1024 * 8;
+  int buffer_size_end = 1024 * 16;
   int d_start = 32;
   int d_end = 4096;
-  int64_t elements_start = 1024;
-  int64_t elements_end = 1024 * 1024 * 1024;
-  vector<char> stream_types { 'm' };
+  int64_t elements_start = 1024 * 1024;
+  int64_t elements_end = 1024 * 1024 * 128;
+  vector<char> stream_types {'m','f', 's' };
   
   for (char stream_type : stream_types) {
-    for (int block_size = block_size_start; block_size <= block_size_end; block_size*=2) {
-      for (int d = d_start; d <= d_end; d*=2) {
+    for (int block_size = block_size_start; block_size <= block_size_end; block_size*=4) {
+      for (int d = d_start; d <= d_end; d*=4) {
         for (int buffer_size = (stream_type == 'b' ? buffer_size_start : 0);
-             buffer_size <= (stream_type == 'b' ? min(buffer_size_end, block_size) : 0); buffer_size= max(1, buffer_size * 2)) {
+             buffer_size <= (stream_type == 'b' ? min(buffer_size_end, block_size) : 0); buffer_size= max(1, buffer_size * 4)) {
           for (int64_t elements = max(elements_start, (int64_t)block_size); elements <= elements_end; elements*=2) {
-            if (d * block_size > elements) continue;
+            if ((int64_t)d * (int64_t)block_size > elements) continue;
 
             string command = timeout_exec + " " + to_string(timeout_seconds) + " ./Project2Test client "
             + "\"elements:" + to_string(elements) + " block_size:" + to_string(block_size) + " buffer_size:"
@@ -185,16 +185,16 @@ tuple<int64_t, int64_t, int64_t, int64_t, int64_t> disk_activity() {
     return make_tuple(0,0,0,0,0);
   }
   char junk[128];
-  int64_t field1,field2,field3,field4,field5,field6,field7,field8,field9,field10;
+  int64_t field1,field2,field3,field4,field5,field6,field7,field8,field9,field10,field11;
   int success = sscanf(diskstats.second.c_str(), "%[^s]sdb2 %" SCNd64 " %" SCNd64 " %"
                                                  SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64
-                                                 " %" SCNd64 " %" SCNd64 " %" SCNd64,
-                       (char*)&junk, &field1, &field2, &field3, &field4, &field5, &field6, &field7, &field8, &field9, &field10);
-  if (success != 11) {
+                                                 " %" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64,
+                       (char*)&junk, &field1, &field2, &field3, &field4, &field5, &field6, &field7, &field8, &field9, &field10,&field11);
+  if (success != 12) {
     cout << "Unable to parse disk activity" << endl;
     return make_tuple(0,0,0,0,0);
   }
-  return make_tuple(field3, field7, field1, field5, field10);
+  return make_tuple(field3, field7, field1, field5, field11);
 #else
   return make_tuple(0,0,0,0,0);
 #endif
