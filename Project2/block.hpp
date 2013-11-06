@@ -25,19 +25,18 @@ public:
   typedef uint64_t Child;
   
   Block(size_t start, size_t end, ExternalHeap<S, I>* heap)
-    : heap_(heap), stream_(S()), element_count_(0), start_(start), end_(end) {
+    : heap_(heap), stream_(S(heap->stream_cache_size())), element_count_(0), start_(start), end_(end) {
       // Avoid calling methods on 'heap' in the constructor
       // because it may not be initialized properly at this point
   }
 
   // Move constructor.
-  Block(Block&& other) NOEXCEPT {
+  Block(Block&& other) NOEXCEPT : stream_(move(other.stream_)) {
     // assert(other.stream_ == nullptr);
     element_count_ = other.element_count_;
     cached_minimum_ = other.cached_minimum_;
     start_ = other.start_;
     end_ = other.end_;
-    stream_ = move(other.stream_);
     heap_ = other.heap_;
   }
 

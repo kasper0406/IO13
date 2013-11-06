@@ -6,6 +6,8 @@
 template <typename I>
 class DummyStream {
 public:
+  DummyStream(uint64_t cache_size) { }
+  
   void open(string filename, uint64_t start, uint64_t end, size_t buffer_size) {
     start_ = start;
     end_ = end;

@@ -15,7 +15,7 @@
 template <typename I>
 class FStream {
 public:
-  FStream() : pFile(nullptr) {}
+  FStream(uint64_t cache_size) : pFile(nullptr) {}
   
   void open(string filename, uint64_t start, uint64_t end, size_t buffer_size) {
     end_ = end;

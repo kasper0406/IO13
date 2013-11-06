@@ -10,7 +10,7 @@
 template <typename I>
 class BufferedStream {
 public:
-  BufferedStream() : fd(-1), buffer_(nullptr), buffer_start_(-1) {}
+  BufferedStream(uint64_t cache_size) : fd(-1), buffer_(nullptr), buffer_start_(-1) {}
   
   void open(string filename, uint64_t start, uint64_t end, size_t buffer_size) {
     assert(buffer_size > 0);

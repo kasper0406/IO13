@@ -18,19 +18,19 @@ using namespace std;
 // typedef FStream<int> TestStream;
 // typedef MMapStream<int> TestStream;
 // typedef MMapFileStream<int> TestStream;
-// typedef CachedStream<int, FStream<int>, 128> TestStream;
-typedef CachedStream<int, BufferedStream, 128> TestStream;
-// typedef CachedStream<int, FStream, 8> TestStream;
+// typedef CachedStream<int, FStream<int>> TestStream;
+typedef CachedStream<int, BufferedStream> TestStream;
+// typedef CachedStream<int, FStream> TestStream;
 
 void resize_test() {
-  ExternalHeap<FStream<int>, int> foo("resize_heap", 5, 3, 3);
+  ExternalHeap<FStream<int>, int> foo("resize_heap", 5, 3, 3, 3);
   for (int i = 0; i < 11; ++i) {
     foo.insert(100);
   }
 }
 
 void test_swap_sift_test() {
-  ExternalHeap<TestStream, int> foo("heap", 5, 3, 3);
+  ExternalHeap<TestStream, int> foo("heap", 5, 3, 3, 3);
   
   // Full tree
   for (int i = 0; i < 5; ++i) {
@@ -67,7 +67,7 @@ void test_swap_sift_test() {
 void lasse_test() {
   cout << "Lasse test" << endl;
   
-  ExternalHeap<SysStream<int>, int> foo("heap3", 4, 2, 2);
+  ExternalHeap<SysStream<int>, int> foo("heap3", 4, 2, 2, 3);
   foo.insert(10);
   foo.insert(10);
   foo.insert(8);
@@ -108,8 +108,8 @@ void lasse_test() {
 
 void kasper_test() {
   cout << "Kasper test" << endl;
-  ExternalHeap<TestStream, int> foo("heap2", 1024, 2, 32);
-  const uint64_t N = 100000;
+  ExternalHeap<TestStream, int> foo("heap2", 1024, 2, 32, 4);
+  const uint64_t N = 1000;
   
   for (int i = 0; i < N; ++i) {
     foo.insert(rand());
@@ -141,7 +141,7 @@ void kasper_test() {
 
 void mmap_stream_test() {
   // MMap stream test
-  MMapStream<uint64_t> stream;
+  MMapStream<uint64_t> stream(0);
   
   // Write some content
   stream.open("test.bin", 0, 10, 0);
@@ -165,7 +165,7 @@ void mmap_file_stream_test() {
   const string filename = "test.bin";
   const int B = 8;
   
-  vector<BufferedStream<int>> streams(stream_count, BufferedStream<int>());
+  vector<BufferedStream<int>> streams(stream_count, BufferedStream<int>(0));
   
   // Write test
   for (int i = 0; i < stream_count; i++) {
@@ -205,7 +205,7 @@ void cached_stream_test() {
   const uint64_t N = 4096;
   const uint64_t start = 2 * N;
   
-  BufferedStream<int> stream;
+  BufferedStream<int> stream(0);
   
   // Write some content
   stream.open("test.bin", start, start + N, 100);
@@ -223,7 +223,7 @@ void cached_stream_test() {
 }
 
 template <typename S>
-void simple_sanity_test(size_t buffer_size = 0) {
+void simple_sanity_test(size_t buffer_size = 0, size_t cache_size = 128) {
   fstream create("monkey", fstream::out | fstream::binary);
   if (!create.is_open()) {
     cout << "Could not create file" << endl;
@@ -233,7 +233,7 @@ void simple_sanity_test(size_t buffer_size = 0) {
   create.write(reinterpret_cast<const char*>(&value), sizeof(int));
   create.close();
   
-  S stream;
+  S stream(cache_size);
   stream.open("monkey", 0, 1, buffer_size);
   
   if (!stream.has_next()) {
@@ -306,7 +306,7 @@ void simple_sanity_test(size_t buffer_size = 0) {
 
   stream.close();
 
-  S stream2;
+  S stream2(cache_size);
   stream2.open("monkey", 0, 1, buffer_size);
 
   if (stream2.has_next() && stream2.read_next() != 41) {
@@ -329,7 +329,7 @@ void simple_sanity_test(size_t buffer_size = 0) {
   };
   filesize.close();
   
-  S stream3;
+  S stream3(cache_size);
   stream3.open("monkey", 0, 4, buffer_size);
   stream3.write(0);
   stream3.write(1);
@@ -337,7 +337,7 @@ void simple_sanity_test(size_t buffer_size = 0) {
   stream3.write(3);
   stream3.close();
   
-  S stream4;
+  S stream4(cache_size);
   stream4.open("monkey", 0, 4, buffer_size);
   if (stream4.read_next() != 0
       && stream4.read_next() != 1
@@ -348,7 +348,7 @@ void simple_sanity_test(size_t buffer_size = 0) {
   }
   stream4.close();
   
-  S stream5;
+  S stream5(cache_size);
   stream5.open("monkey", 0, 3, buffer_size);
   stream5.write(42);
   stream5.seek(2);
@@ -360,7 +360,7 @@ void simple_sanity_test(size_t buffer_size = 0) {
   stream5.write(44);
   stream5.close();
   
-  S stream6;
+  S stream6(cache_size);
   stream6.open("monkey", 0, 4, buffer_size);
   if (stream6.read_next() != 42) {
     cout << "Wrong result" << endl;
@@ -395,8 +395,8 @@ int main(int argc, char *argv[]) {
   simple_sanity_test<BufferedStream<int>>(4);
   // simple_sanity_test<CachedStream<int, DummyStream, 10>>();
   // simple_sanity_test<CachedStream<int, MMapStream, 10>>();
-  simple_sanity_test<CachedStream<int, FStream, 10>>();
-  simple_sanity_test<CachedStream<int, BufferedStream, 10>>(2);
+  simple_sanity_test<CachedStream<int, FStream>>();
+  simple_sanity_test<CachedStream<int, BufferedStream>>(2);
 
   // resize_test();
   lasse_test();

@@ -1,23 +1,15 @@
-\subsection{Test setup}
+%!TEX root = rapport.tex
 
-Our program was written in C/C++ and compiled with GCC. All memory allocations were cache line boundary aligned. For parallelization we used C++11 cross-platform library \texttt{<thread>}.
+\subsection{Sift algorithm variations}
 
-All benchmarks were performed on a Linux desktop which has 16 GB ram and a Core i7 3770 CPU with the following specification:
+\subsection{Streams}
 
-\begin{itemize}
-\item 4 * 3.4 GHz (Turbo Boost up to 3.9 GHz)
-\item 4 * 32 kB L1 instruction cache
-\item 4 * 32 kB L1 data cache (write back)
-\item 4 * 256 kB L2 cache (write back)
-\item Hyper-Threading
-\item Shared 8 MB L3 cache (inclusive, write back)
-\item 64 byte cache lines
-\item The associativity for the cache levels are 8, 8 and 16 respectively
-% http://www.ni.com/white-paper/11266/en#toc5
-\end{itemize}
+% TODO: Find konfigurationer
 
-L2 cache faults, L3 cache faults and retired instructions were measured using Intel Performance Monitor Counter.
+\subsection{Cached stream}
 
-The data in the matrices were randomly generated double precision floating points with
-an uniform distribution. The range of the data was -1 to
-1.
+\subsection{Heap}
+
+% TODO: Med de bedste stream konfigurationer + cached
+
+\subsection{Comparison}

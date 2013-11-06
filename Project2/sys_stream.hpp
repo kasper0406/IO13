@@ -10,7 +10,7 @@
 template <typename I>
 class SysStream {
 public:
-  SysStream() : fd(-1) {}
+  SysStream(uint64_t cache_size) : fd(-1) {}
 
   static void cleanup() {}
   

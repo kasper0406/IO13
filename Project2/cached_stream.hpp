@@ -10,10 +10,10 @@
 
 using namespace std;
 
-template<class I, template<typename> class S, int64_t cache_size>
+template<class I, template<typename> class S>
 class CachedStream {
 public:
-  CachedStream() : stream_(nullptr), cache_(nullptr) { }
+  CachedStream(uint64_t cache_size) : cache_size_(cache_size), stream_(nullptr), cache_(nullptr) { }
   
   ~CachedStream() {
     if (cache_ != nullptr)
@@ -28,13 +28,15 @@ public:
     cache_pos_ = other.cache_pos_;
     cache_ = other.cache_;
     stream_info_ = other.stream_info_;
+    cache_size_ = other.cache_size_;
     
     other.cache_ = nullptr;
     other.stream_ = nullptr;
   }
   
   CachedStream& operator=(CachedStream&& other) NOEXCEPT {
-    if (this != &other) {      
+    if (this != &other) {
+      cache_size_ = other.cache_size_;
       stream_ = other.stream_;
       position_ = other.position_;
       cache_pos_ = other.cache_pos_;
@@ -141,7 +143,7 @@ public:
   
 private:
   bool is_cached() {
-    return cache_ != nullptr && position_ >= cache_pos_ && position_ < cache_pos_ + cache_size;
+    return cache_ != nullptr && position_ >= cache_pos_ && position_ < cache_pos_ + cache_size_;
   }
   
   I get_from_cache() {
@@ -156,9 +158,9 @@ private:
     // Fill up the cache
     cache_pos_ = position_ + 1;
     if (cache_ == nullptr)
-      cache_ = new I[cache_size];
+      cache_ = new I[cache_size_];
     
-    for (uint64_t i = 0; i < cache_size && stream_->has_next(); i++)
+    for (uint64_t i = 0; i < cache_size_ && stream_->has_next(); i++)
       cache_[i] = stream_->read_next();
     stream_->seek(stream_pos(position_));
     
@@ -171,16 +173,16 @@ private:
    */
   I get_from_stream_backwards() {
     const int64_t position_before = position_;
-    position_ = max((int64_t)0, position_ - cache_size);
+    position_ = max((int64_t)0, position_ - cache_size_);
     seek_required_ = true;
     prepare_stream();
     
     // Fill up the cache
     cache_pos_ = position_;
     if (cache_ == nullptr)
-      cache_ = new I[cache_size];
+      cache_ = new I[cache_size_];
     
-    for (uint64_t i = 0; i < cache_size && stream_->has_next(); i++)
+    for (uint64_t i = 0; i < cache_size_ && stream_->has_next(); i++)
       cache_[i] = stream_->read_next();
     
     position_ = position_before;
@@ -200,7 +202,7 @@ private:
    */
   void prepare_stream() {
     if (stream_ == nullptr) {
-      stream_ = new S<I>();
+      stream_ = new S<I>(0); // Cache size doesn't matter
       stream_->open(stream_info_.filename, stream_info_.start, stream_info_.end, stream_info_.buffer_size);
     }
     if (seek_required_) {
@@ -221,6 +223,8 @@ private:
   int64_t stream_pos(int64_t offset) {
     return stream_info_.start + offset;
   }
+  
+  int64_t cache_size_;
   
   S<I>* stream_;
   int64_t position_; // The location seeked to in the stream.

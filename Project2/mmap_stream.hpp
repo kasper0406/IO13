@@ -12,7 +12,7 @@
 template <typename I>
 class MMapStream {
 public:
-  MMapStream() : fd_(-1), mapped_(nullptr) { }
+  MMapStream(uint64_t cache_size) : fd_(-1), mapped_(nullptr) { }
   
   void open(string filename, uint64_t start, uint64_t end, size_t buffer_size) {
     position_ = 0;

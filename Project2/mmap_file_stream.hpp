@@ -14,6 +14,8 @@ using namespace std;
 template <typename I>
 class MMapFileStream {
 public:
+  MMapFileStream(uint64_t cache_size) { }
+  
   void open(string filename, uint64_t start, uint64_t end, size_t buffer_size) {
     position_ = 0;
     end_ = end;
