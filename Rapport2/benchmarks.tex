@@ -7,6 +7,20 @@ We choose to do a small experiment\todo{More details about the test?} for all ou
 
 Doing the tests it was found that the space efficient implementation consistently had a better running time\todo{Decribe how much better?}. Hence this has been chosen for all the following experiments.
 
+\subsection{Parameter weeding}
+As described in Section~\ref{sec:implementation:parameters}, the implemented heap has a lot of adjustable parameters, which all may have an influence on its performance. In order to limit the time needed for running experiments, the parameters space has been weeded out, such that it does not include obviously bad settings.
+
+We have only considered settings of parameters satisfying the following constraints:
+\begin{equation}
+  \label{eqn:memory}
+  \frac{1}{4}M \leq V + 2P \ceil*{\frac{N}{V}} + (d + 1)B \leq M
+\end{equation}
+\begin{equation}
+  \label{eqn:fanout}
+  \frac{1}{4} \frac{V}{P} \leq d \leq 4 \frac{V}{P}
+\end{equation}
+Constraint~\ref{eqn:memory} says that all buffers used by the heap should fit into main memory\todo{Explain?}. If this was not the case, memory trashing would occour, giving more IOs than anticipated. Moreover parameter values have been grown by a factor of $2$.
+
 \subsection{Streams}
 
 % TODO: Find konfigurationer

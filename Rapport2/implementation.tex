@@ -3,7 +3,8 @@ This section will present implementation details on how the heap has
 been implemented, and why these choices were made. Also the details of
 all the implemented streams are discussed.
 
-We define the following:
+\subsection{Heap parameters}
+\label{sec:implementation:parameters}
 \begin{itemize}
   \item $V$ is the maximal number of elements in a node. Hence, a
     node is imperfect if it contains $< \left\lceil \frac{V}{2}
