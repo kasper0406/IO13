@@ -28,11 +28,11 @@ using namespace std::chrono;
 #endif
 
 template <typename S>
-void client(size_t elements, size_t block_size, size_t buffer_size, size_t d) {
-  ExternalHeap<S, int> heap("heap", block_size, buffer_size, d);
+void client(size_t elements, size_t block_size, size_t buffer_size, size_t d, size_t cache_size) {
+  ExternalHeap<S, int> heap("heap", block_size, buffer_size, d, cache_size);
 
   // TODO
-  FStream<int> stream;
+  FStream<int> stream(0);
   stream.open("testfile", 0, elements, buffer_size);
 
   for (uint64_t i = 0; i < elements; ++i) {
@@ -91,12 +91,12 @@ void server() {
   cout << setw(12) << "Block size";
   cout << setw(12) << "d";
   cout << setw(12) << "Buffer size";
+  cout << setw(12) << "Cache size";
   cout << setw(12) << "Time";
   cout << setw(12) << "I sectors";
   cout << setw(12) << "O sectors";
   cout << setw(12) << "Read ops";
   cout << setw(12) << "Write ops";
-  cout << setw(12) << "I/O time";
 
   cout << endl;
 
@@ -107,58 +107,83 @@ void server() {
   string timeout_exec = "/usr/local/Cellar/coreutils/8.21/bin/gtimeout";
   #endif
   int timeout_seconds = 100;
-  int block_size_start = 1024 * 128;
-  int block_size_end = 4096 * 4096;
+  int block_size_start = 1024 * 1024;
+  int block_size_end = 4096 * 4096 * 8;
   int buffer_size_start = 1024;
   int buffer_size_end = 1024 * 16;
-  int d_start = 32;
+  int d_start = 2;
   int d_end = 4096;
   int64_t elements_start = 1024 * 1024;
-  int64_t elements_end = 1024 * 1024 * 128;
-  vector<char> stream_types {'m','f', 's' };
+  int64_t elements_end = 1024 * 1024 * 256;
+  int64_t cache_size_start = 128;
+  int64_t cache_size_end = 1024 * 16;
+  vector<char> stream_types { 'b', 'm', 'f' };
   
-  for (char stream_type : stream_types) {
-    for (int block_size = block_size_start; block_size <= block_size_end; block_size*=4) {
-      for (int d = d_start; d <= d_end; d*=4) {
-        for (int buffer_size = (stream_type == 'b' ? buffer_size_start : 0);
-             buffer_size <= (stream_type == 'b' ? min(buffer_size_end, block_size) : 0); buffer_size= max(1, buffer_size * 4)) {
-          for (int64_t elements = max(elements_start, (int64_t)block_size); elements <= elements_end; elements*=2) {
-            if ((int64_t)d * (int64_t)block_size > elements) continue;
+  for (int64_t elements = elements_start; elements <= elements_end; elements*=2) {
+    for (char stream_type : stream_types) {
+      for (int block_size = block_size_start; block_size <= block_size_end; block_size*=4) {
+        for (int d = d_start; d <= d_end; d*=4) {
+          for (int buffer_size = (stream_type == 'b' ? buffer_size_start : 0);
+               buffer_size <= (stream_type == 'b' ? buffer_size_end : 0); buffer_size= max(1, buffer_size * 4)) {
+            for (int cache_size = cache_size_start; cache_size <= cache_size_end; cache_size*=4) {
+              // Rules
+              // Buffer size smaller than block size
+              if (buffer_size > block_size) continue;
+              // Element size larger than block size
+              if (elements < block_size) continue;
+              // Not enough elements to satisfy 'd'
+              if ((int64_t)d * (int64_t)block_size > elements) continue;
 
-            string command = timeout_exec + " " + to_string(timeout_seconds) + " ./Project2Test client "
-            + "\"elements:" + to_string(elements) + " block_size:" + to_string(block_size) + " buffer_size:"
-            + to_string(buffer_size) + " d:" + to_string(d) + " stream:" + stream_type + "\"";
-            
-            auto result = exec(command);
-            
-            cout << setw(12) << stream_type;
-            cout << setw(12) << elements;
-            cout << setw(12) << block_size;
-            cout << setw(12) << d;
-            cout << setw(12) << buffer_size;
+              // Memory size in elements
+              const int64_t M = 512 * 1024 * 1024 / 4;
+              const int64_t V = block_size;
+              const int64_t P = cache_size;
+              const int64_t B = buffer_size == 0 ? 1024 : buffer_size;
+              const int64_t N = elements;
+              // (N + V - 1) / V == ceil(N / V)
+              const int64_t estimated_memory_usage = V + 2*P*(N + V - 1)/V+(d+1)*B;
 
-            double seconds;
-            int64_t disk_i;
-            int64_t disk_o;
-            int64_t disk_reads;
-            int64_t disk_writes;
-            int64_t disk_time;
-            if (result.first == 0 &&
-                sscanf(result.second.c_str(), "%lf %" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64,
-                         &seconds, &disk_i, &disk_o, &disk_reads, &disk_writes, &disk_time) == 6) {
-              cout << setw(12) << seconds;
-              cout << setw(12) << disk_i;
-              cout << setw(12) << disk_o;
-              cout << setw(12) << disk_reads;
-              cout << setw(12) << disk_writes;
-              cout << setw(12) << ((double)disk_time / 1000);
-              cout << endl;
-            } else if (result.first == 124) {
-              cout << setw(12) << "Timeout" << endl;
-              break;
-            } else {
-              cout << setw(12) << "Error" << endl;
-              break;
+              // Make use of most of the memory space.
+              if (M / 64 > estimated_memory_usage) continue;
+              // Don't suffocate
+              if (M < estimated_memory_usage) continue;
+
+              string command = timeout_exec + " " + to_string(timeout_seconds) + " ./Project2Test client "
+              + "\"elements:" + to_string(elements) + " block_size:" + to_string(block_size) + " buffer_size:"
+              + to_string(buffer_size) + " d:" + to_string(d) + " stream:" + stream_type + " cache_size:" + to_string(cache_size) + "\"";
+              
+              cout << setw(12) << stream_type;
+              cout << setw(12) << elements;
+              cout << setw(12) << block_size;
+              cout << setw(12) << d;
+              cout << setw(12) << buffer_size;
+              cout << setw(12) << cache_size << flush;
+              
+              auto result = exec(command);
+              //auto result = make_pair(0, string("0 0 0 0 0 0 0 0"));
+              
+              double seconds;
+              int64_t disk_i;
+              int64_t disk_o;
+              int64_t disk_reads;
+              int64_t disk_writes;
+              int64_t disk_time;
+              if (result.first == 0 &&
+                  sscanf(result.second.c_str(), "%lf %" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64,
+                           &seconds, &disk_i, &disk_o, &disk_reads, &disk_writes, &disk_time) == 6) {
+                cout << setw(12) << seconds;
+                cout << setw(12) << disk_i;
+                cout << setw(12) << disk_o;
+                cout << setw(12) << disk_reads;
+                cout << setw(12) << disk_writes;
+                cout << endl;
+              } else if (result.first == 124) {
+                cout << setw(12) << "Timeout" << endl;
+                // break;
+              } else {
+                cout << setw(12) << "Error" << endl;
+                // break;
+              }
             }
           }
         }
@@ -209,9 +234,10 @@ int main(int argc, char *argv[]) {
     int block_size;
     int buffer_size;
     int d;
+    int cache_size;
     char stream_type;
-    if (sscanf(argv[2], "elements:%" SCNd64 " block_size:%i buffer_size:%i d:%i stream:%c",
-               &elements, &block_size, &buffer_size, &d, &stream_type) != 5) {
+    if (sscanf(argv[2], "elements:%" SCNd64 " block_size:%i buffer_size:%i d:%i stream:%c cache_size:%i",
+               &elements, &block_size, &buffer_size, &d, &stream_type, &cache_size) != 6) {
       cerr << "Input matching failed." << endl;
       exit(10);
     };
@@ -234,27 +260,52 @@ int main(int argc, char *argv[]) {
     auto disk_start = disk_activity();
     
     auto beginning = high_resolution_clock::now();
-    switch (stream_type) {
-      case 'f':
-        client<CachedStream<int, FStream, 128>>(elements, block_size, buffer_size, d);
-        break;
+    if (cache_size != 0) {
+      switch (stream_type) {
+        case 'f':
+          client<CachedStream<int, FStream>>(elements, block_size, buffer_size, d, cache_size);
+          break;
 
-      case 's':
-        client<CachedStream<int, SysStream, 128>>(elements, block_size, buffer_size, d);
-        break;
+        case 's':
+          client<CachedStream<int, SysStream>>(elements, block_size, buffer_size, d, cache_size);
+          break;
 
-      case 'b':
-        client<CachedStream<int, BufferedStream, 128>>(elements, block_size, buffer_size, d);
-        break;
+        case 'b':
+          client<CachedStream<int, BufferedStream>>(elements, block_size, buffer_size, d, cache_size);
+          break;
 
-      case 'm':
-        client<CachedStream<int, MMapFileStream, 128>>(elements, block_size, buffer_size, d);
-        break;
+        case 'm':
+          client<CachedStream<int, MMapFileStream>>(elements, block_size, buffer_size, d, cache_size);
+          break;
 
-      default:
-        cout << "Unknown stream type" << endl;
-        exit(1);
-        break;
+        default:
+          cout << "Unknown stream type" << endl;
+          exit(1);
+          break;
+      }
+    } else {
+      switch (stream_type) {
+        case 'f':
+          client<FStream<int>>(elements, block_size, buffer_size, d, cache_size);
+          break;
+
+        case 's':
+          client<SysStream<int>>(elements, block_size, buffer_size, d, cache_size);
+          break;
+
+        case 'b':
+          client<BufferedStream<int>>(elements, block_size, buffer_size, d, cache_size);
+          break;
+
+        case 'm':
+          client<MMapFileStream<int>>(elements, block_size, buffer_size, d, cache_size);
+          break;
+
+        default:
+          cout << "Unknown stream type" << endl;
+          exit(1);
+          break;
+      }
     }
     high_resolution_clock::duration duration = high_resolution_clock::now() - beginning;
     auto disk_end = disk_activity();
