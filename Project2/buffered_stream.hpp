@@ -21,6 +21,10 @@ public:
     buffer_size_ = buffer_size;
 
     buffer_ = new I[buffer_size];
+    write_map_ = new uint8_t[(buffer_size + 7) / 8];
+    for (int64_t i = 0; i < (buffer_size_ + 7) / 8; ++i) {
+      write_map_[i] = 0;
+    }
 
     fd = ::open(filename.c_str(), O_RDWR, S_IRUSR | S_IWUSR);
 
@@ -70,6 +74,8 @@ public:
     }
     delete[] buffer_;
     buffer_ = nullptr;
+    delete[] write_map_;
+    write_map_ = nullptr;
     fd = -1;
   }
   
@@ -90,6 +96,18 @@ public:
   static void cleanup() {}
 
 private:
+  void update(int64_t position) {
+    uint8_t selector = 1 << (position - buffer_start_) % 8;
+    write_map_[(position - buffer_start_) / 8] |= selector;
+  }
+
+  bool is_updated(int64_t position) {
+    uint8_t bits = write_map_[(position - buffer_start_) / 8];
+    uint8_t selector = 1 << (position - buffer_start_) % 8;
+    uint8_t masked = bits & selector;
+    return masked == selector;
+  }
+
   // Does not change position_
   I read_from_buffer() {
     assert(position_ < end_);
@@ -97,10 +115,11 @@ private:
 
     int buffer_position = position_ - buffer_start_;
 
-    if (0 <= buffer_position && buffer_position < buffer_size_) {
+    if (0 <= buffer_position && buffer_position < buffer_size_
+        && is_updated(position_)) {
       return buffer_[buffer_position];
     } else {
-      refresh_buffer();
+      refresh_buffer(true);
 
       return read_from_buffer();  // Should not cycle
     }
@@ -115,8 +134,9 @@ private:
 
     if (0 <= buffer_position && buffer_position < buffer_size_) {
       buffer_[buffer_position] = value;
+      update(position_);
     } else {
-      refresh_buffer();
+      refresh_buffer(false);
 
       write_to_buffer(value);  // Should not cycle
     }
@@ -124,19 +144,38 @@ private:
 
   void flush_buffer() {
     if (buffer_start_ < 0) return;  // Not even read.
-    
-    if (::lseek(fd, buffer_start_ * sizeof(I), SEEK_SET) == -1) {
-      perror("Error seek");
-      exit(1);
+
+    int writes_needed = 0;
+    for (int64_t start = 0; start < utilized_buffer_size_;) {
+      if (is_updated(start + buffer_start_)) {
+        // 'end' is exclusive
+        int64_t end = start + 1;
+        while (end < utilized_buffer_size_ && is_updated(buffer_start_ + end)) {
+          end++;
+        }
+
+        if (::lseek(fd, (buffer_start_ + start) * sizeof(I), SEEK_SET) == -1) {
+          perror("Error seek");
+          exit(1);
+        }
+
+        if (::write(fd, buffer_ + start, (end - start) * sizeof(I)) != (end - start) * sizeof(I)) {
+          perror("Error writing");
+          exit(1);
+        }
+
+        writes_needed++;
+
+        start = end;
+      } else {
+        start++;
+      }
     }
 
-    if (::write(fd, buffer_, utilized_buffer_size_ * sizeof(I)) != utilized_buffer_size_ * sizeof(I)) {
-      perror("Error writing");
-      exit(1);
-    }
+    // cout << "Writes needed: " << writes_needed << endl;
   }
 
-  void refresh_buffer() {
+  void refresh_buffer(bool need_read) {
     flush_buffer();
 
     // start count: 1065 end count: 10725 else count: 2922
@@ -164,15 +203,26 @@ private:
 
     utilized_buffer_size_ = buffer_end - buffer_start_;
 
-    if (::lseek(fd, buffer_start_ * sizeof(I), SEEK_SET) == -1) {
-      perror("Error seek");
-      exit(1);
-    }
+    if (need_read) {
+      if (::lseek(fd, buffer_start_ * sizeof(I), SEEK_SET) == -1) {
+        perror("Error seek");
+        exit(1);
+      }
 
-    // TODO(lespeholt): Not really necessary to read buffer when only writes are performed!
+      if (::read(fd, buffer_, utilized_buffer_size_ * sizeof(I)) != utilized_buffer_size_ * sizeof(I)) {
+        perror("Error reading");
+      }
 
-    if (::read(fd, buffer_, utilized_buffer_size_ * sizeof(I)) != utilized_buffer_size_ * sizeof(I)) {
-      perror("Error reading");
+      for (int64_t i = 0; i < utilized_buffer_size_; ++i) {
+        update(buffer_start_ + i);
+      }
+      // for (int64_t i = 0; i < utilized_buffer_size_ / 8; ++i) {
+      //   write_map_[i] = 255;
+      // }
+    } else {
+      for (int64_t i = 0; i < (buffer_size_ + 7) / 8; ++i) {
+        write_map_[i] = 0;
+      }
     }
   }
 
@@ -185,6 +235,7 @@ private:
   int64_t end_;
   int fd;
   I* buffer_;
+  uint8_t* write_map_;
   int64_t buffer_size_;
   int64_t utilized_buffer_size_;
   int64_t buffer_start_;
