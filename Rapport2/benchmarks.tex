@@ -1,6 +1,11 @@
 %!TEX root = rapport.tex
 
 \subsection{Sift algorithm variations}
+As described in Section~\ref{sec:heap:sifting} two different strategies for sifting have been implemented. The one uses $\leq V$ space and reads/writes backwards, whereas the other requires $\leq 2V$ space but only reads forwards.
+
+We choose to do a small experiment\todo{More details about the test?} for all our streams with these two sifting implementations, as we were unsure about the penalty (if any) obtained by doing IO backwards.
+
+Doing the tests it was found that the space efficient implementation consistently had a better running time\todo{Decribe how much better?}. Hence this has been chosen for all the following experiments.
 
 \subsection{Streams}
 
