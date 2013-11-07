@@ -1,5 +1,8 @@
 #pragma once
 
+#include "buffered_stream.hpp"
+#include "f_stream.hpp"
+
 #ifdef WIN32
 #define NOEXCEPT
 #else
@@ -240,3 +243,37 @@ private:
   
   I* cache_; // The read cache
 };
+
+template<>
+void CachedStream<int, BufferedStream>::open(string filename, uint64_t start, uint64_t end, size_t buffer_size) {
+  // HACK(lespeholt): If root, then we want a full buffer
+  // Probably better to just keep it open in the root because when
+  // we not use CachedStream
+  if (start == 0) {
+    cache_size_ = buffer_size;
+  }
+
+  stream_info_.filename = filename;
+  stream_info_.start = start;
+  stream_info_.end = end;
+  stream_info_.buffer_size = buffer_size;
+  
+  position_ = 0;
+}
+
+template<>
+void CachedStream<int, FStream>::open(string filename, uint64_t start, uint64_t end, size_t buffer_size) {
+  // HACK(lespeholt): If root, then we want a full buffer
+  // Probably better to just keep it open in the root because when
+  // we not use CachedStream
+  if (start == 0) {
+    cache_size_ = 1024;
+  }
+
+  stream_info_.filename = filename;
+  stream_info_.start = start;
+  stream_info_.end = end;
+  stream_info_.buffer_size = buffer_size;
+  
+  position_ = 0;
+}

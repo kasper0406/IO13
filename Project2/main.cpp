@@ -340,9 +340,9 @@ void simple_sanity_test(size_t buffer_size = 0, size_t cache_size = 128) {
   S stream4(cache_size);
   stream4.open("monkey", 0, 4, buffer_size);
   if (stream4.read_next() != 0
-      && stream4.read_next() != 1
-      && stream4.read_next() != 2
-      && stream4.read_next() != 3) {
+      || stream4.read_next() != 1
+      || stream4.read_next() != 2
+      || stream4.read_next() != 3) {
     cout << "Wrong result" << endl;
     exit(1);
   }

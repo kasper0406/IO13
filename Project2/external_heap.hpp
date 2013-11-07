@@ -114,9 +114,7 @@ public:
       insert_buffer_.pop_back();
     } else {
       // Biggest is in root element
-      blocks_[0].open_at_first_element();
-      blocks_[0].read_dec();
-      blocks_[0].close();
+      blocks_[0].just_dec();
       
       if (blocks_[0].imperfect()) {
         if (blocks_[0].element_count() == 0) {

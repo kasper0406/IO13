@@ -413,6 +413,11 @@ public:
     element_count_--;
     return element;
   }
+
+  void just_dec() {
+    assert(element_count_ != 0);
+    element_count_--;
+  }
   
   // Reads an elements backward from the stream and decrements the element counter
   I backward_read_dec() {

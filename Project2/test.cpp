@@ -141,7 +141,7 @@ void server() {
               const int64_t B = buffer_size == 0 ? 1024 : buffer_size;
               const int64_t N = elements;
               // (N + V - 1) / V == ceil(N / V)
-              const int64_t estimated_memory_usage = V + 2*P*(N + V - 1)/V+(d+1)*B;
+              const int64_t estimated_memory_usage = V + 2*P*(N + V - 1)/V+(d+1)*B + B;
 
               // Make use of most of the memory space.
               if (M / 64 > estimated_memory_usage) continue;
