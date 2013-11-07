@@ -21,7 +21,15 @@ We have only considered settings of parameters satisfying the following constrai
 \end{equation}
 Constraint~\ref{eqn:memory} says that all buffers used by the heap should fit into main memory\todo{Explain?}. If this was not the case, memory trashing would occour, giving more IOs than anticipated. Moreover parameter values have been grown by a factor of $2$.
 
+
+Nots:
+Good for sifting to reduce the height $h$ of the tree, since sifting can be called recursively for each level. No penalty other than space consumption for having a low tree.
+
+The height is given by $h = \log_d{\frac{N}{V}} = \log_d{N} - \log_d{V}$. So note that $d$ is more significant for the tree height than the block size $V$.
+
 \subsection{Streams}
+
+
 
 % TODO: Find konfigurationer
 
