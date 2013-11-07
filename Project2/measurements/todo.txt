@@ -1,0 +1,4 @@
+1. Test at der ikke er forskel for den nye version
+2. Test de memory mapped der fejlede
+3. Test med mindre blokstoerrelser og hoejde begraesning
+3. Test de andre streams
