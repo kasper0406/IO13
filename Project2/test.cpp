@@ -117,72 +117,78 @@ void server() {
   int64_t elements_end = 1024 * 1024 * 256;
   int64_t cache_size_start = 128;
   int64_t cache_size_end = 1024 * 16;
-  vector<char> stream_types { 'b', 'm', 'f' };
+  double max_height = 4.;
+  vector<char> stream_types { 'm', 'b', 'f' };
   
-  for (int64_t elements = elements_start; elements <= elements_end; elements*=2) {
-    for (char stream_type : stream_types) {
-      for (int block_size = block_size_start; block_size <= block_size_end; block_size*=4) {
-        for (int d = d_start; d <= d_end; d*=4) {
-          for (int buffer_size = (stream_type == 'b' ? buffer_size_start : 0);
-               buffer_size <= (stream_type == 'b' ? buffer_size_end : 0); buffer_size= max(1, buffer_size * 4)) {
-            for (int cache_size = cache_size_start; cache_size <= cache_size_end; cache_size*=4) {
-              // Rules
-              // Buffer size smaller than block size
-              if (buffer_size > block_size) continue;
-              // Element size larger than block size
-              if (elements < block_size) continue;
-              // Not enough elements to satisfy 'd'
-              if ((int64_t)d * (int64_t)block_size > elements) continue;
+  for (double allowed_max_height = 2.; allowed_max_height < max_height; ++allowed_max_height) {
+    for (int64_t elements = elements_start; elements <= elements_end; elements*=2) {
+      for (char stream_type : stream_types) {
+        for (int block_size = block_size_start; block_size <= block_size_end; block_size*=4) {
+          for (int d = d_start; d <= d_end; d*=4) {
+            for (int buffer_size = (stream_type == 'b' ? buffer_size_start : 0);
+                 buffer_size <= (stream_type == 'b' ? buffer_size_end : 0); buffer_size= max(1, buffer_size * 4)) {
+              for (int cache_size = cache_size_start; cache_size <= cache_size_end; cache_size*=4) {
+                // Rules
+                // Buffer size smaller than block size
+                if (buffer_size > block_size) continue;
+                // Element size larger than block size
+                if (elements < block_size) continue;
+                // Not enough elements to satisfy 'd'
+                if ((int64_t)d * (int64_t)block_size > elements) continue;
+                // Memory size in elements
+                const int64_t M = 512 * 1024 * 1024 / 4;
+                const int64_t V = block_size;
+                const int64_t P = cache_size;
+                const int64_t B = buffer_size == 0 ? 1024 : buffer_size;
+                const int64_t N = elements;
+                // (N + V - 1) / V == ceil(N / V)
+                const int64_t estimated_memory_usage = V + 2*P*(N + V - 1)/V+(d+1)*B + B;
 
-              // Memory size in elements
-              const int64_t M = 512 * 1024 * 1024 / 4;
-              const int64_t V = block_size;
-              const int64_t P = cache_size;
-              const int64_t B = buffer_size == 0 ? 1024 : buffer_size;
-              const int64_t N = elements;
-              // (N + V - 1) / V == ceil(N / V)
-              const int64_t estimated_memory_usage = V + 2*P*(N + V - 1)/V+(d+1)*B + B;
+                // Make use of most of the memory space.
+                if (M / 64 > estimated_memory_usage) continue;
+                // Don't suffocate
+                if (M < estimated_memory_usage) continue;
 
-              // Make use of most of the memory space.
-              if (M / 64 > estimated_memory_usage) continue;
-              // Don't suffocate
-              if (M < estimated_memory_usage) continue;
+                const double height = log(N / V) / log(d);
 
-              string command = timeout_exec + " " + to_string(timeout_seconds) + " ./Project2Test client "
-              + "\"elements:" + to_string(elements) + " block_size:" + to_string(block_size) + " buffer_size:"
-              + to_string(buffer_size) + " d:" + to_string(d) + " stream:" + stream_type + " cache_size:" + to_string(cache_size) + "\"";
-              
-              cout << setw(12) << stream_type;
-              cout << setw(12) << elements;
-              cout << setw(12) << block_size;
-              cout << setw(12) << d;
-              cout << setw(12) << buffer_size;
-              cout << setw(12) << cache_size << flush;
-              
-              auto result = exec(command);
-              //auto result = make_pair(0, string("0 0 0 0 0 0 0 0"));
-              
-              double seconds;
-              int64_t disk_i;
-              int64_t disk_o;
-              int64_t disk_reads;
-              int64_t disk_writes;
-              int64_t disk_time;
-              if (result.first == 0 &&
-                  sscanf(result.second.c_str(), "%lf %" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64,
-                           &seconds, &disk_i, &disk_o, &disk_reads, &disk_writes, &disk_time) == 6) {
-                cout << setw(12) << seconds;
-                cout << setw(12) << disk_i;
-                cout << setw(12) << disk_o;
-                cout << setw(12) << disk_reads;
-                cout << setw(12) << disk_writes;
-                cout << endl;
-              } else if (result.first == 124) {
-                cout << setw(12) << "Timeout" << endl;
-                // break;
-              } else {
-                cout << setw(12) << "Error" << endl;
-                // break;
+                if (height > allowed_max_height) continue;
+
+                string command = timeout_exec + " " + to_string(timeout_seconds) + " ./Project2Test client "
+                + "\"elements:" + to_string(elements) + " block_size:" + to_string(block_size) + " buffer_size:"
+                + to_string(buffer_size) + " d:" + to_string(d) + " stream:" + stream_type + " cache_size:" + to_string(cache_size) + "\"";
+                
+                cout << setw(12) << stream_type;
+                cout << setw(12) << elements;
+                cout << setw(12) << block_size;
+                cout << setw(12) << d;
+                cout << setw(12) << buffer_size;
+                cout << setw(12) << cache_size << flush;
+                
+                auto result = exec(command);
+                //auto result = make_pair(0, string("0 0 0 0 0 0 0 0"));
+                
+                double seconds;
+                int64_t disk_i;
+                int64_t disk_o;
+                int64_t disk_reads;
+                int64_t disk_writes;
+                int64_t disk_time;
+                if (result.first == 0 &&
+                    sscanf(result.second.c_str(), "%lf %" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64 " %" SCNd64,
+                             &seconds, &disk_i, &disk_o, &disk_reads, &disk_writes, &disk_time) == 6) {
+                  cout << setw(12) << seconds;
+                  cout << setw(12) << disk_i;
+                  cout << setw(12) << disk_o;
+                  cout << setw(12) << disk_reads;
+                  cout << setw(12) << disk_writes;
+                  cout << endl;
+                } else if (result.first == 124) {
+                  cout << setw(12) << "Timeout" << endl;
+                  // break;
+                } else {
+                  cout << setw(12) << "Error" << endl;
+                  // break;
+                }
               }
             }
           }
