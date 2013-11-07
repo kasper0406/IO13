@@ -152,6 +152,7 @@ void server() {
                 const double height = log(N / V) / log(d);
 
                 if (height > allowed_max_height) continue;
+                if (height <= allowed_max_height - 1) continue;
 
                 string command = timeout_exec + " " + to_string(timeout_seconds) + " ./Project2Test client "
                 + "\"elements:" + to_string(elements) + " block_size:" + to_string(block_size) + " buffer_size:"
