@@ -106,7 +106,7 @@ void server() {
   #else
   string timeout_exec = "/usr/local/Cellar/coreutils/8.21/bin/gtimeout";
   #endif
-  int timeout_seconds = 100;
+  int timeout_seconds = 1000;
   int block_size_start = 1024;
   int block_size_end = 4096 * 4096 * 8;
   int buffer_size_start = 1024;
