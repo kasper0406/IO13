@@ -161,7 +161,7 @@ private:
 
     int buffer_position = position_ - buffer_start_;
 
-    if (0 <= buffer_position && buffer_position < buffer_size_
+    if (0 <= buffer_position && buffer_position < utilized_buffer_size_
         && (is_updated(position_) || is_read(position_))) {
       #ifdef TOUCHED
       map_touch(position_);
@@ -181,7 +181,7 @@ private:
 
     int buffer_position = position_ - buffer_start_;
 
-    if (0 <= buffer_position && buffer_position < buffer_size_) {
+    if (0 <= buffer_position && buffer_position < utilized_buffer_size_) {
       buffer_[buffer_position] = value;
       update(position_);
     } else {
