@@ -396,7 +396,11 @@ int main(int argc, char *argv[]) {
   // simple_sanity_test<CachedStream<int, DummyStream, 10>>();
   // simple_sanity_test<CachedStream<int, MMapStream, 10>>();
   simple_sanity_test<CachedStream<int, FStream>>();
-  simple_sanity_test<CachedStream<int, BufferedStream>>(2);
+  simple_sanity_test<CachedStream<int, BufferedStream>>(1, 1);
+  simple_sanity_test<CachedStream<int, BufferedStream>>(2, 1);
+  simple_sanity_test<CachedStream<int, BufferedStream>>(3, 1);
+  simple_sanity_test<CachedStream<int, BufferedStream>>(4, 1);
+  simple_sanity_test<CachedStream<int, BufferedStream>>(4, 2);
 
   // resize_test();
   lasse_test();
