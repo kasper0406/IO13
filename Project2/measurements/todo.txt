@@ -1,2 +1,9 @@
+0. Test uden cache.
 1. Test med d = V/P
-2. Test sift variation med go uden opt.
+2. Test sift variation med go uden opt. Een maaling.
+3. Buffered Stream, stor buffer og block. Lille cache (meget lille) og en stor.
+
+block 2,4,8,….,til langsommere
+cache: 128, 1024, nogen stor forskel?
+buffer size: 1024 —-> block size/ 4
+storest d.
