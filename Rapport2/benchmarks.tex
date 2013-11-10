@@ -27,13 +27,25 @@ Good for sifting to reduce the height $h$ of the tree, since sifting can be call
 
 The height is given by $h = \log_d{\frac{N}{V}} = \log_d{N} - \log_d{V}$. So note that $d$ is more significant for the tree height than the block size $V$.
 
+
 \subsection{Streams}
+In this section the different streams will be benchmarked and compared.
 
+\subsubsection{Cached stream}
+As expected, we have found that if the cached stream is not used, then the number of reads from the hard disk increases dramatically. Hence, a significant speedup is found for all of the streams by using a cached stream in front of them.
 
+Experiments determining the influence of the cache size is delayed until the specific streams are discussed, since a given cache size may not yield consistent results for different streams.
+
+\subsubsection{SysStream and FStream}
+By experiments, we have found that SysStream and FStream performs worse for any tested parameter combination. Hence, we have chosen to exclude these streams from all future comparisons.
+
+The reason for the SysStream being slow, is due to its lack of buffering, hence no care is taken to try to reduce the number of IOs. For FStream a buffer is added, however, we found that it was dominated by the implemented BufferedStream. This is also to be expected, since the buffers used in the BufferedStream are optimized for the specific application of an external heap, whereas this is not the case for the more generic FStream.
+
+\subsection{BufferedStream}
+
+\subsectione{MMapStream}
 
 % TODO: Find konfigurationer
-
-\subsection{Cached stream}
 
 \subsection{Heap}
 
