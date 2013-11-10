@@ -1,11 +1,11 @@
 %!TEX root = rapport.tex
 
 \subsection{Sift algorithm variations}
-As described in Section~\ref{sec:heap:sifting} two different strategies for sifting have been implemented. The one uses $\leq V$ space and reads/writes backwards, whereas the other requires $\leq 2V$ space but only reads forwards.
+As described in Section~\ref{sec:heap:sifting} two different strategies for sifting have been implemented. A memory efficient using less than $V$ space that reads/writes backwards and a version that uses up to $2V$ space but only reads/writes forwards.
 
-We choose to do a small experiment\todo{More details about the test?} for all our streams with these two sifting implementations, as we were unsure about the penalty (if any) obtained by doing IO backwards.
+We choose to do a small experiment \todo{More details about the test?} for our fastest streams with the two sifting implementations, as we were unsure about the penalty (if any) obtained by doing I/O backwards.
 
-Doing the tests it was found that the space efficient implementation consistently had a better running time\todo{Decribe how much better?}. Hence this has been chosen for all the following experiments.
+Doing the tests it was found that the space efficient implementation consistently had a better running time \todo{Decribe how much better?}. Hence, the memory efficient has been chosen for all the following experiments.
 
 \subsection{Parameter weeding}
 As described in Section~\ref{sec:implementation:parameters}, the implemented heap has a lot of adjustable parameters, which all may have an influence on its performance. In order to limit the time needed for running experiments, the parameters space has been weeded out, such that it does not include obviously bad settings.
@@ -13,37 +13,36 @@ As described in Section~\ref{sec:implementation:parameters}, the implemented hea
 We have only considered settings of parameters satisfying the following constraints:
 \begin{equation}
   \label{eqn:memory}
-  \frac{1}{4}M \leq V + 2P \ceil*{\frac{N}{V}} + (d + 1)B \leq M
+  \underbrace{V}_{\textrm{Sifting}} + \underbrace{2P \ceil*{\frac{N}{V}}}_{\textrm{Caching}} + \underbrace{(d + 1)B}_{\mathclap{\substack{
+  \textrm{Refill for}\\\textrm{buffered streams}
+  }}} \leq M
 \end{equation}
 \begin{equation}
-  \label{eqn:fanout}
-  \frac{1}{4} \frac{V}{P} \leq d \leq 4 \frac{V}{P}
+  \label{eqn:dvn}
+  dV\leq N
 \end{equation}
-Constraint~\ref{eqn:memory} says that all buffers used by the heap should fit into main memory\todo{Explain?}. If this was not the case, memory trashing would occour, giving more IOs than anticipated. Moreover parameter values have been grown by a factor of $2$.
+Constraint~\ref{eqn:memory} says that all buffers and caches used by the heap should fit into main memory. If this was not the case, memory trashing would occur, giving more I/Os than anticipated. Moreover parameter values have been increased by a factor of $2$. Note that for memory mapped stream there is no explicit buffer, hence when the inequality in ~\ref{eqn:memory} is tight no space is left for the operating system to cache files opened with memory mapping.
 
+Assume a fixed block size, then the performance of sifting improves when the height $h = \log_d{\frac{N}{V}}$ of the tree is decreased. Because the recursion of sifting ends after fewer iterations. When refilling $d+1$ streams are open, hence when using a buffered stream $d+1$ buffers are allocated. Therefore, $d$ be increased as long as the buffers fit into memory.
 
-Nots:
-Good for sifting to reduce the height $h$ of the tree, since sifting can be called recursively for each level. No penalty other than space consumption for having a low tree.
-
-The height is given by $h = \log_d{\frac{N}{V}} = \log_d{N} - \log_d{V}$. So note that $d$ is more significant for the tree height than the block size $V$.
-
+All configurations not satisfying constraint~\ref{eqn:dvn} will have the same result as $d=\frac{N}{V}$.
 
 \subsection{Streams}
 In this section the different streams will be benchmarked and compared.
 
 \subsubsection{Cached stream}
-As expected, we have found that if the cached stream is not used, then the number of reads from the hard disk increases dramatically. Hence, a significant speedup is found for all of the streams by using a cached stream in front of them.
+As expected, we have found that if the cached stream is not used, the number of reads from the hard disk increases dramatically. Hence, a significant speedup is found for all of the streams by using a cached stream in front of them.
 
-Experiments determining the influence of the cache size is delayed until the specific streams are discussed, since a given cache size may not yield consistent results for different streams.
+Experiments determining the influence of the cache size is postponed until the specific streams are discussed, since a given cache size may not yield consistent results for different streams.
 
 \subsubsection{SysStream and FStream}
-By experiments, we have found that SysStream and FStream performs worse for any tested parameter combination. Hence, we have chosen to exclude these streams from all future comparisons.
+By experiments, we have found that SysStream and FStream performs worse for all tested parameter combinations. Therefore, we have chosen to exclude these streams from all subsequent comparisons.
 
-The reason for the SysStream being slow, is due to its lack of buffering, hence no care is taken to try to reduce the number of IOs. For FStream a buffer is added, however, we found that it was dominated by the implemented BufferedStream. This is also to be expected, since the buffers used in the BufferedStream are optimized for the specific application of an external heap, whereas this is not the case for the more generic FStream.
+The reason for the SysStream being slow, is due to its lack of buffering to reduce the number of I/Os. For FStream a buffer is added, however, we found that it was dominated by BufferedStream. This is also to be expected, since the buffers used in the BufferedStream are optimized for the specific application of an external heap, whereas this is not the case for the more generic FStream.
 
 \subsection{BufferedStream}
 
-\subsectione{MMapStream}
+\subsection{MMapStream}
 
 % TODO: Find konfigurationer
 

@@ -3,8 +3,6 @@ This section will present implementation details on how the heap has
 been implemented, and how these choices were made. Also the details of
 all the implemented streams are discussed.
 
-% TODO: Hoejde, husk insert buffer der jo ikke bliver lagt paa disk!
-
 \subsection{Heap parameters}
 \label{sec:implementation:parameters}
 \begin{itemize}
@@ -162,28 +160,31 @@ To support the heap structure, the stream interface supported the following oper
 
 \texttt{read\_prev} and \texttt{backward\_write} were needed for the memory efficient sifting algorithm.
 
-\subsubsection{Buffered stream}
+\subsubsection{BufferedStream}
 
 The implementation of buffered stream were slightly more complex than the implementation in project 1 because of the extended stream interface with methods like \texttt{seek} and \texttt{read\_prev}. However, we made a few improvements to make the implementation efficient even with this more general interface. One of the improvements included heuristics to the portion of the file that ends in the buffer. For example, if a requested element that is not in the buffer is at the location right after the buffer ends, then the next portion at the element and onwards is buffered. This improvement could also have been implemented by supplying hints to how the stream is used. Furthermore, a 'write bitmap' were used to determine exactly what needs to be written to disk. This can be important for large buffer sizes.
 
 % TODO: Read map
 
-% TODO: At vi cachede en fuld buffer ved root blokken. OGSAA ved FStream
+For the buffered stream, the stream associated with root node was kept open to avoid filling the buffer from disk on each 'extract max' operation.
 
-\subsubsection{Memory mapped stream}
+\subsubsection{MMapStream}
 
-In project 1, the memory mapped stream mapped small blocks of the file when they were needed. This is not the most natural way to utilize memory mapped files. Instead, the memory mapped stream used in this projects maps the whole file once and remaps the file if the file size changes. In this way, the operating system is completely in charge of utilizing file caches in the best possible way.
+In project 1, the memory mapped stream mapped blocks of the file when they were needed. This is not the most natural way to utilize memory mapped files. Instead, the memory mapped stream used in this projects maps the whole file once and remaps the file if the file size changes. In this way, the operating system is completely in charge of utilizing file caches in the best possible way.
 
-% TODO: Test MMapStream vs. MMapFileStream?
+We did test an implementation that worked by mapping blocks when they were needed, but the overhead of remapping made it significantly slower than just mapping the entire file.
 
 \subsubsection{Cached stream}
 
 To make it very fast to retrieve the maximum element of especially the root but also other nodes, a cached stream were implemented. It caches reads but propagates writes to the underlying stream.
 
-The caching is very important for the analysis of the algorithm. If no cache where used in the root node, every extract max operation would result in an I/O. Hence, the algorithm would have the complexity $O(N\log \frac{N}{B})$ instead of $O(\frac{N}{B}\log \frac{N}{B})$. Furthermore, in the refill operation all the children's maximum element is ed at which also would result in additional I/Oss.
+The caching is very important for the analysis of the algorithm. If no cache where used in the root node, every extract max operation would result in an I/O. Hence, the algorithm would have the complexity $O(N\log \frac{N}{B})$ instead of $O(\frac{N}{B}\log \frac{N}{B})$. Furthermore, in the refill operation all the children's maximum element is cached at which also would result in additional I/Os.
 
 \subsubsection{Other streams}
 
-A stream using the POSIX methods \texttt{read} and \texttt{write} and a stream using \texttt{fread} and \texttt{fwrite} were also implemented. The stream interface almost mapped one-to-one and are therefore not explained in more detail.
+A stream (SysStream) using the POSIX methods \texttt{read} and \texttt{write} and a stream (FStream) using \texttt{fread} and \texttt{fwrite} were also implemented. The stream interface almost mapped one-to-one and are therefore not explained in more detail.
 
-% TODO: Buffer stoerrelse paa FStream og hvordan vi fandt den.
+The buffer size of \texttt{fread}/\texttt{fwrite} can be found with the constant \texttt{BUFSIZ} in \texttt{<cstdio>}. The buffer size on our system was 4kB.
+
+Similarly to BufferedStream, FStream keeps the stream associated with the root node open.
+

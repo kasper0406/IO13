@@ -27,4 +27,4 @@ optimization flags.
 
 The variations between several runs were insignificant so we choose to run all tests once to be able to run as many configurations as possible.
 
-% TODO: Hvordan vi har maalt IO'er
+We measured I/Os with \texttt{/proc/diskstats} and before each test we ran \texttt{sync()}. \texttt{sync} forces a write of dirty buffers in the block buffer cache out to disk.
