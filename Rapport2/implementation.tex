@@ -1,25 +1,29 @@
 %!TEX root = rapport.tex
 This section will present implementation details on how the heap has
-been implemented, and why these choices were made. Also the details of
+been implemented, and how these choices were made. Also the details of
 all the implemented streams are discussed.
 
 \subsection{Heap parameters}
 \label{sec:implementation:parameters}
 \begin{itemize}
-  \item $V$ is the maximal number of elements in a node. Hence, a
-    node is imperfect if it contains $< \left\lceil \frac{V}{2}
+  \item $V$ is the maximum number of elements in a node. Hence, a
+    node is imperfect if it contains less than $\left\lceil \frac{V}{2}
     \right\rceil$ elements.
   \item $d$ is the fan-out of the tree.
 \end{itemize}
 
 \subsection{Heap}
-In the paper the structure of the heap was represented using pointers,
+In the paper, the structure of the heap was represented using pointers
 such that every node stores pointers to its children and its
-parent. Instead, we have chosen to embed the structure of the heap
+parent.
+
+Instead, we chose to embed the structure of the heap
 inside an array, such that an array entry contains a reference to a
 node in the heap. Then the index of the parent node and the indices of
 the child node can be calculated using simple integer operations, and
 the corresponding node can be found by looking up in the node array.
+
+% TODO: Lidt bedre forklaring
 
 Using this representation, it is also very easy to swap the position
 of two nodes, as the two entries in the array can simply be swapped
@@ -158,15 +162,17 @@ To support the heap structure, the stream interface supported the following oper
 
 \subsubsection{Buffered stream}
 
-The implementation of buffered stream were slightly more complex than the implementation in project 1 because of the extended stream interface with methods like \texttt{seek} and \texttt{read\_prev}.
+The implementation of buffered stream were slightly more complex than the implementation in project 1 because of the extended stream interface with methods like \texttt{seek} and \texttt{read\_prev}. However, we made a few improvements to make the implementation efficient even with this more general interface. One of the improvements included heuristics to the portion of the file that ends in the buffer. For example, if a requested element that is not in the buffer is at the location right after the buffer ends, then the next portion at the element and onwards is buffered. This improvement could also have been implemented by supplying hints to how the stream is used. Furthermore, a 'write bitmap' were used to determine exactly what needs to be written to disk. This can be important for large buffer sizes.
 
-% TODO: How the final buffered stream looked like. And how we choose those options.
+% TODO: Read map
+
+% TODO: At vi cachede en fuld buffer ved root blokken. OGSAA ved FStream
 
 \subsubsection{Memory mapped stream}
 
 In project 1, the memory mapped stream mapped small blocks of the file when they were needed. This is not the most natural way to utilize memory mapped files. Instead, the memory mapped stream used in this projects maps the whole file once and remaps the file if the file size changes. In this way, the operating system is completely in charge of utilizing file caches in the best possible way.
 
-% TODO: Test MMapStream vs. MMapFileStream.
+% TODO: Test MMapStream vs. MMapFileStream?
 
 \subsubsection{Cached stream}
 
@@ -177,3 +183,5 @@ The caching is very important for the analysis of the algorithm. If no cache whe
 \subsubsection{Other streams}
 
 A stream using the POSIX methods \texttt{read} and \texttt{write} and a stream using \texttt{fread} and \texttt{fwrite} were also implemented. The stream interface almost mapped one-to-one and are therefore not explained in more detail.
+
+% TODO: Buffer stoerrelse paa FStream og hvordan vi fandt den.
