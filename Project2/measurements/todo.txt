@@ -1,5 +1,5 @@
 0. Test uden cache.
-1. Test med d = V/P
+1. Test med d = V/P (bliver altid mindre ved P=1024 (4kB)
 2. Test sift variation med go uden opt. Een maaling.
 3. Buffered Stream, stor buffer og block. Lille cache (meget lille) og en stor.
 
