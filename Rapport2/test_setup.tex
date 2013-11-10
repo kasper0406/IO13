@@ -8,7 +8,7 @@ specifications:
 \item 2 x 256 KB L2 cache
 \item Shared 3MB L3 cache
 \end{itemize}
-The main memory size of the machine was 1 GB (with 600MB - 700MB free memory), and the machine was running Ubuntu
+The main memory size of the machine was 1 GB (with approximately 600MB free memory), and the machine was running Ubuntu
 Linux 12.04. The hard drive was an USB2 attached Fujitsu MJA2250BH which has the following specifications:
 
 \begin{itemize}
@@ -25,6 +25,4 @@ written in C++11 and compiled on Linux using the GCC 4.7 compiler. When measurem
 code was compiled using the \texttt{-O3 -flto -funroll-loops}
 optimization flags.
 
-In the beginning we ran our tests 3 times and used the median. However, to make it feasible
-to run our tests on bigger inputs, we adjusted our tests to only
-one trial for large inputs.
+The variations between several runs were insignificant so we choose to run all tests once to be able to run as many configurations as possible.
