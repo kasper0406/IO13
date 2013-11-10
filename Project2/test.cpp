@@ -10,7 +10,6 @@
 #include <inttypes.h>
 #include <cstdlib>
 
-#include "test.hpp"
 #include "external_heap.hpp"
 #include "dummy_stream.hpp"
 #include "sys_stream.hpp"
