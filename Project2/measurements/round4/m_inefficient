@@ -1,7 +1,7 @@
-Release mode
-Test start
-
- Stream type    Elements  Block size           d Buffer size  Cache size        Time   I sectors   O sectors    Read ops   Write ops
+#Release mode
+#Test start
+#
+# Stream type    Elements  Block size           d Buffer size  Cache size        Time   I sectors   O sectors    Read ops   Write ops
            m   268435456      524288         512           0           0     508.888     6111856     7385160       48835       33445
            m   268435456     1048576         256           0           0     475.194     5809768     6862576       45587       29601
            m   268435456     2097152         128           0           0     511.049     5745064     7938872       44966       33671
