@@ -1,6 +1,7 @@
 %!TEX root = rapport.tex
 
 \subsection{Sift algorithm variations}
+\label{sec:sifting}
 As described in Section~\ref{sec:heap:sifting} two different strategies for sifting have been implemented. A memory efficient using less than $V$ space that reads/writes backwards and a version that uses up to $2V$ space but only reads/writes forwards.
 
 We choose to do a small experiment for our fastest streams with the two sifting implementations, as we were unsure about the penalty (if any) obtained by doing I/O backwards.
@@ -82,19 +83,35 @@ Another interesting observation from the figure is that the configurations (exce
 From this point on, a node size of 4 MB is used when comparing against other other streams.
 
 \subsection{MMapStream}
+As seen on Figure~\ref{fig:m-efficiency} in Section~\ref{sec:sifting}, the node size resulting in the fastest running time for sorting 1 GB of elements is seen to be 4 MB. Therefore we have chosen to use this node size when running benchmarks of MMapStream.
+% TODO: Maaske lav flere maalinger der viser at 4MB er et godt valg for stoerre input.
 
-When sorting very big input sizes, the $d$ value can not be increased arbitrary because at least one page from every node should be able to fit the memory mapped file cache, otherwise a lot of trashing would occur. Two solutions:
+As seen on Figure~\ref{fig:m:vary-d} it can be seen that the bigger value of $d$ the better the running time. Hence, when doing benchmarks, we have chosen to make $d$ as large as possible. 
+
+\begin{figure}[h!]
+  \centering
+  \includegraphics[width=0.9\textwidth]{m_d}
+  \caption{Running time of MMapStream when varying the $d$ parameter.}
+  \label{fig:m:vary-d}
+\end{figure}
+
+However, when sorting very big input sizes, the $d$ value can not be increased arbitrary because at least one page from every node should be able to fit the memory mapped file cache, otherwise a lot of trashing would occur. There are two possible solutions to this problem:
 \begin{itemize}
-\item Increase the node size. Which is only possible up to the memory size.
+\item Increase the node size. This is only possible up to the main memory size, otherwise sifting will begin to put its internal buffer on disk.
 \item Restrict $d$ such that there is memory left for the operating system to use as cache when doing refill.
 \end{itemize}
 Both of the solutions will result in decreased performance, and the latter of the solutions would result in more I/Os, but ultimately this is unavoidable because of the I/O sorting lower bound.
 
+For all the benchmarked input sizes, it has always been possible to simply increase $d$ such that the resulting heap was of height 1.
+
+% TODO: Kommenter paa hvor mange elementer der skal tilfoejes for at det sker?
 
 % TODO: Find konfigurationer
 
-\subsection{Heap}
+\subsection{Comparison}
 
 % TODO: Med de bedste stream konfigurationer + cached
+This section will discuss the performance of the external heap. We have chosen to omit SysStream and FStream in this comparison as they are clearly inferior to BufferedStream and MMapStream.
 
-\subsection{Comparison}
+Figure~REF shows how heap sorting using the external heap with BufferedStream and MMapStream compare to external merge sort as implemented in project 1. It can be seen that they are both slower, which is to be expected.
+
