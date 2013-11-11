@@ -9,13 +9,13 @@ specifications:
 \item Shared 3 MB L3 cache
 \end{itemize}
 The main memory size of the machine was 1 GB (with approximately 600 MB free memory), and the machine was running Ubuntu
-Linux 12.04. The hard drive was an USB2 attached Fujitsu MJA2250BH which has the following specifications:
+Linux 12.04. The hard drive was an USB2 attached Fujitsu MJA2250BH which had the following specifications:
 
 \begin{itemize}
 \item 250 GB
 \item 5,400 RPM
-\item 8MB cache
-\item 512B sector size
+\item 8 MB cache
+\item 512 B sector size
 \end{itemize}
 
 The file system had a block size of 4096 B and 128 kB read ahead.
@@ -25,8 +25,6 @@ written in C++11 and compiled on Linux using the GCC 4.7 compiler. When measurem
 code was compiled using the \texttt{-O3 -flto -funroll-loops}
 optimization flags.
 
-The variations between several runs were insignificant so we choose to run all tests once to be able to run as many configurations as possible.
+All tests have been performed with uniform distributed random generated 32 bit integers. The variations between several runs were insignificant so we choose to run all tests once to be able to run as many configurations as possible.
 
 We measured I/Os with \texttt{/proc/diskstats} and before each test we ran \texttt{sync()}. \texttt{sync} forces a write of dirty buffers in the block buffer cache out to disk.
-
-\todo{random generated ints}

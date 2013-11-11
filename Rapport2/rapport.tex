@@ -58,7 +58,7 @@ The following is a description of the different folders available at
 \item[root] Contains the implementations of the different streams and
   the external heap.
 
-\item[measurements/] Contains the raw measurements used for the plots in the
+\item[measurements/] Contains the raw measurements used for the plots in this
   report.
 \end{description}
 
@@ -67,7 +67,7 @@ The code has the following source files:
 \begin{description}
 
 
-\item[block.hpp] \texttt{Block} class that represents a node and contains methods for opening streams to the.
+\item[block.hpp] \texttt{Block} class that represents a node and contains methods for operating streams.
 
 \item[buffered\_stream.hpp] Our implementation of a buffered stream.
 
@@ -84,9 +84,9 @@ The code has the following source files:
 
 \item[main.cpp] Driver code for calling sanity tests.
 
-\item[mmap\_file\_stream.hpp] Stream implementation using memory mapping and maps the whole file.
+\item[mmap\_file\_stream.hpp] Stream implementation using memory mapping that maps the whole file.
 
-\item[mmap\_stream.hpp] Stream implementation using memory mapping and maps block by block.
+\item[mmap\_stream.hpp] Stream implementation using memory mapping that maps block by block.
 
 \item[sys\_stream.hpp] Stream implementation using POSIX \texttt{read} and \texttt{write}.
 
