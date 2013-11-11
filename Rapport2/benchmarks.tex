@@ -42,6 +42,23 @@ The reason for the SysStream being slow, is due to its lack of buffering to redu
 
 \subsection{BufferedStream}
 
+For BufferedStream the memory efficient sifting algorithm was the highest performing. This is believed to be due to the same reasoning as explained in subsection \todo{subsectionen!}.
+
+\begin{figure}[h!]
+  \centering
+  \includegraphics[width=1\textwidth]{b_final.pdf}
+  \caption{Time for sorting a 1GB file varying the buffer size (x-axis) and the node size (series)}
+  \label{fig:b_final}
+\end{figure}
+
+As can be seen in figure~\ref{fig:b_final}, the highest performing configuration for buffered stream sorting 1 GB elements is a 32 kB buffer size and a node size of 4 MB. Larger block size forces $d$ to be smaller which is shown in figure \todo{Den figur} is not good for best performance. But 4 MB node size is also faster than 2 MB node size. We believe this is due to the fact that a larger node size yields more sequential read/write that buffered streams are especially suited for. When the node size increases, the best buffer size also increases. Having a larger buffer size means more sequential reads/writes and higher performance when utilized properly.
+
+Another interesting observation from the figure is that the configurations (except for a node size of 32 MB) starts to perform worse at a point when using larger buffer sizes. This effect is especially visible for a node size of 2 MB. We believe this is due to underutilized buffers. For instance, consider a refill using a node size of 2 MB, $d=512$ and a 32 kB buffer. The algorithm potentially refills $\frac{V}{2}=\frac{\textrm{2 MB}}{2}$ elements and assuming an equal number of elements from each child is moved up, $\frac{V}{2d}=\frac{\textrm{2 MB}}{2*512}=\textrm{2 kB}$ elements from each child is used which is significantly less than the buffer size of each child. A similar argument can be used for sifting where a smaller portion is sifted upwards when $d$ is larger and therefore, the buffer is again potentially underutilized.
+
+\todo{back det op med 2 MB via TOUCHED}
+
+From this point on, a node size of 4 MB is used when comparing against other other streams.
+
 \subsection{MMapStream}
 
 % TODO: Find konfigurationer

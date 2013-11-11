@@ -3,22 +3,22 @@ All measurements presented in this report were performed on a computer
 with an Intel Core i3-380UM CPU with the following technical
 specifications:
 \begin{itemize}
-\item 2 cores w/HT operating at 1.33GHz
-\item 2 x 32KB L1 data cache
-\item 2 x 256 KB L2 cache
-\item Shared 3MB L3 cache
+\item 2 cores w/HT operating at 1.33 GHz
+\item 2 x 32 kB L1 data cache
+\item 2 x 256 kB L2 cache
+\item Shared 3 MB L3 cache
 \end{itemize}
-The main memory size of the machine was 1 GB (with approximately 600MB free memory), and the machine was running Ubuntu
+The main memory size of the machine was 1 GB (with approximately 600 MB free memory), and the machine was running Ubuntu
 Linux 12.04. The hard drive was an USB2 attached Fujitsu MJA2250BH which has the following specifications:
 
 \begin{itemize}
-\item 250GB
+\item 250 GB
 \item 5,400 RPM
 \item 8MB cache
 \item 512B sector size
 \end{itemize}
 
-The file system had a block size of 4096B and 128kB read ahead.
+The file system had a block size of 4096 B and 128 kB read ahead.
 
 All implementations have been
 written in C++11 and compiled on Linux using the GCC 4.7 compiler. When measurements were performed, the
@@ -28,3 +28,5 @@ optimization flags.
 The variations between several runs were insignificant so we choose to run all tests once to be able to run as many configurations as possible.
 
 We measured I/Os with \texttt{/proc/diskstats} and before each test we ran \texttt{sync()}. \texttt{sync} forces a write of dirty buffers in the block buffer cache out to disk.
+
+\todo{random generated ints}
