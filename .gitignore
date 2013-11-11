@@ -12,11 +12,23 @@
 *.la
 *.a
 
+# LaTeX
 *.toc
 *.out
 *.log
 *.pdf
 *.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.synctex.gz
+
+# Mac
+.DS_Store
+
+# Emacs
+*.*#
+*.*~
 
 # Build files
 build
