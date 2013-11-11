@@ -1,15 +1,21 @@
 %!TEX root = rapport.tex
-This section will present implementation details on how the heap has
-been implemented, and how these choices were made. Also the details of
+This section presents implementation details on how the heap has
+been implemented and how these choices were made. Also the details of
 all the implemented streams are discussed.
 
-\subsection{Heap parameters}
+\subsection{Notation}
 \label{sec:implementation:parameters}
+
+We use the following variables throughout the rapport.
+
 \begin{itemize}
-  \item $V$ is the maximum number of elements in a node. Hence, a
+  \item $V$ is the maximum number of elements in a node in the heap. Hence, a
     node is imperfect if it contains less than $\left\lceil \frac{V}{2}
     \right\rceil$ elements.
-  \item $d$ is the fan-out of the tree.
+  \item $d$ is the fan-out of the heap.
+  \item $B$ is the buffer size of buffered streams.
+  \item $N$ is the number of elements.
+  \item $M$ is the amount of memory available.
 \end{itemize}
 
 \subsection{Heap}
@@ -23,7 +29,7 @@ node in the heap. Then the index of the parent node and the indices of
 the child node can be calculated using simple integer operations, and
 the corresponding node can be found by looking up in the node array.
 
-% TODO: Lidt bedre forklaring
+\todo{Lidt bedre forklaring}
 
 Using this representation, it is also very easy to swap the position
 of two nodes, as the two entries in the array can simply be swapped
@@ -32,7 +38,7 @@ imperfect).
 
 To store the elements of the heap, a big file have been allocated on
 disk. This file is (virtually) divided into blocks of size $V$, such
-that each block is associated with a node in the tree.
+that each block is associated with a node in the internal tree.
 
 When elements are inserted into the heap, they file may become too
 small. Hence when a new block is added, and the file does not have
@@ -69,8 +75,8 @@ when extracting the maximum element.
 
 \subsubsection{Sifting}
 \label{sec:heap:sifting}
-When doing the sift operation, it is required to merge blocks of the
-current node and its parent. When doing this, one should be careful
+During sifting, the elements of the current node and its parent are merged.
+When doing this, one should be careful
 about how many elements are assigned to respectively the parent and
 the current node after the merge: If too many elements are transferred
 to the parent, such that an element with strictly lower priority is
@@ -94,7 +100,7 @@ We have fixed this by per default to assign
 \[
   \max \left( \text{child elements less than minimum in parent}, \ceil*{\frac{V}{2}} \right)
 \]
-elements to the child. But then it might be the parent gets
+elements to the child. But then it might be that the parent gets
 overfilled, in which case a sufficient number of the smallest elements
 from the parent are transferred to the child node. By construction
 this division will satisfy the invariants of the heap.
@@ -120,7 +126,7 @@ Two implementations have been made for merging a block:
 \end{description}
 We have chosen to investigate both techniques, as we are unsure what
 the penalty of reading and writing backwards is, due to read-ahead
-etc.. We believe the effect will be different for different types of
+etc. We believe the effect will be different for different types of
 streams, as some with large buffers or memory mapped files, may handle
 the situation in a better way.
 
@@ -128,6 +134,7 @@ the situation in a better way.
 To ensure the correctness of our heap implementation, the following
 three techniques have been used:
 \begin{itemize}
+\item Unit testing of the individual methods.
 \item A graphical representation of the data structure have been
   implemented, enabling us to manually verify small test inputs.
 \item A consistency check function has been implemented, which is
