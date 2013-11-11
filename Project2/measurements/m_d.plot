@@ -5,7 +5,7 @@ set terminal pdf enhanced font "Helvetica, 10" size 7,4
 set output "./m_d.pdf"
 
 set xlabel "d"
-set xtics 0, 1 rotate
+set xtics 0, 1
 set offset 1, 1
 
 set xtics add ("" 2)
