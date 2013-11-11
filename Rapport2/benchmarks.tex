@@ -3,9 +3,22 @@
 \subsection{Sift algorithm variations}
 As described in Section~\ref{sec:heap:sifting} two different strategies for sifting have been implemented. A memory efficient using less than $V$ space that reads/writes backwards and a version that uses up to $2V$ space but only reads/writes forwards.
 
-We choose to do a small experiment \todo{More details about the test?} for our fastest streams with the two sifting implementations, as we were unsure about the penalty (if any) obtained by doing I/O backwards.
+We choose to do a small experiment for our fastest streams with the two sifting implementations, as we were unsure about the penalty (if any) obtained by doing I/O backwards.
 
-Doing the tests it was found that the space efficient implementation consistently had a better running time \todo{Decribe how much better?}. Hence, the memory efficient has been chosen for all the following experiments.
+For the BufferedStream, the two algorithms were benchmarked for different node sizes and buffer sizes. In all performed measurements, ranging from a buffer size of 4kB to 256kB and node size ranging from 2MB to 8MB it was found that memory efficient sifting was always superior. We believe this is due to the buffers and caches used, since they will neglect result in the backward read/write to be translated to be forward read/writes.
+
+The reason for the memory efficient sifting to be faster is believed to be caused by the memory inefficient algorithm interleaves operations on the two streams, where as the memory efficient algorithm only uses one stream at a time. For example in the memory inefficient implementation, when the elements of the two nodes are merged into internal memory, elements are read from both of the streams, and even though the streams are buffered, the disk must seek from one part of the disk to another when the buffers needs to be refilled. This is not the case for the memory efficient implementation.
+
+For the memory mapped stream, a similar experiment was done. Figure~\ref{fig:m-efficiency} shows the result of this experiment. As can be seen, the memory inefficient algorithm is the fastest for small node sizes, wheres the memory efficient algorithm is faster for large node sizes.
+
+Like before, the stream interleaving done by the memory inefficient algorithm is believed to be contributing to this: For small node sizes it does not matter that much, because relatively few elements are read and most of them can be cached, while for larger node sizes the disk will begin reading from two different areas. To make things worse, the memory inefficient algorithm uses about twice the amount of memory for doing the merge, yielding less space for the operating system to use for caching of the memory mapped file. Therefore, when using a large node size, more pages of the memory mapped file may be swapped to disk, resulting in cache misses later in the test execution.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.9\textwidth]{m_efficiency}
+  \caption{Comparison of memory inefficient and memory efficient sifting algorithm, when using MMapStream with varying node sizes and 1GB of elements.}
+  \label{fig:m-efficiency}
+\end{figure}
 
 \subsection{Parameter weeding}
 As described in Section~\ref{sec:implementation:parameters}, the implemented heap has a lot of adjustable parameters, which all may have an influence on its performance. In order to limit the time needed for running experiments, the parameters space has been weeded out, such that it does not include obviously bad settings.
@@ -21,7 +34,7 @@ We have only considered settings of parameters satisfying the following constrai
   \label{eqn:dvn}
   dV\leq N
 \end{equation}
-Constraint~\ref{eqn:memory} says that all buffers and caches used by the heap should fit into main memory. If this was not the case, memory trashing would occur, giving more I/Os than anticipated. Moreover parameter values have been increased by a factor of $2$. Note that for memory mapped stream there is no explicit buffer, hence when the inequality in ~\ref{eqn:memory} is tight no space is left for the operating system to cache files opened with memory mapping.
+Constraint~\ref{eqn:memory} says that all buffers and caches used by the heap should fit into main memory. If this was not the case, memory trashing would occur, giving more I/Os than anticipated. Moreover parameter values have been increased by a factor of $2$. Note that for memory mapped stream there is no explicit buffer, hence when the inequality in \ref{eqn:memory} is tight no space is left for the operating system to cache files opened with memory mapping.
 
 Assume a fixed block size, then the performance of sifting improves when the height $h = \log_d{\frac{N}{V}}$ of the tree is decreased. Because the recursion of sifting ends after fewer iterations. When refilling $d+1$ streams are open, hence when using a buffered stream $d+1$ buffers are allocated. Therefore, $d$ be increased as long as the buffers fit into memory.
 
@@ -31,9 +44,11 @@ All configurations not satisfying constraint~\ref{eqn:dvn} will have the same re
 In this section the different streams will be benchmarked and compared.
 
 \subsubsection{Cached stream}
-As expected, we have found that if the cached stream is not used, the number of reads from the hard disk increases dramatically. Hence, a significant speedup is found for all of the streams by using a cached stream in front of them.
+We found the cached stream to improve the performance for the BufferedStream, FStream and SysStream. For SysStream the improvement is expected, since it has no buffer or cache on its own. For the BufferedStream and FStream, the speedup was found for a very small cache size, with decreasing performance when increasing the cache size. We believe this is due to the cache is "conflicting" with the buffers of the underlying streams, but using a very small cache helps when doing the refill operation, since this eliminates the first read from every child node where none or only few elements are are taken.
 
-Experiments determining the influence of the cache size is postponed until the specific streams are discussed, since a given cache size may not yield consistent results for different streams.
+For the memory mapped stream, the cached stream made the performance worse. This is not too surprising because the operating system handles which pages of the file should be swapped in and which should not. Therefore adding an extra cache may confuse the operating systems cache strategy, resulting in worse performance.
+
+Hence, in the following experiments, a small cache of 128 elements are used for BufferedStream, FStream and SysStream, whereas no cache is used for MMapStream.
 
 \subsubsection{SysStream and FStream}
 By experiments, we have found that SysStream and FStream performs worse for all tested parameter combinations. Therefore, we have chosen to exclude these streams from all subsequent comparisons.
