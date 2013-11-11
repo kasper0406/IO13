@@ -51,7 +51,7 @@ Figure~\ref{fig:m-cache-size-comparison} shows that the MMapStream performance s
 \begin{figure}
   \centering
   \includegraphics[width=0.9\textwidth]{m_cache_size_comparison}
-  \caption{Comparison of the running time for different block sizes using different cache sizes for MMapStream.}
+  \caption{Comparison of the running time for different node sizes using different cache sizes for MMapStream.}
   \label{fig:m-cache-size-comparison}
 \end{figure}
 
@@ -82,6 +82,14 @@ Another interesting observation from the figure is that the configurations (exce
 From this point on, a node size of 4 MB is used when comparing against other other streams.
 
 \subsection{MMapStream}
+
+When sorting very big input sizes, the $d$ value can not be increased arbitrary because at least one page from every node should be able to fit the memory mapped file cache, otherwise a lot of trashing would occur. Two solutions:
+\begin{itemize}
+\item Increase the node size. Which is only possible up to the memory size.
+\item Restrict $d$ such that there is memory left for the operating system to use as cache when doing refill.
+\end{itemize}
+Both of the solutions will result in decreased performance, and the latter of the solutions would result in more I/Os, but ultimately this is unavoidable because of the I/O sorting lower bound.
+
 
 % TODO: Find konfigurationer
 
