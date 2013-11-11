@@ -46,7 +46,14 @@ In this section the different streams will be benchmarked and compared.
 \subsubsection{Cached stream}
 We found the cached stream to improve the performance for the BufferedStream, FStream and SysStream. For SysStream the improvement is expected, since it has no buffer or cache on its own. For the BufferedStream and FStream, the speedup was found for a very small cache size, with decreasing performance when increasing the cache size. We believe this is due to the cache is "conflicting" with the buffers of the underlying streams, but using a very small cache helps when doing the refill operation, since this eliminates the first read from every child node where none or only few elements are are taken.
 
-For the memory mapped stream, the cached stream made the performance worse. This is not too surprising because the operating system handles which pages of the file should be swapped in and which should not. Therefore adding an extra cache may confuse the operating systems cache strategy, resulting in worse performance.
+Figure~\ref{fig:m-cache-size-comparison} shows that the MMapStream performance significantly worse when using an extra level of cache. Moreover, the size of the cache does not seem to have a any significant effect on the running time. This is believed to be because that the operating system handles the caching of the memory mapped file itself, and hence adding an extra layer of cache is redundant, and introduces overhead and possibly interferes with the cache strategy employed by the operating system.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.9\textwidth]{m_cache_size_comparison}
+  \caption{Comparison of the running time for different block sizes using different cache sizes for MMapStream.}
+  \label{fig:m-cache-size-comparison}
+\end{figure}
 
 Hence, in the following experiments, a small cache of 128 elements are used for BufferedStream, FStream and SysStream, whereas no cache is used for MMapStream.
 
