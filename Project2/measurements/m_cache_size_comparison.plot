@@ -4,11 +4,19 @@ max(a,b) = (a > b) ? a : b
 set terminal pdf enhanced font "Helvetica, 10" size 7,4
 set output "./m_cache_size_comparison.pdf"
 
-set xlabel "log2 V"
+set xlabel "Node size"
 #set xtics 0, 1 rotate
 set offset 1, 1
 
 set ylabel "Running time [s]"
+
+set xtics add ("" 9)
+set xtics add ("" 18)
+set xtics add ("2 MB" 19)
+set xtics add ("4 MB" 20)
+set xtics add ("8 MB" 21)
+set xtics add ("16 MB" 22)
+set xtics add ("" 23)
 
 set ytics nomirror tc lt 1
 

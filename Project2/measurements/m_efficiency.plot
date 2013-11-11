@@ -4,9 +4,19 @@ max(a,b) = (a > b) ? a : b
 set terminal pdf enhanced font "Helvetica, 10" size 7,4
 set output "./m_efficiency.pdf"
 
-set xlabel "log2 V"
-set xtics 0, 1 rotate
+set xlabel "Node size"
+set xtics 0, 1
 set offset 1, 1
+
+set xtics add ("" 9)
+set xtics add ("" 18)
+set xtics add ("2 MB" 19)
+set xtics add ("4 MB" 20)
+set xtics add ("8 MB" 21)
+set xtics add ("16 MB" 22)
+set xtics add ("32 MB" 23)
+set xtics add ("64 MB" 24)
+set xtics add ("" 25)
 
 set ylabel "Running time [s]"
 
