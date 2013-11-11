@@ -1,0 +1,9 @@
+Release mode
+Test start
+
+ Stream type    Elements  Block size           d Buffer size  Cache size        Time   I sectors   O sectors    Read ops   Write ops
+           b   268435456      524288         512        1024         128     Timeout
+           b   268435456      524288         512        8192         128     Timeout
+           b   268435456      524288         512       65536         128
+
+Take away: Memory wasting er virkelig daarlig for buffered

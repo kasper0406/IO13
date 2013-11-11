@@ -1,0 +1,14 @@
+Release mode
+Test start
+
+ Stream type    Elements  Block size           d Buffer size  Cache size        Time   I sectors   O sectors    Read ops   Write ops
+           b   268435456      524288         512        1024        1024     801.971     5322120     7934520       67528       34297
+           b   268435456      524288         512        8192        1024     783.405     5096768     7970408       39935       34448
+           b   268435456      524288         512       65536        1024     Timeout
+           b   268435456     1048576         256        1024        1024     773.733     5175088     8527520       72945       36592
+           b   268435456     1048576         256        8192        1024     753.567     4893760     8624376       39987       37004
+           b   268435456     1048576         256       65536        1024     823.437     4966104     8581168       38255       36831
+           b   268435456     2097152         128        1024        1024
+
+
+Take away: En stor cache er ikke rigtig bedre, og den bedste er daarligere end med en mindre cache

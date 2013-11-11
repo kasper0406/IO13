@@ -7,3 +7,13 @@ block 2,4,8,….,til langsommere
 cache: 128, 1024, nogen stor forskel?
 buffer size: 1024 —-> block size/ 4
 storest d.
+
+
+Elements 256 * 2^20
+Block size 5 forskellige
+Cache size 128
+Buffer size fra 2048, 4096, 8192, 16, 32
+
+=>
+
+5 * 5=25
