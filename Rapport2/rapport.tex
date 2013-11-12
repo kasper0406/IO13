@@ -63,35 +63,33 @@ The following is a description of the different folders available at
 \subsubsection{Code structure}
 The code has the following source files:
 \begin{description}
-
-
-\item[block.hpp] \texttt{Block} class that represents a node and contains methods for operating streams.
-
-\item[buffered\_stream.hpp] Our implementation of a buffered stream.
-
-\item[cached\_stream.hpp] A cached stream that abstracts another stream and provides a cache layer.
-
 \item[CMakeLists.txt] CMake file for the project specifying
   compilation options.
 
-\item[dummy\_stream.hpp] A dummy in-memory stream used for testing.
+\item[main.cpp] Driver code for calling sanity tests.
+
+\item[test.cpp] Driver code for calling test code.
 
 \item[external\_heap.hpp] Our external heap interface that provides \texttt{insert}, \texttt{extract\_max}, etc.
 
+\item[block.hpp] \texttt{Block} class that represents a node and contains methods for operating streams.
+
+\item[dummy\_stream.hpp] A dummy in-memory stream used for testing.
+
+\item[sys\_stream.hpp] Stream implementation using POSIX \texttt{read} and \texttt{write}.
+
 \item[f\_stream.hpp] Stream implementation using \texttt{fread} and \texttt{fwrite}.
 
-\item[main.cpp] Driver code for calling sanity tests.
+\item[buffered\_stream.hpp] Our implementation of a buffered stream.
 
 \item[mmap\_file\_stream.hpp] Stream implementation using memory mapping that maps the whole file.
 
 \item[mmap\_stream.hpp] Stream implementation using memory mapping that maps block by block.
 
-\item[sys\_stream.hpp] Stream implementation using POSIX \texttt{read} and \texttt{write}.
-
-\item[test.cpp] Driver code for calling test code.
-
+\item[cached\_stream.hpp] A cached stream that abstracts another stream and provides a cache layer.
 \end{description}
 
+\clearpage
 \section{Implementation}
 \input{implementation}
 

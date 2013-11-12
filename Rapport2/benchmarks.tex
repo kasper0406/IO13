@@ -9,7 +9,7 @@ We choose to do a small experiment for our fastest streams with the two sifting 
 For the BufferedStream, the two algorithms were benchmarked for different node sizes and buffer sizes. In all performed experiments, ranging from a buffer size of 4 kB to 256 kB and node size ranging from 2 MB to 8 MB it was found that memory efficient sifting was always superior. We believe this is due to:
 
 \begin{itemize}
-\item Buffers and caches, since those ends up being filled up by reading forward.
+\item Buffers and caches, since they are always filled by reading forward.
 \item The memory inefficient algorithm interleaves operations on the two streams, where the memory efficient algorithm only uses one stream at a time. For example in the memory inefficient implementation, when the elements of the two nodes are merged into internal memory, elements are read from both of the streams, and even though the streams are buffered, the disk must seek from one part of the disk to another when the buffers needs to be refilled. This is not the case for the memory efficient implementation.
 \end{itemize}
 
@@ -38,11 +38,11 @@ We have only considered settings of parameters satisfying the following constrai
   \label{eqn:dvn}
   dV\leq N
 \end{equation}
-Constraint~\ref{eqn:memory} says that all buffers and caches used by the heap should fit into main memory. If this was not the case, memory trashing would occur, resulting in more I/Os than anticipated. Note that for the memory mapped stream there is no explicit buffer, hence when the inequality in \eqref{eqn:memory} is tight, no space is left for the operating system to cache files opened with memory mapping. Moreover parameter values have been increased by a factor of $2$.
+Constraint~\ref{eqn:memory} says that all buffers and caches used by the heap should fit into main memory. If this was not the case, memory trashing would occur, resulting in more I/Os than anticipated. Note that for the memory mapped stream there is no explicit buffer, hence when the inequality in \eqref{eqn:memory} is tight, no space is left for the operating system to cache files opened with memory mapping.
 
 Assume a fixed block size, then the performance of sifting improves when the height $h = \log_d{\frac{N}{V}}$ of the tree is decreased because the recursion of sifting ends after fewer iterations. During refilling, $d+1$ streams are open, hence when using a buffered stream $d+1$ buffers are allocated. Therefore, $d$ can be increased as long as the buffers fit into memory.
 
-All configurations not satisfying \eqref{eqn:dvn} will have the same result as $d=\frac{N}{V}$.
+All configurations not satisfying \eqref{eqn:dvn} will have the same result as $d=\frac{N}{V}$. Moreover parameter values have been increased by a factor of $2$.
 
 \subsection{Streams}
 In this section the different streams will be benchmarked and compared.
