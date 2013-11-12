@@ -210,7 +210,7 @@ private:
     }
 #endif
 
-    int writes_needed = 0;
+    int64_t writes_needed = 0;
     for (int64_t start = 0; start < utilized_buffer_size_;) {
       if (is_updated(start + buffer_start_)) {
         // 'end' is exclusive
