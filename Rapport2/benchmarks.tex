@@ -68,7 +68,6 @@ The reason for the SysStream being slow, is due to its lack of buffering to redu
 
 \subsection{MMapStream}
 As seen in figure~\ref{fig:m-efficiency} in section~\ref{sec:sifting}, the node size resulting in the fastest running time for sorting 1 GB of elements is 4 MB. Therefore we have chosen to use this node size when running benchmarks of MMapStream.
-\todo{Maaske lav flere maalinger der viser at 4MB er et godt valg for stoerre input.}
 
 From figure~\ref{fig:m:vary-d} it can be seen that a bigger value of $d$ improves running time. Hence, when running benchmarks, we have chosen to make $d$ as large as possible. 
 
@@ -101,8 +100,6 @@ As can be seen in figure~\ref{fig:b_final}, the best performing configuration fo
 
 Another interesting observation from the figure is that the configurations (except for a node size of 32 MB) begins to perform worse at a point when using larger buffer sizes. This effect is especially visible for a node size of 2 MB. We believe this is due to underutilized buffers. For instance, consider a refill using a node size of 2 MB, $d=512$ and a 32 kB buffer. The algorithm potentially refills $\frac{V}{2}=\frac{\textrm{2 MB}}{2}$ elements and assuming an equal number of elements from each child is moved up, $\frac{V}{2d}=\frac{\textrm{2 MB}}{2*512}=\textrm{2 kB}$ elements from each child is used which is significantly less than the buffer size of each child. A similar argument can be used for sifting where a smaller portion is sifted upwards when $d$ is larger and therefore, the buffer is again potentially underutilized.
 
-\todo{back det op med 2 MB via TOUCHED}
-
 From this point on, a node size of 4 MB and a buffer size of 32 kB is used when comparing against other other streams.
 
 \subsection{Comparison}
@@ -114,7 +111,10 @@ From this point on, a node size of 4 MB and a buffer size of 32 kB is used when 
   \label{fig:best_sort}
 \end{figure}
 
-This section will discuss the performance of the external heap. We have chosen to omit SysStream and FStream in this comparison as they are inferior to BufferedStream and MMapStream.
+We have chosen to omit SysStream and FStream in this comparison as they are inferior to BufferedStream and MMapStream.
 
-Figure~REF shows how heap sorting using the external heap with BufferedStream and MMapStream compare to external merge sort as implemented in project 1. It can be seen that they are both slower, which is to be expected.
+Figure~\ref{fig:best_sort} shows how heap sorting using the external heap with BufferedStream and MMapStream compare to external mergesort as implemented in project 1 and in-memory quicksort. It can be seen that the external heapsort is slower than external mergesort with both MMapStream and BufferedStream. This is in agreement with the findings in R. Fadel et. al. \citep{Fadel1999345}.
 
+It seems that the ratio between external heapsort and external mergesort gets worse for larger input sizes. In project 1 we saw that the number of input scans in external mergesort was given by the height of the merge tree. For the external heapsort the effect of the tree height is not as profound since the height of the tree does not directly relate to the number of input scans. The number of refill operations is linear in the input size and each refill operation does not only induce a constant number of I/Os when $d$ increases. We may see a more constant ratio if the node size was increased as the input size got larger. When an extra level is added to the merge tree, then we would expect to a drop in the ratio between external mergesort and external heapsort. The reason no drop is seen in the plot is that the merge tree always had height 2.
+
+The plot also shows that BufferedStream is approximately 50\% slower than MMapStream. This is opposed to what we found in the external mergesort. We believe this is due to a more random access pattern in the external heapsort which memory mapped files are especially good at due to its least-recently-used cache strategy.
