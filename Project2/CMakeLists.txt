@@ -26,8 +26,6 @@ add_executable(Project2 main.cpp
                         mmap_file_stream.hpp
                         sys_stream.hpp
                         buffered_stream.hpp
-                        utils.hpp
-                        test.hpp
                         external_heap.hpp
                         block.hpp
                         cached_stream.hpp)
@@ -40,8 +38,6 @@ add_executable(Project2Test
                         mmap_file_stream.hpp
                         sys_stream.hpp
                         buffered_stream.hpp
-                        utils.hpp
-                        test.hpp
                         external_heap.hpp
                         block.hpp
                         cached_stream.hpp)
