@@ -331,6 +331,7 @@ int main(int argc, char *argv[]) {
   #else
     cout << "Debug mode" << endl;
   #endif
+    cout << "Size of off_t: " << sizeof(off_t);
     
     server();
   }
