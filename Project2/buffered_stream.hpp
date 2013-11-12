@@ -15,7 +15,8 @@ template <typename I>
 class BufferedStream {
 public:
   enum Hint { kForward, kBackward, kUnknown };
-  BufferedStream(uint64_t cache_size) : fd(-1), buffer_(nullptr), buffer_start_(-1) {}
+  BufferedStream(uint64_t cache_size) : fd(-1), buffer_(nullptr), buffer_start_(-1) {
+      }
   
   void open(string filename, uint64_t start, uint64_t end, size_t buffer_size) {
     // cout << "OPEN" << endl;
@@ -161,7 +162,7 @@ private:
 
     int64_t buffer_position = position_ - buffer_start_;
 
-    if (0 <= buffer_position && buffer_position < utilized_buffer_size_
+    if (buffer_start_ >= 0 && 0 <= buffer_position && buffer_position < utilized_buffer_size_
         && (is_updated(position_) || is_read(position_))) {
       #ifdef TOUCHED
       map_touch(position_);
@@ -181,7 +182,7 @@ private:
 
     int64_t buffer_position = position_ - buffer_start_;
 
-    if (0 <= buffer_position && buffer_position < utilized_buffer_size_) {
+    if (buffer_start_ >= 0 && 0 <= buffer_position && buffer_position < utilized_buffer_size_) {
       buffer_[buffer_position] = value;
       update(position_);
     } else {
@@ -224,6 +225,7 @@ private:
           exit(1);
         }
 
+        //::write(fd, buffer_ + start, (end - start) * sizeof(I));
         if (::write(fd, buffer_ + start, (end - start) * sizeof(I)) != (end - start) * sizeof(I)) {
           perror("Error writing");
           exit(1);
