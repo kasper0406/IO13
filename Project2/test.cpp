@@ -1,3 +1,6 @@
+#define _FILE_OFFSET_BITS 64
+#define _LARGEFILE64_SOURCE
+
 #include <iostream>
 #include <ctime>
 #include <fstream>

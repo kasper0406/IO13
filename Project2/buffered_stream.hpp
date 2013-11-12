@@ -47,7 +47,7 @@ public:
       exit(1);
     }
 
-    if (::lseek(fd, start * sizeof(I), SEEK_SET) == -1) {
+    if (lseek(fd, start * sizeof(I), SEEK_SET) == -1) {
       perror("Error seek in open");
       exit(1);
     }
@@ -159,7 +159,7 @@ private:
     assert(position_ < end_);
     assert(start_ <= position_);
 
-    int buffer_position = position_ - buffer_start_;
+    int64_t buffer_position = position_ - buffer_start_;
 
     if (0 <= buffer_position && buffer_position < utilized_buffer_size_
         && (is_updated(position_) || is_read(position_))) {
@@ -179,7 +179,7 @@ private:
     assert(position_ < end_);
     assert(start_ <= position_);
 
-    int buffer_position = position_ - buffer_start_;
+    int64_t buffer_position = position_ - buffer_start_;
 
     if (0 <= buffer_position && buffer_position < utilized_buffer_size_) {
       buffer_[buffer_position] = value;
@@ -219,7 +219,7 @@ private:
           end++;
         }
 
-        if (::lseek(fd, (buffer_start_ + start) * sizeof(I), SEEK_SET) == -1) {
+        if (lseek(fd, (buffer_start_ + start) * sizeof(I), SEEK_SET) == -1) {
           perror("Error seek");
           exit(1);
         }
@@ -284,7 +284,7 @@ private:
     // }
 
     if (need_read) {
-      if (::lseek(fd, buffer_start_ * sizeof(I), SEEK_SET) == -1) {
+      if (lseek(fd, buffer_start_ * sizeof(I), SEEK_SET) == -1) {
         perror("Error seek");
         exit(1);
       }
