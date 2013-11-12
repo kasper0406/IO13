@@ -6,7 +6,7 @@ all the implemented streams are discussed.
 \subsection{Notation}
 \label{sec:implementation:parameters}
 
-We use the following variables throughout the rapport.
+We use the following variables throughout the rapport:
 
 \begin{itemize}
   \item $V$ is the maximum number of elements in a node in the heap. Hence, a
@@ -27,33 +27,28 @@ Instead, we chose to have an internal array representation of the heap where
 each entry corresponds to a node in the heap. Then for a given node, the
 index of the parent and the indices of
 the children can be calculated using simple integer operations.
-
 To store the elements of the heap, a big file have been allocated on
 disk. This file is (virtually) divided into blocks of size $V$, such
 that each node in the internal heap is associated with a block.
-
 Using this representation, it is also very easy to swap the position
 of two nodes, as the two entries in the array can simply be swapped
 (this is required in the insert operation when the last node is
 imperfect).
 
 When elements are inserted into the heap, the file may become too
-small. Hence when a new block is added, and the file does not have
+small. Hence, when a new block is added and the file does not have
 enough space, the file is extended by $V$ elements. Extending the file
 should be handled by the operating system using constant I/Os, and
 hence there should be no problem in extending the file every time a new
-node is added. As we have enough disk space, we have chosen not to
-shrink the file when extracting elements. Again since it should only
-require a constant number of I/Os we do not believe this will have any
-significant influence on our benchmarks.
+node is added.
 
-Every node in the tree has an associated stream, that can read and
-write to the block associated with the node. Unless mentioned otherwise
-in the stream section, the stream for a given node is opened and
+Every node in the tree has an associated stream that can read and
+write to the block associated with the node. Unless mentioned otherwise,
+the stream for a given node is opened and
 closed as it is needed. That is, every time an element is read
 or written, the stream is opened, the operations are executed,
 and then the stream is closed again. This also means that at
-most $d + 1$ streams are active at the same time, which happens in
+most $d + 1$ streams are open at the same time, which happens in
 the refill operation.
 
 \begin{figure}
@@ -64,19 +59,19 @@ the refill operation.
   \label{fig:node-block}
 \end{figure}
 
-Inside a block, elements are stored from right to left in the block in
+Elements are stored from right to left in the block in
 descending sorted order, as illustrated by
 figure~\ref{fig:node-block}. This layout facilitates forward reading
 when extracting the maximum elements.
 
 \subsubsection{Sifting}
 \label{sec:heap:sifting}
-During sifting, the elements of the child node and its parent are merged.
+During sifting, the elements in the child node and its parent are merged.
 When doing this, one should be careful
 about how many elements are assigned to respectively the parent and
 the child node after the merge: If too many elements are transferred
-to the parent, such that an element with strictly lower priority is
-added to the parent, then the heap invariant between the parent and
+to the parent, such that an element with strictly lower priority than the minimum element in the parent is
+added, then the heap invariant between the parent and
 its other children may be violated.
 
 On the other hand, it is desired to assign as many elements as
@@ -86,7 +81,7 @@ operations.
 In the paper they assign $\max(r - h, \ceil*{\frac{V}{2}})$ elements to
 the child, where $r$ is the sum of the number of elements in the
 parent and in the child node, and $h$ is the number of elements
-having priority higher than or equal to the slowest element in the parent node.
+having priority higher than or equal to the smallest element in the parent node.
 One situation where this strategy does not work is when two full blocks are merged, and $h =
 0$ (that is, all the child elements are smaller than the elements in the parent),
 then all elements will be assigned to the child, which renders the
@@ -116,7 +111,7 @@ Two implementations have been made for merging a block:
   going to the child node (and the parent) can be computed when
   reading the elements of the child node into the buffer. Then the
   elements going to the child node can be written backwards into its
-  block, by also reading the buffer and the block of the parent node
+  block by reading the buffer and the block of the parent node
   backwards.
 \end{description}
 
@@ -162,7 +157,7 @@ To support the heap structure, the stream interface supported the following oper
 
 \subsubsection{BufferedStream}
 
-The implementation of buffered stream was slightly more complex than the implementation in project 1 because of the extended stream interface with methods like \texttt{seek} and \texttt{read\_prev}. However, we made a few improvements to make the implementation as efficient as possible. One of the improvements included heuristics for choosing the portion of the file that ends in the buffer. For example, if the requested element that is not in the buffer is at the location right after the buffer ends, then the next portion from the element and onwards is buffered. This improvement could also have been implemented by supplying hints to how the stream is used. Furthermore, a 'write bitmap' were used to determine exactly what needs to be written to disk. This can be important for large buffer sizes.
+The implementation of buffered stream was slightly more complex than the implementation in project 1 because of the extended stream interface with methods like \texttt{seek} and \texttt{read\_prev}. However, we made a few improvements to make the implementation as efficient as possible. One of the improvements included heuristics for choosing the portion of the file that ends in the buffer. For example, if the requested element is not in the buffer and is at the location right after the buffer ends, then the next portion from the element and onwards is buffered. This improvement could also have been implemented by supplying hints to how the stream is used. Furthermore, a 'write bitmap' were used to determine exactly what needs to be written to disk. This can be important for large buffer sizes.
 
 % TODO: Read map
 
@@ -170,7 +165,7 @@ For the buffered stream, the stream associated with the root node was kept open 
 
 \subsubsection{MMapStream}
 
-In project 1, the memory mapped stream mapped blocks of the file when they were needed. This is not the most natural way to utilize memory mapped files. Instead, the memory mapped stream used in this projects maps the whole file once and remaps the file if the file size changes. In this way, the operating system is completely in charge of utilizing file caches in the best possible way.
+In project 1, the memory mapped stream mapped blocks of the file when they were needed. This is not the most natural way to utilize memory mapped files. Instead, the memory mapped stream used in this project maps the whole file once and remaps the file if the file size changes. In this way, the operating system is completely in charge of utilizing file caches in the best possible way.
 
 We did test an implementation that worked by mapping blocks when they were needed, but the overhead of remapping made it slower than just mapping the entire file.
 
