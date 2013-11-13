@@ -25,7 +25,7 @@ Like before, the stream interleaving done by the memory inefficient algorithm is
 \end{figure}
 
 \subsection{Parameter weeding}
-As described in Section~\ref{sec:implementation:parameters}, the implemented heap has a lot of adjustable parameters, which all may have an influence on its performance. In order to limit the time needed for running experiments, the parameter space has been weeded out, such that it does not include obviously bad settings.
+As described in Section~\ref{sec:implementation:parameters}, the implemented heap has a lot of adjustable parameters which all may have an influence on its performance. In order to limit the time needed for running experiments, the parameter space has been weeded out, such that it does not include obviously bad settings.
 
 We have only considered settings of parameters satisfying the following constraints:
 \begin{equation}
@@ -40,7 +40,7 @@ We have only considered settings of parameters satisfying the following constrai
 \end{equation}
 Constraint~\ref{eqn:memory} says that all buffers and caches used by the heap should fit into main memory. If this was not the case, memory trashing would occur, resulting in more I/Os than anticipated. Note that for the memory mapped stream there is no explicit buffer, hence when the inequality in \eqref{eqn:memory} is tight, no space is left for the operating system to cache files opened with memory mapping.
 
-Assume a fixed block size, then the performance of sifting improves when the height $h = \log_d{\frac{N}{V}}$ of the tree is decreased because the recursion of sifting ends after fewer iterations. During refilling, $d+1$ streams are open, hence when using a buffered stream $d+1$ buffers are allocated. Therefore, $d$ can be increased as long as the buffers fit into memory.
+Assume a fixed node size, then the performance of sifting improves when the height $h = \log_d{\frac{N}{V}}$ of the tree is decreased because the recursion of sifting ends after fewer iterations. During refilling, $d+1$ streams are open, hence when using a buffered stream $d+1$ buffers are allocated. Therefore, $d$ can be increased as long as the buffers fit into memory.
 
 All configurations not satisfying \eqref{eqn:dvn} will have the same result as $d=\frac{N}{V}$. Moreover parameter values have been increased by a factor of $2$.
 
@@ -48,7 +48,7 @@ All configurations not satisfying \eqref{eqn:dvn} will have the same result as $
 In this section the different streams will be benchmarked and compared.
 
 \subsubsection{Cached stream}
-We found that the cached stream improves the performance of the BufferedStream, FStream and SysStream. For SysStream the improvement is expected, since it has no buffer or cache on its own. For the BufferedStream and FStream, a speedup was found for a very small cache size, with decreasing performance when increasing the cache size. We believe this is due to the cache is "conflicting" with the buffers of the underlying streams, but using a very small cache helps when doing the refill operation, since this eliminates the first read from every child node where none or only few elements are are taken.
+We found that the cached stream improves the performance of the BufferedStream, FStream and SysStream. For SysStream the improvement is expected, since it has no buffer or cache on its own. For the BufferedStream and FStream, a speedup was found with a very small cache size, with decreasing performance when increasing the cache size. We believe this is due to the cache is "conflicting" with the buffers of the underlying streams, but using a very small cache helps when doing the refill operation, since this eliminates the first read from every child node where none or only few elements are are taken.
 
 Figure~\ref{fig:m-cache-size-comparison} shows that MMapStream performs significantly worse when using an extra level of cache. Moreover, the size of the cache does not seem to have a any significant effect on the running time. This is believed to be because that the operating system handles the caching of the memory mapped file itself, and hence adding an extra layer of cache is redundant, and introduces overhead and possibly interferes with the cache strategy employed by the operating system.
 
@@ -62,7 +62,7 @@ Figure~\ref{fig:m-cache-size-comparison} shows that MMapStream performs signific
 In the following experiments, a small cache of 128 elements are used for BufferedStream, FStream and SysStream, whereas no cache is used for MMapStream.
 
 \subsubsection{SysStream and FStream}
-By experiments, we have found that SysStream and FStream performs worse for all tested parameter combinations. Therefore, we have chosen to exclude these streams from all subsequent comparisons.
+By experimenting, we have found that SysStream and FStream performs worse for all tested parameter combinations. Therefore, we have chosen to exclude these streams from all subsequent comparisons.
 
 The reason for the SysStream being slow, is due to its lack of buffering to reduce the number of I/Os. For FStream a buffer is added, however, we found that it was dominated by BufferedStream even with the same buffer size. This is also to be expected, since the buffers used in BufferedStream are optimized for the specific application of an external heap, whereas this is not the case for the more generic FStream.
 
@@ -111,9 +111,9 @@ From this point on, a node size of 4 MB and a buffer size of 32 kB is used when 
   \label{fig:best_sort}
 \end{figure}
 
-We have chosen to omit SysStream and FStream in this comparison as they are inferior to BufferedStream and MMapStream.
+We have chosen to omit SysStream and FStream in this comparison because they are inferior to BufferedStream and MMapStream.
 
-Figure~\ref{fig:best_sort} shows how heap sorting using the external heap with BufferedStream and MMapStream compare to external mergesort as implemented in project 1 and in-memory quicksort. It can be seen that the external heapsort is slower than external mergesort with both MMapStream and BufferedStream. This is in agreement with the findings in R. Fadel et. al. \citep{Fadel1999345}.
+Figure~\ref{fig:best_sort} shows how heap sorting using the external heap with BufferedStream and MMapStream compares to external mergesort as implemented in project 1 and in-memory quicksort. It can be seen that the external heapsort is slower than external mergesort with both MMapStream and BufferedStream. This is in agreement with the findings in R. Fadel et. al. \citep{Fadel1999345}.
 
 It seems that the ratio between external heapsort and external mergesort gets worse for larger input sizes. This is not expected since both solutions satisfies the optimal sorting I/O bound. However, note that:
 \begin{itemize}
@@ -122,4 +122,4 @@ It seems that the ratio between external heapsort and external mergesort gets wo
 \end{itemize}
 Therefore, when an extra level is added to the merge tree, we would expect a drop in the ratio between external mergesort and external heapsort. The reason no drop is seen in the plot is that for the tested input sizes the merge tree always had height 2.
 
-The plot also shows that BufferedStream is approximately 50\% slower than MMapStream. This is opposed to what we found in the external mergesort. We believe this is due to a more random access pattern in the external heapsort which memory mapped files are especially good at due to its least-recently-used cache strategy.
+The plot also shows that BufferedStream is approximately 50\% \\ slower than MMapStream. This is opposed to what we found in the external mergesort. We believe this is due to a more random access pattern in the external heapsort which memory mapped files are especially good at due to its least-recently-used cache strategy.
