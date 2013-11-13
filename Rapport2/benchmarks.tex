@@ -88,6 +88,7 @@ Both of the solutions will result in decreased performance, and the latter of th
 For all the benchmarked input sizes, it has always been possible to simply increase $d$ such that the resulting heap was of height 2.
 
 \subsection{BufferedStream}
+\label{sec:bufferedstream}
 
 \begin{figure}[h!]
   \centering
@@ -122,4 +123,5 @@ It seems that the ratio between external heapsort and external mergesort gets wo
 \end{itemize}
 Therefore, when an extra level is added to the merge tree, we would expect a drop in the ratio between external mergesort and external heapsort. The reason no drop is seen in the plot is that for the tested input sizes the merge tree always had height 2.
 
-The plot also shows that BufferedStream is approximately 50\% \\ slower than MMapStream. This is opposed to what we found in the external mergesort. We believe this is due to a more random access pattern in the external heapsort which memory mapped files are especially good at due to its least-recently-used cache strategy.
+The plot also shows that BufferedStream is approximately 50\% \\ slower than MMapStream. This is opposed to what we found in the external mergesort. We believe this is due to a more random access pattern in the external heapsort which memory mapped files are especially good at due to its least-recently-used cache strategy. It should be noted that the last data point in the series for BufferedStream used a node size of 8 MB instead of 4 MB. It was changed because the measurement with a 4 MB node size showed twice the amount of I/Os than expected. We believe this is due to an underutilized buffer and underutilized read ahead as mentioned in subsection \ref{sec:bufferedstream}.
+% TODO: 64 kB buffer as shown as the best configuration of 
