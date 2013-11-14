@@ -119,7 +119,7 @@ Figure~\ref{fig:best_sort} shows how heap sorting using the external heap with B
 It seems that the ratio between external heapsort and external mergesort increases slowly for larger input sizes. This was not expected since both solutions satisfies the optimal sorting I/O bound. However, note that:
 \begin{itemize}
 \item In project 1 we saw that the number of input scans in external mergesort was given by the height of the merge tree. For the external heapsort the effect of the tree height is not as profound since the height of the tree does not directly relate to the number of input scans.
-\item The number of refill operations is linear in the input size and each refill operation does not only induce a constant number of I/Os when $d$ increases. We may see a more constant ratio if the node size was increased as the input size got larger.
+\item The number of refill operations is linear in the input size and each refill operation does not only induce a constant number of I/Os when $d$ increases.
 \end{itemize}
 Therefore, when an extra level is added to the merge tree, we would expect a drop in the ratio between external mergesort and external heapsort. The reason no drop is seen in the plot is that for the tested input sizes the merge tree always had height 2.
 
