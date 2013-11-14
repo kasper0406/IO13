@@ -78,14 +78,14 @@ From figure~\ref{fig:m:vary-d} it can be seen that a bigger value of $d$ improve
   \label{fig:m:vary-d}
 \end{figure}
 
-However, when sorting very big input sizes, the $d$ value can not be increased arbitrary because at least one page from every node should be able to fit the memory mapped file cache, otherwise a lot of trashing would occur. There are two possible solutions to this problem:
+However, when sorting very big inputs, $d$ can not be increased arbitrary because at least one page in every node should be able to fit in the memory mapped file cache. A lot of memory trashing would occur if this is not the case. Furthermore, at least a page of elements from each child in a refill operation should be used to not waste I/Os. This is not the case when $d$ is sufficiently large. There are two possible solutions to these problems:
 \begin{itemize}
 \item Increase the node size. This is only possible up to the main memory size, otherwise sifting will begin to put its internal buffer on disk.
 \item Restrict $d$ such that there is memory left for the operating system to use as cache when doing refill.
 \end{itemize}
-Both of the solutions will result in decreased performance, and the latter of the solutions would result in more I/Os, but ultimately this is unavoidable because of the I/O sorting lower bound.
+Decreasing $d$ will result in decreased performance and an increase in I/Os, but ultimately this is unavoidable because of the I/O sorting lower bound.
 
-For all the benchmarked input sizes, it has always been possible to simply increase $d$ such that the resulting heap was of height 2.
+For all the benchmarked input sizes, it has always been possible to increase $d$ or the node size such that the resulting heap was of height 2.
 
 \subsection{BufferedStream}
 \label{sec:bufferedstream}
@@ -125,5 +125,4 @@ Therefore, when an extra level is added to the merge tree, we would expect a dro
 
 The plot also shows that BufferedStream is approximately 50\% \\ slower than MMapStream. This is opposed to what we found in the external mergesort. We believe this is due to a more random access pattern in the external heapsort which memory mapped files are especially good at due to its least-recently-used cache strategy.
 
-It should be noted that the last two data points in the series for BufferedStream and MMapStream uses a node size of 8 MB instead of 4 MB and with 64 kB buffer for BufferedStream. It was changed because the measurements with 4 MB node size showed a much larger amount of I/Os than expected. We believe this is due to an underutilized buffer/cache and unexploited read ahead opportunities.
-% TODO: 64 kB buffer as shown as the best configuration of 
+It should be noted that the last two data points in the series for BufferedStream and MMapStream uses a node size of 8 MB instead of 4 MB and with 64 kB buffer for BufferedStream. It was changed because the measurements with 4 MB node size showed a much larger amount of I/Os than expected. We believe this is due to underutilized buffers/pages and unexploited read ahead opportunities.
