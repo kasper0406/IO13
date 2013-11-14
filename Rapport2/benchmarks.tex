@@ -116,12 +116,14 @@ We have chosen to omit SysStream and FStream in this comparison because they are
 
 Figure~\ref{fig:best_sort} shows how heap sorting using the external heap with BufferedStream and MMapStream compares to external mergesort as implemented in project 1 and in-memory quicksort. It can be seen that the external heapsort is slower than external mergesort with both MMapStream and BufferedStream. This is in agreement with the findings in R. Fadel et. al. \citep{Fadel1999345}.
 
-It seems that the ratio between external heapsort and external mergesort gets worse for larger input sizes. This is not expected since both solutions satisfies the optimal sorting I/O bound. However, note that:
+It seems that the ratio between external heapsort and external mergesort increases slowly for larger input sizes. This was not expected since both solutions satisfies the optimal sorting I/O bound. However, note that:
 \begin{itemize}
 \item In project 1 we saw that the number of input scans in external mergesort was given by the height of the merge tree. For the external heapsort the effect of the tree height is not as profound since the height of the tree does not directly relate to the number of input scans.
 \item The number of refill operations is linear in the input size and each refill operation does not only induce a constant number of I/Os when $d$ increases. We may see a more constant ratio if the node size was increased as the input size got larger.
 \end{itemize}
 Therefore, when an extra level is added to the merge tree, we would expect a drop in the ratio between external mergesort and external heapsort. The reason no drop is seen in the plot is that for the tested input sizes the merge tree always had height 2.
 
-The plot also shows that BufferedStream is approximately 50\% \\ slower than MMapStream. This is opposed to what we found in the external mergesort. We believe this is due to a more random access pattern in the external heapsort which memory mapped files are especially good at due to its least-recently-used cache strategy. It should be noted that the last data point in the series for BufferedStream used a node size of 8 MB instead of 4 MB. It was changed because the measurement with a 4 MB node size showed twice the amount of I/Os than expected. We believe this is due to an underutilized buffer and underutilized read ahead as mentioned in subsection \ref{sec:bufferedstream}.
+The plot also shows that BufferedStream is approximately 50\% \\ slower than MMapStream. This is opposed to what we found in the external mergesort. We believe this is due to a more random access pattern in the external heapsort which memory mapped files are especially good at due to its least-recently-used cache strategy.
+
+It should be noted that the last two data points in the series for BufferedStream and MMapStream uses a node size of 8 MB instead of 4 MB and with 64 kB buffer for BufferedStream. It was changed because the measurements with 4 MB node size showed a much larger amount of I/Os than expected. We believe this is due to an underutilized buffer/cache and unexploited read ahead opportunities.
 % TODO: 64 kB buffer as shown as the best configuration of 
