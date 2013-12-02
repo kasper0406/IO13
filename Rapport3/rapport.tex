@@ -70,12 +70,12 @@ An upper bound is given on \circled{1} and \circled{2}:
   \begin{align*}
     \sum_{l = H_i + 1}^{H} N_i &= \left( H - (H_i + 1) \right) N_i
       = \left( \log_d{\frac{N}{M}} - (\floor{\log_d{N_i}} + 1) \right) N_i \\
-      &= \left( \log_d{\frac{N}{M}} - \log_d{N_i} \right) N_i
+      &\leq \left( \log_d{\frac{N}{M}} - \log_d{N_i} \right) N_i
       = N_i \log_d{\frac{N}{M}} - N_i \log_d{N_i}.
   \end{align*}
   By summing over all elements, it is found that
   \[
-    \circled{2} = \sum_{i=1}^K N_i \log_{\frac{M}{B}}{\frac{N}{M}} - N_i \log_{\frac{M}{B}}{N_i}
+    \circled{2} \leq \sum_{i=1}^K N_i \log_{\frac{M}{B}}{\frac{N}{M}} - N_i \log_{\frac{M}{B}}{N_i}
       = O\left( N \log_{\frac{M}{B}}{\frac{N}{B}} - \sum_{i = 1}^K N_i \log_{\frac{M}{B}}{N_i} \right).
   \]
 \end{description}
@@ -89,10 +89,39 @@ elements are scanned during the algorithm. The algorithm always scans elements i
     = O\left( \max\left\{ \frac{N}{B}, \frac{N}{B} \log_{\frac{M}{B}}{\frac{N}{B}} - \sum_{i=1}^K \frac{N_i}{B} \log_{\frac{M}{B}}{N_i} \right\} \right).
 \end{align*}
 
+\pagebreak
 \section{Searching}
+This exercise describes how an external linear space data structure can be designed, which maintain a set of intervals such that the number of intervals containing a given point can be reported in $O(\log_B^2 N)$ I/Os. Also the structure should have support for inserts and deletes in amortized $O(\log_B^2 N)$ I/Os.
 
-...
+The problem is very closely related to the one solved by the external interval tree -- instead of reporting the stabbed intervals, they should be counted. However, this means that some of the complexity of the data structure can not be hidden behind the output complexity. In order to circumvent this problem, the following modifications are made to the external interval tree:
+\begin{itemize}
+  \item The slab lists associated to a node are stored as a weight balanced B-tree.
+  \item A counter is associated to all multislab lists, maintaining the number of intervals in the multislab. These counters also stores the counts for the intervals put in the underflow structure.
 
+\iffalse
+  \item In addition to the underflow structure, a counting underflow structure is maintained. The static structure for answering interval queries used in the underflow structure is modified such that it can answer counting stabbing queries in time $O(\log_B N)$ I/Os. This is done by sweeping the intervals from left to right, and maintain a counter of the number of currently active intervals. For all start or endpoints of intervals, the current number of active intervals is inserted into a B-tree. Thereby a counting stabbing query can be answered by searching down the B-tree. Clearly this structure uses linear space and can be constructed in $O(\frac{N}{B} \log_{\frac{M}{B}}{\frac{N}{B}})$ I/Os.
+
+  Notice that instead of storing the counting underflow structure, it could be omitted and then simply store the counts in the counters for the multislabs. However, we have chosen not to do this in order to have a more clear correspondence with the external interval tree.
+\fi
+\end{itemize}
+Since the original external interval tree uses linear space, the structure with the above modifications still uses linear space.
+
+Queries are answered by walking down the base tree based on the query point. When processing a node in the tree the counts for the multislab lists are loaded using $O(1)$ I/O, and the relevant interval counts are summed. Then the associated structure to the node is queried as described below using $O(\log_B N)$ I/Os. Then the query is called recursively in the base tree, leading to a query complexity of $O(log_B^2 N)$ I/Os.
+
+When querying the associated data-structures, it should be counted how many elements are located to the left (right) of a given point. In the original external interval tree, this was done by scanning the elements, and then charging the cost to the output size. However, this is not possible when counting. Instead, a query is answered by walking down the tree according to the query points, and then count the number of elements in the sub-trees to the left (right) by using their weights.
+
+Figure~\ref{fig:searching:query} illustrates the query process for counting the number of intervals in the right slab lists. The querying process is started in the root, and is then moving down the tree. Every internal node stores the weights of all the children, which can be loaded using $O(1)$ I/Os, and can also be updated without a problem during insertion/deletion. In order to find the number of intervals to the left of a given point, the children of $v$ located to the left of the child $v'$ containing the query point is summed up, and a recursive call is made on $v'$.
+\begin{figure}[h!]
+  \centering
+  \includegraphics[width=0.6\textwidth]{images/query}
+  \caption{Answering a query in a right slab list structure. The weights of the leafs to the left of $v'$ is summed up to get the number of intervals to the left of the query point.}
+  \label{fig:searching:query}
+\end{figure}
+This procedure $O(1)$ I/Os at every node and since the tree is balanced, contributes a total of $O(\log_B N)$ I/Os.
+
+The insertion / deletion process is almost the same as for the external interval tree\footnote{We assume the version without global rebuilding when doing deletions.}. The only difference is that the counters for the multislabs needs to be updated, but this can easily be done when updating the elements inside each multislab. Using the same analysis as in the lecture notes, the complexity for doing inserts and deletes is $O(\log_B N)$ I/Os amortized.
+
+\pagebreak
 \section{Distribution sweeping}
 
 ...
