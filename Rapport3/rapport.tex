@@ -106,7 +106,7 @@ The problem is very closely related to the one solved by the external interval t
 \end{itemize}
 Since the original external interval tree uses linear space, the structure with the above modifications still uses linear space.
 
-Queries are answered by walking down the base tree based on the query point. When processing a node in the tree the counts for the multislab lists are loaded using $O(1)$ I/O, and the relevant interval counts are summed. Then the associated structure to the node is queried as described below using $O(\log_B N)$ I/Os. Then the query is called recursively in the base tree, leading to a query complexity of $O(log_B^2 N)$ I/Os.
+Queries are answered by walking down the base tree based on the query point. When processing a node in the tree the counts for the multislab lists are loaded using $O(1)$ I/O, and the relevant interval counts are summed. Then the associated structure to the node is queried as described below using $O(\log_B N)$ I/Os. Then the query is called recursively in the base tree, leading to a query complexity of $O(\log_B^2 N)$ I/Os.
 
 When querying the associated data-structures, it should be counted how many elements are located to the left (right) of a given point. In the original external interval tree, this was done by scanning the elements, and then charging the cost to the output size. However, this is not possible when counting. Instead, a query is answered by walking down the tree according to the query points, and then count the number of elements in the sub-trees to the left (right) by using their weights.
 
