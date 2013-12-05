@@ -22,8 +22,6 @@ Step \ref{enu:segments} reads all rectangles once and writes $4N$ segments to di
 
 By using $d = \frac{M}{B}$ (possible because we can have $\frac{M}{B}$ buffered streams open), the total I/Os becomes $O(\frac{N}{B}\log_{\frac{M}{B}}{N})$. $O(\frac{N}{B}\log_{\frac{M}{B}}{N})=O(\frac{N}{B}(\log_{\frac{M}{B}}{\frac{N}{B}}+\log_{\frac{M}{B}}{B}))$, so if $N>B^2$ then the I/Os is $O(\frac{N}{B}\log_{\frac{M}{B}}{\frac{N}{B}})$.
 
-\todo{Kan vi garantere koerselstiden uden $N>B^2$? Maaske ved at lave lidt arbejde til at starte op}
-
 \todo{Hvordan flere i samme punkt haandteres. I praksis er det ikke et problem fordi de saa faar hoejde 0. Og ellers kunne vi differentierer med et kommatal}
 
 \begin{figure}[h!]
