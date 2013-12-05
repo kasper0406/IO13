@@ -50,7 +50,7 @@ Therefore for a given level $l$ in the merge tree of fanout $d$ and height $H$, 
 \]
 It is noticed that $N_i \leq d^l \iff \log_d{N_i} \leq l$. Therefore, if $H_i := \floor{\log_d{N_i}}$, then
 \[
-  \sum_{i=1}^K \sum_{l = 0}^H \min\{N_i, d^l\} =
+  \sum_{i=1}^K \sum_{l = 0}^H \min\{N_i, d^l\} \leq
     \sum_{i=1}^K \left( \sum_{l=0}^{H_i} d^l + \sum_{l = H_i + 1}^H N_i \right) =
     \underbrace{\sum_{i=1}^K \sum_{l=0}^{H_i} d^l}_{\circled{1}} + \underbrace{\sum_{i=1}^K \sum_{l = H_i + 1}^H N_i}_{\circled{2}}.
 \]
