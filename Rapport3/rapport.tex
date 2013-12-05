@@ -33,7 +33,9 @@ Kasper Nielsen - 20091182\\}
 \pagebreak{}\tableofcontents{}\pagebreak{}
 
 \section{Sorting}
-In this exercise an I/O-efficient algorithm for removing duplicates in a multiset of $N$ elements is analyzed. As given in the hint in the exercise, the algorithm is based on merge-sort, where duplicates are removed as soon as they are found in the merge step.
+\textbf{Problem:} Design an I/O-efficient algorithm for removing duplicate from a multiset of $N$ elements.
+\\
+\\As given in the hint in the exercise, the algorithm is based on mergesort, where duplicates are removed as soon as they are found in the merge step.
 
 The algorithm will be analyzed by giving an upper bound on the number of times an element is scanned during an execution of the algorithm. For illustration purposes consider Figure~\ref{fig:sorting:mergetree}. Since duplicates are removed as soon as they are found, no node in the merge tree can contain duplicates (the leaves are found by sorting the elements in internal memory and removing duplicates).
 
@@ -44,11 +46,11 @@ The algorithm will be analyzed by giving an upper bound on the number of times a
   \label{fig:sorting:mergetree}
 \end{figure}
 
-Therefore for a given level $l$ in the merge tree of fanout $d$ and height $H$, at most $d^l$ duplicates remain. Furthermore, there is at most $N_i$ duplicates of a given element $i$. Therefore, the total number of duplicates remaining on level $i$ is less than $\min\{d^l, N_i\}$. Summing the contribution from all levels of the tree gives an upper bound on the number of times a given element is scanned. This can again be summed over all different elements, giving the following bound on the total number of element scans
+Therefore for a given level $l$ in the merge tree of fanout $d$ and height $H$, at most $d^l$ duplicates remain. Furthermore, there are at most $N_i$ duplicates of a given element $i$. Therefore, the total number of duplicates remaining on level $i$ is less than $\min\{d^l, N_i\}$. Summing the contribution from all levels of the tree gives an upper bound on the number of times a given element is scanned. This can again be summed over all different elements, giving the following upper bound on the total number of element scans
 \[
   \sum_{i=1}^K \sum_{l = 0}^H \min\{N_i, d^l\} .
 \]
-It is noticed that $N_i \leq d^l \iff \log_d{N_i} \leq l$. Therefore, if $H_i := \floor{\log_d{N_i}}$, then
+Notice that $N_i \leq d^l \iff \log_d{N_i} \leq l$. Therefore, if $H_i := \floor{\log_d{N_i}}$, then
 \[
   \sum_{i=1}^K \sum_{l = 0}^H \min\{N_i, d^l\} \leq
     \sum_{i=1}^K \left( \sum_{l=0}^{H_i} d^l + \sum_{l = H_i + 1}^H N_i \right) =
@@ -56,7 +58,7 @@ It is noticed that $N_i \leq d^l \iff \log_d{N_i} \leq l$. Therefore, if $H_i :=
 \]
 An upper bound is given on \circled{1} and \circled{2}:
 \begin{description}
-\item[\circled{1}] Notice that\todo{Should we show this?}
+\item[\circled{1}] Notice that
   \begin{align*}
     \sum_{l=0}^{H_i} d^l = \frac{d^{H_i + 1} - 1}{d - 1} = \frac{d d^{\floor{\log_d{N_i}}} - 1}{d - 1} \leq \frac{d}{d - 1} N_i .
   \end{align*}
@@ -83,7 +85,7 @@ Combining theses two bounds, it is found that at most
 \[
   \sum_{i=1}^K \sum_{l = 0}^H \min\{N_i, d^l\} = O(N) + O\left( N \log_{\frac{M}{B}}{\frac{N}{B}} - \sum_{i = 1}^K N_i \log_{\frac{M}{B}}{N_i} \right)
 \]
-elements are scanned during the algorithm. The algorithm always scans elements in blocks, however some of the blocks could be non-full due to the duplicate removal. However, this can only happen once for every node in the merge tree, which is asymptotically bounded by the number of leaves ($\frac{N}{M} \leq \frac{N}{B}$). Therefore this cost and the cost of the first input scans are bounded by $O(\frac{N}{B}))$, whereby the total number of I/Os is bounded by
+elements are scanned during the algorithm. The algorithm always scans elements in blocks, however some of the blocks could be non-full due to the duplicate removal. However, this can only happen once for every node in the merge tree, which is asymptotically bounded by the number of leaves ($\frac{N}{M} \leq \frac{N}{B}$). Therefore this cost and the cost of the first input scan are bounded by $O(\frac{N}{B})$, whereby the total number of I/Os is bounded by
 \begin{align*}
   O\left( \max\left\{ \frac{N}{B}, \frac{N \log_{\frac{M}{B}}{\frac{N}{B}} - \sum_{i = 1}^K N_i \log_{\frac{M}{B}}{N_i}}{B} \right\} \right) \\
     = O\left( \max\left\{ \frac{N}{B}, \frac{N}{B} \log_{\frac{M}{B}}{\frac{N}{B}} - \sum_{i=1}^K \frac{N_i}{B} \log_{\frac{M}{B}}{N_i} \right\} \right).
@@ -91,11 +93,12 @@ elements are scanned during the algorithm. The algorithm always scans elements i
 
 \pagebreak
 \section{Searching}
-This exercise describes how an external linear space data structure can be designed, which maintain a set of intervals such that the number of intervals containing a given point can be reported in $O(\log_B^2 N)$ I/Os. Also the structure should have support for inserts and deletes in amortized $O(\log_B^2 N)$ I/Os.
 
-The problem is very closely related to the one solved by the external interval tree -- instead of reporting the stabbed intervals, they should be counted. However, this means that some of the complexity of the data structure can not be hidden behind the output complexity. In order to circumvent this problem, the following modifications are made to the external interval tree:
+\textbf{Problem:} Design a linear space external data structure for the problem of maintaining a set of intervals $I$, such that given a query point $x$ the number of intervals in $I$ containing $x$.
+\\
+\\The problem is very closely related to the one solved by the external interval tree -- instead of reporting the stabbed intervals, they should be counted. However, this means that some of the complexity of the data structure can not be hidden behind the output complexity. In order to circumvent this problem, the following modifications are made to the external interval tree:
 \begin{itemize}
-  \item The slab lists associated to a node are stored as a weight balanced B-tree.
+  \item The slab lists associated to a node are stored as weight balanced B-trees.
   \item A counter is associated to all multislab lists, maintaining the number of intervals in the multislab. These counters also stores the counts for the intervals put in the underflow structure.
 
 \iffalse
@@ -106,20 +109,20 @@ The problem is very closely related to the one solved by the external interval t
 \end{itemize}
 Since the original external interval tree uses linear space, the structure with the above modifications still uses linear space.
 
-Queries are answered by walking down the base tree based on the query point. When processing a node in the tree the counts for the multislab lists are loaded using $O(1)$ I/O, and the relevant interval counts are summed. Then the associated structure to the node is queried as described below using $O(\log_B N)$ I/Os. Then the query is called recursively in the base tree, leading to a query complexity of $O(\log_B^2 N)$ I/Os.
+Queries are answered by walking down the base tree based on the query point. When processing a node in the tree the counts for the multislab lists are read using $O(1)$ I/O, and the relevant interval counts are summed. Then the associated structure to the node is queried as described below using $O(\log_B N)$ I/Os. In total, the query complexity is $O(\log_B^2 N)$ I/Os.
 
-When querying the associated data-structures, it should be counted how many elements are located to the left (right) of a given point. In the original external interval tree, this was done by scanning the elements, and then charging the cost to the output size. However, this is not possible when counting. Instead, a query is answered by walking down the tree according to the query points, and then count the number of elements in the sub-trees to the left (right) by using their weights.
+When querying the associated data-structures, it should be counted how many elements are located to the left (right) of a given point. In the original external interval tree, this is done by scanning the elements, and then charging the cost to the output size. However, this is not possible when counting. Instead, a query is answered by walking down the tree according to the query point while counting the number of elements in the sub-trees to the left (right) by using their weights.
 
-Figure~\ref{fig:searching:query} illustrates the query process for counting the number of intervals in the right slab lists. The querying process is started in the root, and is then moving down the tree. Every internal node stores the weights of all the children, which can be loaded using $O(1)$ I/Os, and can also be updated without a problem during insertion/deletion. In order to find the number of intervals to the left of a given point, the children of $v$ located to the left of the child $v'$ containing the query point is summed up, and a recursive call is made on $v'$.
+Figure~\ref{fig:searching:query} illustrates the query process for counting the number of intervals in the left slab lists. The querying process is started in the root, and is then moving down the tree. Every internal node stores the weights of all the children, which can be read using $O(1)$ I/Os, and can also be updated without a problem during insertion/deletion. In order to find the number of intervals with an start point to the to the left of the query point, the children of $v$ located to the left of the child $v'$ containing the query point is summed up, and a recursive call is made on $v'$.
 \begin{figure}[h!]
   \centering
   \includegraphics[width=0.6\textwidth]{images/query}
-  \caption{Answering a query in a right slab list structure. The weights of the leafs to the left of $v'$ is summed up to get the number of intervals to the left of the query point.}
+  \caption{Answering a query in a left slab list structure. The weights of the leafs to the left of $v'$ is summed up to get the number of intervals with a start point to the left of the query point.}
   \label{fig:searching:query}
 \end{figure}
-This procedure $O(1)$ I/Os at every node and since the tree is balanced, contributes a total of $O(\log_B N)$ I/Os.
+This produces $O(1)$ I/Os at every node and since the tree is balanced, contributes a total of $O(\log_B N)$ I/Os.
 
-The insertion / deletion process is almost the same as for the external interval tree\footnote{We assume the version without global rebuilding when doing deletions.}. The only difference is that the counters for the multislabs needs to be updated, but this can easily be done when updating the elements inside each multislab. Using the same analysis as in the lecture notes, the complexity for doing inserts and deletes is $O(\log_B N)$ I/Os amortized.
+The insertion / deletion process is almost the same as for the external interval tree\footnote{We assume the version without global rebuilding when doing deletions.}. The only difference is that the counters for the multislabs needs to be updated, but this can easily be done when updating the elements inside each multislab. Note that using a weight balanced B-tree for the slab lists does not change how the slab lists are updated. Using the same analysis as in the lecture notes, the complexity for doing inserts and deletes is $O(\log_B N)$ I/Os amortized.
 
 \pagebreak
 \section{Distribution sweeping}
