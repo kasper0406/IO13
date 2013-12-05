@@ -1,0 +1,34 @@
+\emph{Given $N$ rectangles in the plane, compute the measure (area) of their union.} We solved the problem with the following algorithm which is visualized in figure~\ref{fig:segments}.
+
+\subsection{Algorithm}
+
+\begin{enumerate}
+\item \label{enu:segments} Construct 4 segments for each rectangle consisting of a 'span' attribute initialized to 0 and a list initialized with the rectangle it is constructed from. $4N$ segments are constructed in total. These segments are shown in the second picture in figure~\ref{fig:segments}. The 'span' attribute is how large a part is overlapped by rectangles from the segment to the next segment (the one with the next $y$ value).
+\item \label{enu:sorting} Sort by $x$ value, then by $y$. This can be done using two external mergesorts. The segments with the same $x$ value is considered a strip.
+\item \label{enum:combine} Combine $d$ strips until only one strip remains by (shown in the last three pictures in figure~\ref{fig:segments})
+    \begin{enumerate}
+        \item Iterating through all $d$ strips by $y$ value. Each iteration combines between 1 and $d$ segments. I.e. there might only be one segment with the next lowest $y$ value or there might be a segment in all $d$ strips with the next lowest $y$.
+        \item Two arrays $E$ and $W$ is updated while iterating the strips. $E$ contains $d$ counts where $E_i>0$ means that some rectangle is covering the horizontal area strip $i$ covers. $W$ contains $d-1$ counts where $W_i>0$ means that some rectangle is covering the horizontal space between strip $i$ and strip $i+1$. These counts are easily updated when the rectangles in segments are iterated. If a rectangle in the segment has a start point at the segment and the rectangle spans $E_i$ then the count is incremented. If it is an endpoint then the count is decremented. Similar for $W$.
+        \item All the rectangles in the segments that are combined will be stored in the combined segment. The span of the combined segment is computed from the $E$, $W$ and the 'span' attributes of the combined segments spans.
+    \end{enumerate}
+\item \label{enu:calculate} Calculate the total area by summing the vertical difference between segments $s_{y}$ and $s_{y+1}$ multiplied by the 'span' attribute of $s_{y}$.
+\end{enumerate}
+
+We have verified the correctness of the algorithm by implementing it in-memory.
+
+\subsection{Analysis}
+
+Step \ref{enu:segments} reads all rectangles once and writes $4N$ segments to disk. It is $O(\frac{N}{B})$ I/Os in total. The double sorting done in step \ref{enu:sorting} is done in the usual sorting bound. The combine step in \ref{enum:combine} is performed $O(\log_{d}{N})$ times because the algorithm starts with $O(N)$ strips. Each time, all segments and their associated rectangles are read once. Segments are combined which reduces the number of segments but the number of rectangles is kept constant ($4N$). Therefore, one combine step can be done in $O(\frac{N}{B})$ I/Os. In total for all the combine steps, the upper bound for I/Os is $O(\frac{N}{B}\log_{d}{N}$). The final step, step \ref{enu:calculate}, can be done with $O(\frac{N}{B})$ I/Os.
+
+By using $d = \frac{M}{B}$ (possible because we can have $\frac{M}{B}$ buffered streams open), the total I/Os becomes $O(\frac{N}{B}\log_{\frac{M}{B}}{N})$. $O(\frac{N}{B}\log_{\frac{M}{B}}{N})=O(\frac{N}{B}(\log_{\frac{M}{B}}{\frac{N}{B}}+\log_{\frac{M}{B}}{B}))$, so if $N>B^2$ then the I/Os is $O(\frac{N}{B}\log_{\frac{M}{B}}{\frac{N}{B}})$.
+
+\todo{Kan vi garantere koerselstiden uden $N>B^2$? Maaske ved at lave lidt arbejde til at starte op}
+
+\todo{Hvordan flere i samme punkt haandteres. I praksis er det ikke et problem fordi de saa faar hoejde 0. Og ellers kunne vi differentierer med et kommatal}
+
+\begin{figure}[h!]
+  \centering
+  \includegraphics[width=1.12\textwidth]{images/Segments}
+  \caption{An execution of the algorithm with $d = 2$.}
+  \label{fig:segments}
+\end{figure}
