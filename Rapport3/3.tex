@@ -25,8 +25,8 @@ Step \ref{enu:segments} reads all rectangles once and writes $4N$ segments to di
 By using $d = \frac{M}{B}$ (possible because we can have $\frac{M}{B}$ buffered streams open), the total I/Os becomes $O(\frac{N}{B}\log_{\frac{M}{B}}{N})$. Observe that $\frac{N}{B}\log_{\frac{M}{B}}{N}=\frac{N}{B}(\log_{\frac{M}{B}}{\frac{N}{B}}+\log_{\frac{M}{B}}{B})$. The tall cache assumption implies that $N>B^2$, so in total we have $O(\frac{N}{B}\log_{\frac{M}{B}}{\frac{N}{B}})=O(sort(N))$ I/Os.
 
 \begin{figure}
-    \subfloat[]{\includegraphics[clip, bb=0bp 20bp 200bp 240bp,scale=0.75]{images/Segment2}\label{segment2}}
     \subfloat[]{\includegraphics[clip, bb=0bp 20bp 200bp 240bp,scale=0.75]{images/Segment1}\label{segment1}}
+    \subfloat[]{\includegraphics[clip, bb=0bp 20bp 200bp 240bp,scale=0.75]{images/Segment2}\label{segment2}}
     \subfloat[]{\includegraphics[clip, bb=0bp 20bp 200bp 240bp,scale=0.75]{images/Segment3}\label{segment3}}\\
     \subfloat[]{\includegraphics[clip, bb=0bp 20bp 200bp 240bp,scale=0.75]{images/Segment4}\label{segment4}}
     \subfloat[]{\includegraphics[clip, bb=0bp 20bp 200bp 240bp,scale=0.75]{images/Segment5}\label{segment5}}
