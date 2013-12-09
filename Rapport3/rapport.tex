@@ -38,11 +38,11 @@ Kasper Nielsen - 20091182\\}
 \pagebreak
 
 \section{Sorting}
-\textbf{Problem:} Design an I/O-efficient algorithm for removing duplicate from a multiset of $N$ elements.
+\textbf{Problem:} Design an I/O-efficient algorithm for removing duplicates from a multiset of $N$ elements.
 \\
-\\As given in the hint in the exercise, the algorithm is based on mergesort, where duplicates are removed as soon as they are found in the merge step.
+\\As given in the hint in the exercise, the algorithm is based on mergesort where duplicates are removed as soon as they are found in the merge step.
 
-The algorithm will be analyzed by giving an upper bound on the number of times an element is scanned during an execution of the algorithm. For illustration purposes consider Figure~\ref{fig:sorting:mergetree}. Since duplicates are removed as soon as they are found, no node in the merge tree can contain duplicates (the leaves are found by sorting the elements in internal memory and removing duplicates).
+The algorithm will be analyzed by giving an upper bound on the number of times an element is scanned during an execution of the algorithm. For illustration purposes consider figure~\ref{fig:sorting:mergetree}. Since duplicates are removed as soon as they are found, no node in the merge tree can contain duplicates (the leaves are found by sorting the elements in internal memory and removing duplicates).
 
 \begin{figure}[h!]
   \centering
@@ -114,7 +114,7 @@ elements are scanned during the algorithm. The algorithm always scans elements i
 \end{itemize}
 Since the original external interval tree uses linear space, the structure with the above modifications still uses linear space.
 
-Queries are answered by walking down the base tree based on the query point. When processing a node in the tree the counts for the multislab lists are read using $O(1)$ I/O, and the relevant interval counts are summed. Then the associated structure to the node is queried as described below using $O(\log_B N)$ I/Os. In total, the query complexity is $O(\log_B^2 N)$ I/Os.
+Queries are answered by walking down the base tree based on the query point. When processing a node in the tree the counts for the multislab lists are read using $O(1)$ I/Os, and the relevant interval counts are summed. Then the associated structure to the node is queried as described below using $O(\log_B N)$ I/Os. In total, the query complexity is $O(\log_B^2 N)$ I/Os.
 
 When querying the associated data-structures, it should be counted how many elements are located to the left (right) of a given point. In the original external interval tree, this is done by scanning the elements, and then charging the cost to the output size. However, this is not possible when counting. Instead, a query is answered by walking down the tree according to the query point while counting the number of elements in the sub-trees to the left (right) by using their weights.
 
