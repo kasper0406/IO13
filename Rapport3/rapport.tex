@@ -127,7 +127,7 @@ Figure~\ref{fig:searching:query} illustrates the query process for counting the 
 \end{figure}
 This produces $O(1)$ I/Os at every node and since the tree is balanced, contributes a total of $O(\log_B N)$ I/Os.
 
-The insertion / deletion process is almost the same as for the external interval tree\footnote{We assume the version without global rebuilding when doing deletions.}. The only difference is that the counters for the multislabs needs to be updated, but this can easily be done when updating the elements inside each multislab. Note that using a weight balanced B-tree for the slab lists does not change how the slab lists are updated. Using the same analysis as in the lecture notes, the complexity for doing inserts and deletes is $O(\log_B N)$ I/Os amortized.
+The insertion / deletion process is almost the same as for the external interval tree. The only difference is that the counters for the multislabs needs to be updated, but this can easily be done when updating the elements inside each multislab. Note that using a weight balanced B-tree for the slab lists does not change how the slab lists are updated. Using the same analysis as in the lecture notes, the complexity for doing inserts and deletes is $O(\log_B N)$ I/Os amortized.
 
 \pagebreak
 \section{Distribution sweeping}
