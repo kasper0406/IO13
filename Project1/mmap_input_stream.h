@@ -17,6 +17,7 @@ template<uint64_t B, typename T>
 class MMapInputStream : public InputStream<T>, public MMapStream<B, T> {
 public:
   void open(string filename, uint64_t start, uint64_t end) {
+    filename_ = filename;
     this->fd = ::open(filename.c_str(), O_RDONLY);
     if (this->fd == -1)
       throw runtime_error("Failed to open file!");
@@ -38,4 +39,13 @@ public:
     
     return result;
   }
+  
+  void closeAndRemove() {
+    MMapInputStream<B, T>::close();
+    if (filename_ != "tmp" && remove(this->filename_.c_str()) != 0) {
+      throw runtime_error("did not delete " + this->filename_ + " foo");
+    }
+  }
+private:
+  string filename_;
 };

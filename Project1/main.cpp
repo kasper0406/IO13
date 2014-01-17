@@ -14,7 +14,7 @@
 #include "buffered_input_stream.h"
 #include "buffered_output_stream.h"
 
-constexpr uint64_t B = 524288;
+constexpr uint64_t B = 41943040;//(uint64_t)1024 * (uint64_t)1024 * (uint64_t)1024 * (uint64_t)4;
 template <typename T> using MMapIStream = MMapInputStream<B, T>;
 template <typename T> using MMapOStream = MMapOutputStream<B, T>;
 
@@ -119,13 +119,40 @@ void lasse_mmap_test() {
   measure(cout, "Large area", trials, large_test);
 }
 
-int main(int argc, char *argv[]) {
-  sanity_test<FREADInputStream, FWRITEOutputStream>();
-  sanity_test<ReadInputStream, WriteOutputStream>();
-  sanity_test<BufferedIStream, BufferedOStream>();
-  sanity_test<MMapIStream, MMapOStream>();
+void lasse_mmap_test2() {
+  const string filename = "mmap_test_file";
+  const uint64_t elements = B;
   
-  const uint64_t elements = 1024 * 1024 * 1024 / 4;
+  generate_file<uint32_t>(filename, []() { return 0; }, elements);
+  
+  cout << "Generated file" << endl;
+  
+  uint64_t block_size = B / 128;
+  int i = 0;
+  for (int block = 0; block < (B / block_size); block++) {
+    measure(cout, "MMAP write test", 1, [filename, block_size, &i]() {
+      MMapOutputStream<B, uint32_t> s;
+      s.open(filename, 0, elements);
+      
+      for (int j = 0; j < block_size; j++) {
+        i++;
+        s.write(j % 13);
+      }
+      
+      s.close();
+    });
+  }
+}
+
+int main(int argc, char *argv[]) {
+  /*sanity_test<FREADInputStream, FWRITEOutputStream>();
+  sanity_test<ReadInputStream, WriteOutputStream>();
+  sanity_test<BufferedIStream, BufferedOStream>();*/
+  sanity_test<MMapIStream, MMapOStream>();
+  cout << "foo" << endl;
+  //lasse_mmap_test2();
+  
+  const uint64_t elements = 1024 * 1024 * 1024 / 128;  // 1 GB
   //const uint64_t elements = 1024 * 1024 * 1024 / 16;
 
   //lasse_mmap_test();
@@ -144,7 +171,7 @@ int main(int argc, char *argv[]) {
   //test_reads<FREADInputStream<uint32_t>>(elements);
   //test_writes<FWRITEOutputStream<uint32_t>>(elements);
     
-  test_sort<BufferedIStream, BufferedOStream>();
+  test_sort<MMapIStream, MMapOStream>();
 
   //test_heapsort();
 

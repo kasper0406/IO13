@@ -384,13 +384,19 @@ void test_sort() {
   const string filename = "test_file2";
   //const uint64_t min_M = 1024 * 1024;
   //const uint64_t max_M = 1024 * 1024 * 1024 / 4;
-  const uint64_t min_M = 1024 * 1024 * 4;
+  /*const uint64_t min_M = 1024 * 1024 * 4;
   const uint64_t max_M = 1024 * 1024 * 1024 / 8;
   const uint32_t min_d = 2;
   const uint32_t max_d = 512;
   // const uint64_t min_elements = 1024 * 1024 * 32;
   const uint64_t min_elements = 1024 * 1024 * 1024;
-  const uint64_t max_elements = 1024 * 1024 * 1024;
+  const uint64_t max_elements = 1024 * 1024 * 1024;*/
+  const uint64_t min_M = (800 / 4) * 1024 * 1024;
+  const uint64_t max_M = (800 / 4) * 1024 * 1024;
+  const uint32_t min_d = 4;
+  const uint32_t max_d = 4;
+  const uint64_t min_elements = 1024 * 1024 * 1024 / 4;
+  const uint64_t max_elements = 1024 * 1024 * 1024 / 4;
    
   print_sort_header<IN<uint32_t>, OUT<uint32_t>>(cout);
 
@@ -398,13 +404,13 @@ void test_sort() {
     generate_file<uint32_t>(filename, random_uint32, elements);
 
     for (uint64_t M = min_M; M <= max_M; M *= 2) {
-      if (M > elements) continue;
+      //if (M > elements) continue;
 
       for (uint32_t d = min_d; d <= max_d; d *= 2) {
-        if ((int)ceil((double)elements / (double)M) < d) continue; 
+        //if ((int)ceil((double)elements / (double)M) < d) continue;
         //if ((d+1) * (524288/64) >= M) continue; 
-        if ((d+1) * 524288 > 1024 * 1024 * 1024 / 2) continue;
-        if (log((double)elements / (double)M) / log(d) > 1) continue;
+        //if ((d+1) * 524288 > 1024 * 1024 * 1024 / 2) continue;
+        //if (log((double)elements / (double)M) / log(d) > 1) continue;
 
         stringstream test;
         test << setw(16) << to_string(elements) << setw(16) << to_string(M) << setw(8) << to_string(d);
