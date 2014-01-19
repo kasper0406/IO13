@@ -310,6 +310,10 @@ int main(int argc, char *argv[]) {
           client<MMapFileStream<int>>(elements, block_size, buffer_size, d, cache_size);
           break;
 
+        case 'n':
+          client<MMapStream<int>>(elements, block_size, buffer_size, d, cache_size);
+          break;
+          
         default:
           cout << "Unknown stream type" << endl;
           exit(1);
