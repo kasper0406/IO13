@@ -154,16 +154,18 @@ int main(int argc, char *argv[]) {
   // const uint64_t elements = 1024 * 1024 * 1024 / 128;  // 1 GB
   //const uint64_t elements = 1024 * 1024 * 1024 / 16;
 
-  const uint64_t elements = (uint64_t)(1024 * 1024 * 1024) * (uint64_t)2 / (uint64_t)4; // 2 GB
+  const uint64_t elements = (uint64_t)(1024 * 1024 * 1024) *  (uint64_t)4; // 1 GB
 
-  for (int k = 1; k <= 256; k *= 4) {
+  /*for (int k = 1; k <= 256; k *= 4) {
     // if (k == 16) continue;
     // test_reads_multiple_files<MMapIStream<uint32_t>>(elements, k);
     // test_reads_multiple_files<BufferedIStream<uint32_t>>(elements, k);
 
     // test_writes_multiple_files<MMapOStream<uint32_t>>(elements, k);
     test_writes_multiple_files<BufferedOStream<uint32_t>>(elements, k);
-  }
+  }*/
+  
+  test_writes<MMapOStream<uint32_t>>(elements);
 
   //lasse_mmap_test();
 
