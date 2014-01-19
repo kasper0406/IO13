@@ -70,7 +70,7 @@ public:
     else
       prot = PROT_WRITE;
     
-    memory = (T*) mmap(NULL, B * sizeof(T) + offWrtPageSize, prot, MAP_SHARED, fd, offset);
+    memory = (T*) mmap(NULL, B * sizeof(T) + offWrtPageSize, prot, MAP_SHARED | MAP_HUGETLB, fd, offset);
     if (memory == MAP_FAILED) {
       memory = NULL;
       throw runtime_error("Failed to map memory: " + to_string(errno));
