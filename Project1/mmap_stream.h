@@ -58,7 +58,7 @@ public:
     
     // Align the offset to a multiple of page size
     uint64_t offset = nextBlock * sizeof(T);
-    const uint64_t offWrtPageSize = offset % sysconf(_SC_PAGESIZE);
+    const uint64_t offWrtPageSize = offset % (1024 * 1024 * 2);//sysconf(_SC_PAGESIZE);
     if (offWrtPageSize != 0) {
       cout << "We are not aligned!" << endl;
       offset -= offWrtPageSize;
