@@ -154,7 +154,7 @@ int main(int argc, char *argv[]) {
   // const uint64_t elements = 1024 * 1024 * 1024 / 128;  // 1 GB
   //const uint64_t elements = 1024 * 1024 * 1024 / 16;
 
-  const uint64_t elements = (uint64_t)(1024 * 1024 * 1024) *  (uint64_t)4; // 1 GB
+  const uint64_t elements = (uint64_t)(1024 * 1024 * 1024) /  (uint64_t)4; // 1 GB
 
   /*for (int k = 1; k <= 256; k *= 4) {
     // if (k == 16) continue;
