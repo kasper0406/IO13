@@ -248,6 +248,71 @@ const double time_limit_in_seconds = 3000;
 
 // TODO(lespeholt): Tildels copy-paste for test_reads og test_writes
 
+template <class S>
+void test_reads_multiple_files(uint64_t elements, uint32_t k) {
+  const string filename_prefix = "test_file" + to_string(elements) + "-" + to_string(k);
+
+  if (!(elements && !(elements & (elements - 1)))) {
+    cout << "Number of elements not a power of 2" << endl;
+    exit(1);
+  }
+
+  if (max_k > elements) {
+    cout << "Max number of streams must be lower or equal to the number of elements" << endl;
+    exit(1);
+  }
+
+  const uint64_t n = elements / k;
+
+  // Generate test files
+  cout << "Generating test files..." << endl;
+  for (uint32_t i = 0; i < k; i++) {
+    cout << "Generating " << i << " / " << k << endl;
+
+    string filename = filename_prefix + "-" + to_string(i);
+    ifstream foo(filename);
+    if (!foo.good()) {
+      generate_file<typename S::type>(filename, random_uint32, n);
+    }
+    foo.close();
+  }
+
+  // Do the test
+  cout << "Test commencing..." << endl;
+  print_test_header<S>(cout, elements);
+  vector<S> streams(k);
+
+  auto preprocess = []() { };
+
+  uint32_t sum = 0;
+  auto read_test = [&]() {
+    for (uint32_t i = 0; i < k; ++i) {
+      string filename = filename_prefix + "-" + to_string(i);
+      streams[i].open(filename, 0, n);
+    }
+
+    for (uint64_t i = 0; i < n; ++i) {
+      for (auto& stream : streams) {
+        sum += stream.read_next();
+      }
+    }
+
+    for (auto& stream : streams) {
+      if (!stream.end_of_stream()) {
+        cout << "Not eof" << endl;
+        exit(1);
+      }
+      stream.close();
+    }
+  };
+
+  stringstream test;
+  test << setw(16) << to_string(n) + "\t" + to_string(k);
+
+  const uint32_t trials = 3;
+  measure(cout, test.str(), trials, read_test, preprocess);
+}
+
 // Tester flere streams der interleaves. Det er det der giver den bedste
 // merge-sort approksimation. Hvis de koeres efter hinanden er det jo bare ligesom
 // at koere een sekventielt.

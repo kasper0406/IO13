@@ -14,7 +14,7 @@
 #include "buffered_input_stream.h"
 #include "buffered_output_stream.h"
 
-constexpr uint64_t B = 41943040;//(uint64_t)1024 * (uint64_t)1024 * (uint64_t)1024 * (uint64_t)4;
+constexpr uint64_t B = 1024 * 1024 * 8 / 4;//(uint64_t)1024 * (uint64_t)1024 * (uint64_t)1024 * (uint64_t)4;
 template <typename T> using MMapIStream = MMapInputStream<B, T>;
 template <typename T> using MMapOStream = MMapOutputStream<B, T>;
 
@@ -149,11 +149,17 @@ int main(int argc, char *argv[]) {
   sanity_test<ReadInputStream, WriteOutputStream>();
   sanity_test<BufferedIStream, BufferedOStream>();*/
   sanity_test<MMapIStream, MMapOStream>();
-  cout << "foo" << endl;
   //lasse_mmap_test2();
   
-  const uint64_t elements = 1024 * 1024 * 1024 / 128;  // 1 GB
+  // const uint64_t elements = 1024 * 1024 * 1024 / 128;  // 1 GB
   //const uint64_t elements = 1024 * 1024 * 1024 / 16;
+
+  const uint64_t elements = (uint64_t)(1024 * 1024 * 1024) * (uint64_t)2 / (uint64_t)4; // 2 GB
+
+  for (int k = 1; k <= 256; k *= 4) {
+    if (k == 16) continue;
+    test_reads_multiple_files<MMapIStream<uint32_t>>(elements, k);
+  }
 
   //lasse_mmap_test();
 
@@ -171,7 +177,7 @@ int main(int argc, char *argv[]) {
   //test_reads<FREADInputStream<uint32_t>>(elements);
   //test_writes<FWRITEOutputStream<uint32_t>>(elements);
     
-  test_sort<MMapIStream, MMapOStream>();
+  // test_sort<MMapIStream, MMapOStream>();
 
   //test_heapsort();
 
