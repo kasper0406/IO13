@@ -286,6 +286,10 @@ int main(int argc, char *argv[]) {
         case 'm':
           client<CachedStream<int, MMapFileStream>>(elements, block_size, buffer_size, d, cache_size);
           break;
+          
+        case 'n':
+          client<CachedStream<int, MMapStream>>(elements, block_size, buffer_size, d, cache_size);
+          break;
 
         default:
           cout << "Unknown stream type" << endl;
