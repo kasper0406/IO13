@@ -353,6 +353,7 @@ void test_reads(uint64_t elements) {
     };
 
     auto read_test = [&]() {
+      vector<S> streams(k);
       for (uint32_t i = 0; i < k; ++i) {
         streams[i].open(filename, (uint64_t)i * (elements / k), ((uint64_t)i + 1LL) * (elements / k));
       }
@@ -384,6 +385,47 @@ void test_reads(uint64_t elements) {
 // merge-sort approksimation. Hvis de koeres efter hinanden er det jo bare ligesom
 // at koere een sekventielt.
 // For write tests, udskrives der bare 0'er
+
+template<class S>
+void test_writes_multiple_files(uint64_t elements, uint32_t k) {
+  const string filename_prefix = "test_file" + to_string(elements) + "-" + to_string(k);
+
+  if (!(elements && !(elements & (elements - 1)))) {
+    cout << "Number of elements not a power of 2" << endl;
+    exit(1);
+  }
+
+  if (max_k > elements) {
+    cout << "Max number of streams must be lower or equal to the number of elements" << endl;
+    exit(1);
+  }
+
+  const uint64_t n = elements / k;
+
+  auto write_test = [&]() {
+    vector<S> streams(k);
+    for (uint32_t i = 0; i < k; ++i) {
+      string filename = filename_prefix + "-" + to_string(i);
+      streams[i].open(filename, 0, n);
+    }
+
+    for (uint64_t i = 0; i < n; ++i) {
+      for (auto& stream : streams) {
+        stream.write(rand());
+      }
+    }
+
+    for (auto& stream : streams) {
+      stream.close();
+    }
+  };
+
+  stringstream test;
+  test << setw(16) << to_string(n) + "\t" + to_string(k);
+  const uint32_t trials = 1;
+  measure(cout, test.str(), trials, write_test);
+}
+
 template <class S>
 void test_writes(uint64_t elements) {
   const string filename = "test_file";

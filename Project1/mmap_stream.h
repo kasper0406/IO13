@@ -59,8 +59,10 @@ public:
     // Align the offset to a multiple of page size
     uint64_t offset = nextBlock * sizeof(T);
     const uint64_t offWrtPageSize = offset % sysconf(_SC_PAGESIZE);
-    if (offWrtPageSize != 0)
+    if (offWrtPageSize != 0) {
+      cout << "We are not aligned!" << endl;
       offset -= offWrtPageSize;
+    }
     
     int prot;
     if (direction == Stream<T>::Direction::IN)
@@ -72,6 +74,9 @@ public:
     if (memory == MAP_FAILED) {
       memory = NULL;
       throw runtime_error("Failed to map memory: " + to_string(errno));
+    }
+    if (madvise(memory, B * sizeof(T) + offWrtPageSize, MADV_SEQUENTIAL) != 0) {
+      throw runtime_error("Failed to advise kernel about access pattern!");
     }
     
     // Skip the elements loaded in to satisfy the "offset should be multiple of page size"-restriction.
