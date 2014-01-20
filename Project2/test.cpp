@@ -129,8 +129,8 @@ void server() {
   int buffer_size_end = 0;
   int d_start = 2;
   int d_end = 4096;
-  int64_t elements_start = 1024 * 1024 * 1024 / 4;
-  int64_t elements_end = 1024 * 1024 * 1024 / 4;
+  int64_t elements_start = 1024 * 1024 * 1024 / 4 / 64 + 1;
+  int64_t elements_end = 1024 * 1024 * 1024 / 4 / 64 + 1;
   int64_t cache_size_start = 0;
   int64_t cache_size_end = 0;
   double max_height = 1.;
