@@ -8,6 +8,7 @@
 #include <limits>
 #include <sstream>
 #include <chrono>
+#include <algorithm>
 
 using namespace std::chrono;
 
@@ -52,9 +53,11 @@ public:
       
       auto beginning_insert = high_resolution_clock::now();
       
+      sort(insert_buffer_.begin(), insert_buffer_.end());
+      
       while (!insert_buffer_.empty()) {
         // Pop element in insert buffer
-        pop_heap(insert_buffer_.begin(), insert_buffer_.end());
+        // pop_heap(insert_buffer_.begin(), insert_buffer_.end());
         I element = insert_buffer_.back();
         insert_buffer_.pop_back();
         blocks_.back().write_inc(element);
@@ -98,6 +101,8 @@ public:
     }
 
     if (!insert_buffer_.empty()) {
+      if (insert_buffer_.size() != 1) throw runtime_error("Ikke en!");
+      
       insert_buffer_candidate = insert_buffer_.front();
     }
 
@@ -115,12 +120,14 @@ public:
       // The heap is empty!
       throw logic_error("Trying to extract from empty heap!");
     }
-
+    
     size_--;
     
     if (!insert_buffer_.empty() && insert_buffer_.front() == peek_max()) {
+      if (insert_buffer_.size() != 1) throw runtime_error("Ikke en!");
+      
       // Biggest is in insert buffer
-      pop_heap(insert_buffer_.begin(), insert_buffer_.end());
+      // pop_heap(insert_buffer_.begin(), insert_buffer_.end());
       insert_buffer_.pop_back();
     } else {
       // Biggest is in root element
