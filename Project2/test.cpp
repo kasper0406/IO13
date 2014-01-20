@@ -37,13 +37,22 @@ void client(size_t elements, size_t block_size, size_t buffer_size, size_t d, si
   FStream<int> stream(0);
   stream.open("testfile", 0, elements, buffer_size);
 
+  auto beginning_insert = high_resolution_clock::now();
+  
   for (uint64_t i = 0; i < elements; ++i) {
     heap.insert(stream.read_next());
   }
+  
+  high_resolution_clock::duration duration_insert = high_resolution_clock::now() - beginning_insert;
+  double time_spent_insert = duration_cast<milliseconds>(duration_insert).count() / 1000.;
+  
+  cout << "Insert time " << time_spent_insert << endl;
 
   // heap.sift_all();
 
   stream.seek(0);
+  
+  auto beginning_extract = high_resolution_clock::now();
 
   int previous = numeric_limits<int>::max();
   for (uint64_t i = 0; i < elements; ++i) {
@@ -56,6 +65,11 @@ void client(size_t elements, size_t block_size, size_t buffer_size, size_t d, si
     heap.extract_max();
     previous = current;
   }
+  
+  high_resolution_clock::duration duration_extract = high_resolution_clock::now() - beginning_extract;
+  double time_spent_extract = duration_cast<milliseconds>(duration_extract).count() / 1000.;
+  
+  cout << "Extract time " << time_spent_extract << endl;
 
   stream.close();
 }
