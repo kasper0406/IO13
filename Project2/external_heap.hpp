@@ -66,7 +66,7 @@ public:
       high_resolution_clock::duration duration_insert = high_resolution_clock::now() - beginning_insert;
       double time_spent_insert = duration_cast<milliseconds>(duration_insert).count() / 1000.;
       
-      cout << "Insert block time " << time_spent_insert << endl;
+      //cout << "Insert block time " << time_spent_insert << endl;
 
       blocks_.back().close();
 
