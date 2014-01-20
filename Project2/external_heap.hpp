@@ -8,6 +8,7 @@
 #include <limits>
 #include <sstream>
 #include <chrono>
+#include <algorithm>
 
 using namespace std::chrono;
 
