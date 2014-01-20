@@ -123,27 +123,27 @@ void server() {
   string timeout_exec = "/usr/local/Cellar/coreutils/8.21/bin/gtimeout";
   #endif
   int timeout_seconds = 1000;
-  int block_size_start = 1024;
-  int block_size_end = 4096 * 4096 * 8;
-  int buffer_size_start = 1024;
-  int buffer_size_end = 1024 * 16;
+  int block_size_start = 1024 * 1024;
+  int block_size_end = 1024 * 1024 * 512 / 4;
+  int buffer_size_start = 0;
+  int buffer_size_end = 0;
   int d_start = 2;
   int d_end = 4096;
-  int64_t elements_start = 1024 * 1024;
-  int64_t elements_end = 1024 * 1024 * 256;
-  int64_t cache_size_start = 128;
-  int64_t cache_size_end = 1024 * 16;
-  double max_height = 4.;
-  vector<char> stream_types { 'm', 'b', 'f' };
+  int64_t elements_start = 1024 * 1024 * 1024 / 4;
+  int64_t elements_end = 1024 * 1024 * 1024 / 4;
+  int64_t cache_size_start = 0;
+  int64_t cache_size_end = 0;
+  double max_height = 1.;
+  vector<char> stream_types { 'm' };
   
-  for (double allowed_max_height = 2.; allowed_max_height < max_height; ++allowed_max_height) {
+  for (double allowed_max_height = 1.; allowed_max_height <= max_height; ++allowed_max_height) {
     for (int64_t elements = elements_start; elements <= elements_end; elements*=2) {
       for (char stream_type : stream_types) {
-        for (int block_size = block_size_start; block_size <= block_size_end; block_size*=4) {
-          for (int d = d_start; d <= d_end; d*=4) {
+        for (int block_size = block_size_start; block_size <= block_size_end; block_size*=2) {
+          for (int d = d_start; d <= d_end; d*=2) {
             for (int buffer_size = (stream_type == 'b' ? buffer_size_start : 0);
                  buffer_size <= (stream_type == 'b' ? buffer_size_end : 0); buffer_size= max(1, buffer_size * 4)) {
-              for (int cache_size = cache_size_start; cache_size <= cache_size_end; cache_size*=4) {
+              for (int cache_size = cache_size_start; cache_size <= cache_size_end; cache_size = max(cache_size*4,1)) {
                 // Rules
                 // Buffer size smaller than block size
                 if (buffer_size > block_size) continue;
@@ -161,14 +161,15 @@ void server() {
                 const int64_t estimated_memory_usage = V + 2*P*(N + V - 1)/V+(d+1)*B + B;
 
                 // Make use of most of the memory space.
-                if (M / 64 > estimated_memory_usage) continue;
+                //if (M / 64 > estimated_memory_usage) continue;
                 // Don't suffocate
-                if (M < estimated_memory_usage) continue;
+                //if (M < estimated_memory_usage) continue;
 
-                const double height = log(N / V) / log(d);
+                const double height = log((double)N / (double)V) / log(d);
+                
 
-                if (height > allowed_max_height) continue;
-                if (height <= allowed_max_height - 1) continue;
+                if (height - 0.01> allowed_max_height) continue;
+                //if (height <= allowed_max_height - 1) continue;
 
                 string command = timeout_exec + " " + to_string(timeout_seconds) + " ./Project2Test client "
                 + "\"elements:" + to_string(elements) + " block_size:" + to_string(block_size) + " buffer_size:"
